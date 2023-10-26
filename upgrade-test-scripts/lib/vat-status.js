@@ -1,6 +1,6 @@
 // @ts-check
 import dbOpenAmbient from 'better-sqlite3';
-import { HOME } from '../../constants.js';
+import { HOME } from './constants.js';
 
 /**
  * @file look up vat incarnation from kernel DB
@@ -14,7 +14,7 @@ const swingstorePath = '~/.agoric/data/agoric/swingstore.sqlite';
  *
  * @param {import('better-sqlite3').Database} db
  */
-const dbTool = db => {
+export const dbTool = db => {
   const prepare = (strings, ...params) => {
     const dml = strings.join('?');
     return { stmt: db.prepare(dml), params };

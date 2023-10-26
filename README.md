@@ -98,9 +98,9 @@ To make the wallet ui talk to your local chain, set the network config to
 2. Duplicate the last pair of UPGRADE and TEST blocks
 3. Update their number from the UPGRADE / DEST block at the end
 4. Make directory for tests (e.g. `agoric-upgrade-12`)
-4. Make directory for ugprade (e.g. `propose-agoric-upgrade-12` with a `.keep`)
-5. Update the UPGRADE/DEST pair to be your new upgrade (THIS_NAME matching the upgrade handler string in app.go)
-6. Update the `Makefile`
+5. Make directory for ugprade (e.g. `propose-agoric-upgrade-12` with a `.keep`)
+6. Update the UPGRADE/DEST pair to be your new upgrade (THIS_NAME matching the upgrade handler string in app.go)
+7. Update the `Makefile`
   - the two targets to `Makefile` (e.g. `propose-agoric-upgrade-12` and `agoric-upgrade-12`)
   - set the default TARGET (e.g. `agoric-upgrade-12`)
   - add the DEST target to the `.phony` in `Makefile`
