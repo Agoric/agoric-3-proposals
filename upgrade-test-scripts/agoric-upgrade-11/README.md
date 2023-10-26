@@ -4,7 +4,9 @@
 2. 11wf with walletFactory
 3. 11kr with kreadKit
 
-# Testing 11kr
+# Testing 11kr - WIP
+
+*Note: MN2= volume vs. fetching from github releases is in flux.*
 
 Related: https://github.com/agoric-labs/KREAd/releases/tag/gryo-rc0
 
