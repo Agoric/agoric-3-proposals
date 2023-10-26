@@ -44,7 +44,7 @@ Then in a new shell do the following.
 rm -rf upgrade-test-scripts
 ln -s /workspace/upgrade-test-scripts
 
-# Patch agoric-cli
+# Patch agoric-cli - WIP - outdated???
 cp upgrade-test-scripts/agoric-upgrade-11/gov-cmd packages/agoric-cli/src/commands/gov.js
 cp upgrade-test-scripts/agoric-upgrade-11/agops-bin packages/agoric-cli/src/bin-agops.js
 ## this should be docker-u11
