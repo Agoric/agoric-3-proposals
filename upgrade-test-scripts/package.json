@@ -10,7 +10,9 @@
   },
   "scripts": {
     "agops": "yarn --cwd /usr/src/agoric-sdk/ --silent agops",
-    "upgrade-tests": "ava --serial agoric-upgrade*/**/pre.test.js agoric-upgrade*/**/actions.test.js agoric-upgrade*/**/post.test.js"
+    "upgrade-tests-1": "ava --serial agoric-upgrade*/**/pre.test.js agoric-upgrade*/**/actions.test.js agoric-upgrade*/**/post.test.js",
+    "upgrade-tests-2": "if [ -d agoric-upgrade-11 ]; then ava --serial agoric-upgrade-11/mn2.test.js agoric-upgrade-11/add-collateral.test.js; fi",
+    "upgrade-tests": "yarn run upgrade-tests-1 && yarn run upgrade-tests-2"
   },
   "ava": {
     "files": [
