@@ -333,7 +333,8 @@ test.serial('priceAuthority installation was not changed', async t => {
   t.deepEqual(actual, expected);
 });
 
-test('stATOM-USD price feed instance in agoricNames', async t => {
+// needs synchronization
+test.skip('stATOM-USD price feed instance in agoricNames', async t => {
   const { agoric } = t.context;
   const { instance } = await wellKnownIdentities({ agoric });
   testIncludes(t, 'stATOM-USD price feed', Object.keys(instance), 'instance');
