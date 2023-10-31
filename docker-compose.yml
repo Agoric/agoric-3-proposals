@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  agd:
+    image: agoric/upgrade-test:agoric-upgrade-11
+    ports:
+      - 26656:26656
+      - 26657:26657
+      - 1317:1317
+    environment:
+      DEST: 1
+      DEBUG: "SwingSet:ls,SwingSet:vat"
+    volumes:
+      - .:/workspace
+    entrypoint: /usr/src/agoric-sdk/upgrade-test-scripts/start_to_to.sh
