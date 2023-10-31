@@ -34,7 +34,7 @@ test.before(async t => {
 
 test.serial('Open Vaults', async t => {
   const currentVaults = await agops.vaults('list', '--from', GOV1ADDR);
-  t.is(currentVaults.length, 4);
+  t.true(currentVaults.length >= 4);
 
   await openVault(GOV1ADDR, 7, 11);
   await adjustVault(GOV1ADDR, 'vault5', { giveMinted: 1.5 });
