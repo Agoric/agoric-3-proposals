@@ -97,7 +97,7 @@ const dappAPI = {
 
 const staticConfig = {
   deposit: '10000000ubld', // 10 BLD
-  installer: 'gov1', // as in: agd keys show gov1
+  installer: 'gov2', // as in: agd keys show gov2
   proposer: 'validator',
   collateralPrice: 6, // conservatively low price. TODO: look up
   swingstorePath: '~/.agoric/data/agoric/swingstore.sqlite',
