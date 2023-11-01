@@ -71,6 +71,7 @@ ENV THIS_NAME=agoric-upgrade-10 USE_JS=1
 
 WORKDIR /usr/src/agoric-sdk/
 COPY ./env_setup.sh ./start_to_to.sh ./package.json ./*.js ./upgrade-test-scripts/
+COPY ./lib/ ./upgrade-test-scripts/lib/
 RUN cd upgrade-test-scripts && yarn
 RUN echo '. /usr/src/agoric-sdk/upgrade-test-scripts/env_setup.sh' >> ~/.bashrc
 
@@ -104,6 +105,7 @@ ENV THIS_NAME=agoric-upgrade-11 USE_JS=1
 # start-chain boilerplate
 WORKDIR /usr/src/agoric-sdk/
 COPY ./env_setup.sh ./start_to_to.sh ./package.json ./*.js ./upgrade-test-scripts/
+COPY ./lib/ ./upgrade-test-scripts/lib/
 RUN cd upgrade-test-scripts && yarn
 RUN echo '. /usr/src/agoric-sdk/upgrade-test-scripts/env_setup.sh' >> ~/.bashrc
 
@@ -138,6 +140,7 @@ COPY --from=propose-agoric-upgrade-12 /root/.agoric /root/.agoric
 # start-chain boilerplate
 WORKDIR /usr/src/agoric-sdk/
 COPY ./env_setup.sh ./start_to_to.sh ./package.json ./*.js ./upgrade-test-scripts/
+COPY ./lib/ ./upgrade-test-scripts/lib/
 RUN cd upgrade-test-scripts && yarn
 RUN echo '. /usr/src/agoric-sdk/upgrade-test-scripts/env_setup.sh' >> ~/.bashrc
 

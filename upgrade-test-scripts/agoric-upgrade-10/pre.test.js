@@ -2,16 +2,16 @@ import test from 'ava';
 
 import { promises as fs } from 'fs';
 
-import { agd, agoric, agops } from '../cliHelper.js';
+import { agd, agoric, agops } from '../lib/cliHelper.js';
 
 import {
   GOV1ADDR,
   GOV2ADDR,
   GOV3ADDR,
   PSM_PAIR,
-} from '../constants.js';
-import { openVault } from '../econHelpers.js';
-import { getUser, waitForBlock } from '../commonUpgradeHelpers.js';
+} from '../lib/constants.js';
+import { openVault } from '../lib/econHelpers.js';
+import { getUser, waitForBlock } from '../lib/commonUpgradeHelpers.js';
 
 test.before(async () => {
   console.log('Wait for upgrade to settle');

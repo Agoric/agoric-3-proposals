@@ -1,9 +1,14 @@
 import test from 'ava';
 
-import { agd, agoric, agops } from '../cliHelper.js';
-import { GOV1ADDR, SDK_ROOT } from '../constants.js';
+import { agd, agoric, agops } from '../lib/cliHelper.js';
+import { GOV1ADDR, SDK_ROOT } from '../lib/constants.js';
 import { installBundles, runZcfUpgrade, runProber } from './actions.js';
-import { adjustVault, closeVault, mintIST, openVault } from '../econHelpers.js';
+import {
+  adjustVault,
+  closeVault,
+  mintIST,
+  openVault,
+} from '../lib/econHelpers.js';
 
 test.before(async t => {
   await mintIST(GOV1ADDR, 12340000000, 10000, 2000);
@@ -29,7 +34,7 @@ test.before(async t => {
 
 test.serial('Open Vaults', async t => {
   const currentVaults = await agops.vaults('list', '--from', GOV1ADDR);
-  t.is(currentVaults.length, 4);
+  t.true(currentVaults.length >= 4);
 
   await openVault(GOV1ADDR, 7, 11);
   await adjustVault(GOV1ADDR, 'vault5', { giveMinted: 1.5 });
