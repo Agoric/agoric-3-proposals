@@ -86,14 +86,6 @@ export const provisionSmartWallet = async (address, amount) => {
   console.log(await agoric.wallet('show', `--from ${address}`));
 };
 
-export const newOfferId = async () => {
-  const { stdout: date } = await $`date +${'%s%3M'}`;
-  // eslint-disable-next-line no-undef
-  await new Promise(r => setTimeout(r, 1000));
-
-  return date;
-};
-
 export const mkTemp = async template => {
   const { stdout: data } = await $({
     shell: true,
