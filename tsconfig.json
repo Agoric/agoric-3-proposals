@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "ES2022"
+        ],
+        "module": "nodenext",
+        // ES2022 per Node 18 in https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
+        "target": "ES2022"
+    }
+}

@@ -1,6 +1,5 @@
 #!/usr/bin/env tsx
 
-// FIXME get TypeScript to resolve these, probably with lib:ES2022
 import assert from 'node:assert/strict';
 import {
   provisionWallet,

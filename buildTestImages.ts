@@ -1,5 +1,4 @@
 #!/usr/bin/env tsx
-// @ts-check
 
 import { parseArgs } from 'node:util';
 import { execSync } from 'node:child_process';
@@ -11,7 +10,7 @@ refreshDockerfile();
 const options = {
   match: { short: 'm', type: 'string' },
   dry: { type: 'boolean' },
-};
+} as const;
 const { values } = parseArgs({ options });
 
 const { match, dry } = values;
