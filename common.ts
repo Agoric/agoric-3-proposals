@@ -1,7 +1,6 @@
 #!/usr/bin/env tsx
-// @ts-check
 
-import fs from 'node:fs';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 export const repository = 'ghcr.io/agoric/agoric-3-proposals';

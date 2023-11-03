@@ -65,14 +65,14 @@ const acceptEC = async () => {
 };
 
 const acceptOracles = oracles => {
-  const promiseArray = [];
+  const promiseArray = [] as Promise<void>[];
 
   for (const oracle of oracles) {
     console.log(`${oracle.address}: Accept oracle invitations`);
     promiseArray.push(
       executeOffer(
         oracle.address,
-        agops.oracle('accept', '--offerId', oracle.id),
+        agops.oracle('accept', '--offerId', oracle.acceptanceOfferId),
       ),
     );
   }
@@ -267,7 +267,7 @@ export const raiseDebtCeiling = async address => {
 
 export const pushPrice = (oracles, price = 10.0) => {
   console.log(`ACTIONS pushPrice ${price}`);
-  const promiseArray = [];
+  const promiseArray = [] as Promise<void>[];
 
   for (const oracle of oracles) {
     console.log(`Pushing Price from oracle ${oracle.address}`);
@@ -280,7 +280,7 @@ export const pushPrice = (oracles, price = 10.0) => {
           '--price',
           price,
           '--oracleAdminAcceptOfferId',
-          oracle.id,
+          oracle.acceptanceOfferId,
         ),
       ),
     );

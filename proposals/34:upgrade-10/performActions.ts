@@ -1,6 +1,5 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 
-// FIXME get TypeScript to resolve these, probably with lib:ES2022
 import assert from 'node:assert/strict';
 import {
   provisionWallet,
@@ -19,7 +18,6 @@ import {
 } from '../../upgrade-test-scripts/lib/constants.js';
 import {
   getUser,
-  newOfferId,
   waitForBlock,
 } from '../../upgrade-test-scripts/lib/commonUpgradeHelpers.js';
 import { submitDeliverInbound } from './upgradeHelpers.js';
@@ -37,24 +35,13 @@ const oraclesAddresses = [GOV1ADDR, GOV2ADDR];
 await waitForBlock(2);
 await submitDeliverInbound('user1');
 
-const oracles = [];
-for (const oracle of oraclesAddresses) {
-  const offerId = await newOfferId();
-  oracles.push({ address: oracle, id: offerId });
-}
+const oracles = oraclesAddresses.map((address, i) => ({
+  address,
+  acceptanceOfferId: i, // for re-use between accept and push
+}));
 
 console.log('Ensure user2 provisioned');
 await provisionWallet('user2');
-
-// XXX no need to test the helper function here
-// const user2Address = await getUser('user2');
-// const data = await agd.query(
-//   'vstorage',
-//   'data',
-//   `published.wallet.${user2Address}`,
-// );
-
-// assert.equal(data.value, '');
 
 console.log('Ensure auction params have changed');
 await implementNewAuctionParams(

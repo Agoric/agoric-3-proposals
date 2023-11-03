@@ -9,6 +9,7 @@ yarn install --frozen-lockfile
 
 yarn ava pre.test.js
 
-./performActions.js
+yarn global add tsx
+./performActions.ts
 
 ./legacy.sh

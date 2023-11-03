@@ -1,8 +1,7 @@
 #!/usr/bin/env tsx
 // @ts-check
 
-import assert from 'node:assert';
-import fs from 'node:fs';
+import * as fs from 'node:fs';
 import { readProposals } from './common';
 import type {
   ProposalInfo,
