@@ -63,7 +63,7 @@ jobs:
         uses: crazy-max/ghaction-github-runtime@v3
 
       - name: build test images
-        run: ./buildTestImages.ts --buildOpts="--cache-from type=gha --cache-to type=gha,mode=max"
+        run: ./buildTestImages.ts
 
       - name: run test images
         run: ./runTestImages.ts
