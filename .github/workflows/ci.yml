@@ -59,10 +59,12 @@ jobs:
         # The .ts scripts depend upon this
       - run: npm install --global tsx
 
+      - name: Export vars of Actions Runtime for caching
+        uses: crazy-max/ghaction-github-runtime@v3
+
       - name: build test images
-        run: |
-          docker info
-          ./buildTestImages.ts
+        run: ./buildTestImages.ts --buildOpts="--cache-from type=gha --cache-to type=gha,mode=max"
+
       - name: run test images
         run: ./runTestImages.ts
 
@@ -78,6 +80,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # use GitHub Actions Cache https://github.com/moby/buildkit#github-actions-cache-experimental
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: notify on failure
         if: failure() && github.event_name != 'pull_request'
         uses: ./.github/actions/notify-status

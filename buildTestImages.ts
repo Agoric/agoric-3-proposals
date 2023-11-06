@@ -8,12 +8,13 @@ import { refreshDockerfile } from './makeDockerfile';
 refreshDockerfile();
 
 const options = {
+  buildOpts: { type: 'string' },
   match: { short: 'm', type: 'string' },
   dry: { type: 'boolean' },
 } as const;
 const { values } = parseArgs({ options });
 
-const { match, dry } = values;
+const { buildOpts, match, dry } = values;
 
 const allProposals = readProposals();
 
@@ -28,7 +29,7 @@ for (const proposal of proposals) {
   const { name, target } = imageNameForProposalTest(proposal);
   // 'load' to ensure the images are output to the Docker client. Seems to be necessary
   // for the CI docker/build-push-action to re-use the cached stages.
-  const cmd = `docker buildx build --load --tag ${name} --target ${target} .`;
+  const cmd = `docker buildx build ${buildOpts} --load --tag ${name} --target ${target} .`;
   console.log(cmd);
   if (!dry) {
     execSync(cmd, { stdio: 'inherit' });
