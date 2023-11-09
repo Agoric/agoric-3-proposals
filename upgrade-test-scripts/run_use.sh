@@ -23,8 +23,6 @@ fi
 
 source ./env_setup.sh
 
-export SLOGFILE=slog.slog
-
 echo "Starting agd in the background."
 startAgd
 
