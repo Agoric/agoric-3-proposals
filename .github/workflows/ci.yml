@@ -59,6 +59,9 @@ jobs:
         # The .ts scripts depend upon this
       - run: npm install --global tsx
 
+      - name: build use images
+        run: ./buildUseImages.ts
+
       - name: build test images
         run: |
           docker info
