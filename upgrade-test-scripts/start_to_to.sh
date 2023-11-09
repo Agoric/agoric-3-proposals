@@ -6,8 +6,6 @@ grep -qF 'printKeys' /root/.bashrc || echo "printKeys" >>/root/.bashrc
 
 source ./env_setup.sh
 
-export SLOGFILE=slog.slog
-
 startAgd
 
 if [[ -z "${UPGRADE_TO}" ]]; then

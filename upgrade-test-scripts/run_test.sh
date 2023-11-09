@@ -6,8 +6,6 @@ set -e
 
 source ./env_setup.sh
 
-export SLOGFILE=slog.slog
-
 PROPOSAL_PATH=$1
 
 startAgd
