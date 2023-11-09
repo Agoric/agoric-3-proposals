@@ -59,10 +59,12 @@ jobs:
         # The .ts scripts depend upon this
       - run: npm install --global tsx
 
+      - name: build use images
+        run: ./buildUseImages.ts
+
       - name: build test images
-        run: |
-          docker info
-          ./buildTestImages.ts
+        run: ./buildTestImages.ts
+
       - name: run test images
         run: ./runTestImages.ts
 
@@ -78,6 +80,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main
+          cache-to: type=inline
+
       - name: notify on failure
         if: failure() && github.event_name != 'pull_request'
         uses: ./.github/actions/notify-status

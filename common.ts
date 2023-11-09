@@ -44,8 +44,11 @@ export function readProposals(): ProposalInfo[] {
   return proposalPaths.map(readInfo);
 }
 
-export function imageNameForProposalTest(proposal) {
-  const target = `test-${proposal.proposalName}`;
+export function imageNameForProposal(
+  proposal: ProposalCommon,
+  stage: 'use' | 'test',
+) {
+  const target = `${stage}-${proposal.proposalName}`;
   return {
     name: `${repository}:${target}`,
     target,
