@@ -2,7 +2,7 @@
 
 import { parseArgs } from 'node:util';
 import { execSync } from 'node:child_process';
-import { imageNameForProposalTest, readProposals } from './common';
+import { imageNameForProposal, readProposals } from './common';
 
 const options = {
   match: { short: 'm', type: 'string' },
@@ -19,7 +19,7 @@ const proposals = match
 
 for (const proposal of proposals) {
   console.log(`Running test image for proposal ${proposal.proposalName}`);
-  const { name } = imageNameForProposalTest(proposal);
+  const { name } = imageNameForProposal(proposal, 'test');
   // 'rm' to remove the container when it exits
   const cmd = `docker run --rm ${name}`;
   execSync(cmd, { stdio: 'inherit' });

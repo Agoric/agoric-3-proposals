@@ -62,6 +62,9 @@ jobs:
       - name: Export vars of Actions Runtime for caching
         uses: crazy-max/ghaction-github-runtime@v3
 
+      - name: build use images
+        run: ./buildUseImages.ts
+
       - name: build test images
         run: ./buildTestImages.ts
 
