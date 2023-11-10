@@ -17,7 +17,7 @@ jobs:
     runs-on:
       # Run on a large runner. Changing or viewing the configuration requires an org admin.
       # https://docs.github.com/en/actions/using-github-hosted-runners/about-larger-runners/running-jobs-on-larger-runners
-      labels: 'ubuntu-latest-m'
+      group: 'Default Larger Runners'
     # UNTIL https://github.com/Agoric/agoric-3-proposals/issues/2
     timeout-minutes: 120
     steps:
