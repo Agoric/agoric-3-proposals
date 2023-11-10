@@ -13,7 +13,10 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # This should work but causes an error when used in the Docker caching due to `type=registry,ref=ghcr.io/Agoric/agoric-3-proposals:cache`
+  # failed to configure registry cache exporter: invalid reference format: repository name must be lowercase
+  # IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: agoric/agoric-3-proposals
 
 jobs:
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
@@ -59,6 +62,9 @@ jobs:
         # The .ts scripts depend upon this
       - run: npm install --global tsx
 
+      - name: build use images
+        run: ./buildUseImages.ts
+
       - name: build test images
         run: |
           docker info
@@ -78,6 +84,14 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # https://www.kenmuse.com/blog/implementing-docker-layer-caching-in-github-actions/
+          cache-from: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ github.event_name }}
+          cache-to: |
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ github.event_name }},mode=max
+
       - name: notify on failure
         if: failure() && github.event_name != 'pull_request'
         uses: ./.github/actions/notify-status
