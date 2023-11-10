@@ -13,7 +13,10 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # This should work but causes an error when used in the Docker caching due to `type=registry,ref=ghcr.io/Agoric/agoric-3-proposals:cache`
+  # failed to configure registry cache exporter: invalid reference format: repository name must be lowercase
+  # IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: agoric/agoric-3-proposals
 
 jobs:
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
