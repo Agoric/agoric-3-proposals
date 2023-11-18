@@ -54,6 +54,10 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 
 ## Development
 
+```
+npm install -g tsx
+```
+
 To build the test images,
 
 ```

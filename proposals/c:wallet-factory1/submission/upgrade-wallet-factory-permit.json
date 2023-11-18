@@ -1,0 +1,17 @@
+{
+  "consume": {
+    "vatAdminSvc": "vatAdminSvc",
+    "walletFactoryStartResult": "walletFactoryStartResult",
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

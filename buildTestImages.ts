@@ -21,6 +21,8 @@ const proposals = match
   ? allProposals.filter(p => p.proposalName.includes(match))
   : allProposals;
 
+console.log('BUILDING: ', proposals);
+
 for (const proposal of proposals) {
   if (!dry) {
     console.log(`\nBuilding test image for proposal ${proposal.proposalName}`);
