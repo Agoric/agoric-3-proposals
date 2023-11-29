@@ -16,14 +16,33 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  platforms:
+    runs-on: ubuntu-latest
+    outputs:
+      default: '${{ steps.platforms.outputs.default }}'
+      platforms: '${{ steps.platforms.outputs.platforms }}'
+    steps:
+      - name: Compute Docker platforms
+        id: platforms
+        run: |
+          DEFAULT_PLATFORM=linux/amd64
+          echo "default=$DEFAULT_PLATFORM" >> $GITHUB_OUTPUT
+          if ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}; then
+            platforms='["'"$DEFAULT_PLATFORM"'"]'
+          else
+            platforms='["linux/amd64","linux/arm64/v8"]'
+          fi
+          echo "platforms=$platforms" >> $GITHUB_OUTPUT
+    
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
   test-proposals:
-    strategy:
-      matrix:
-        platform: [linux/amd64]
-    runs-on: ubuntu-latest
+    needs: [platforms]
     # UNTIL https://github.com/Agoric/agoric-3-proposals/issues/2
     timeout-minutes: 120
+    strategy:
+      matrix:
+        platform: ${{ fromJSON(needs.platforms.outputs.platforms) }}
+    runs-on: ${{ contains(matrix.platform, '/arm') && 'macos-latest-xlarge' || 'ubuntu-latest' }}
     steps:
       - name: free up disk space
         run: |
@@ -39,11 +58,19 @@ jobs:
           echo "=== After cleanup:"
           df -h
 
+      - name: Set environment
+        run: |
+          echo "DEFAULT_PLATFORM=${{ needs.platforms.outputs.default }}" >> $GITHUB_ENV
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU for cross-platform builds
+        uses: docker/setup-qemu-action@v3
+        if: ${{ matrix.platform != env.DEFAULT_PLATFORM }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -62,30 +89,88 @@ jobs:
         # The .ts scripts depend upon this
       - run: npm install --global tsx
 
-      - name: build test images
+      - name: build test images ${{ matrix.platform }} == ${{ env.DEFAULT_PLATFORM }}
         run: |
           docker info
-          ./buildTestImages.ts
+          ./buildTestImages.ts ${{ matrix.platform == env.DEFAULT_PLATFORM && ' ' || '--dry' }}
       - name: run test images
+        if: ${{ matrix.platform == env.DEFAULT_PLATFORM }}
         run: ./runTestImages.ts
 
-      # XXX this should be instant because all the stages were already built in the steps above
-      # but it's re-building the last stage. This is deemed good enough for now.
-      # see https://github.com/moby/moby/issues/34715
-      - name: Build and push complete image
+      - name: Compute tags
+        id: docker-tags
+        run: |
+          sep=
+          SUFFIXED=
+          uarch=$(echo "${{ matrix.platform }}" | tr / _)
+          for TAG in ${{ steps.meta.outputs.tags }}; do
+            SUFFIXED="$SUFFIXED$sep$TAG-$uarch"
+            if test -z "$sep"; then
+              sep=,
+              echo "tag=$TAG-$uarch" >> $GITHUB_OUTPUT
+            fi
+          done
+          echo "tags=$SUFFIXED" >> $GITHUB_OUTPUT
+      
+      # XXX this should be instant for the local platform because all the stages
+      # were already built in the steps above but it's re-building the last
+      # stage. This is deemed good enough for now.  see
+      # https://github.com/moby/moby/issues/34715
+      - name: Build and push images
         uses: docker/build-push-action@v5
         with:
           context: .
+          platforms: ${{ matrix.platform }}
           # push to registry on every repo push. A PR #2 will push with tag `pr-2` and `main` will have tag `main`.
           # See https://github.com/docker/metadata-action?tab=readme-ov-file#basic.
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.docker-tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - name: notify on failure
-        if: failure() && github.event_name != 'pull_request'
-        uses: ./.github/actions/notify-status
+
+  # Publish the build's multiarch images to Docker Registry.
+  docker-publish-multiarch:
+    needs: [test-proposals, platforms]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
         with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          from: ${{ secrets.NOTIFY_EMAIL_FROM }}
-          to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          password: ${{ secrets.NOTIFY_EMAIL_PASSWORD }}
+          buildkitd-flags: --debug
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+      - name: Compute tags
+        id: docker-tags
+        run: |
+          echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
+      
+      - name: Push multiarch image
+        run: |
+          set -ex
+          for TAG in ${{ steps.docker-tags.outputs.tags }}; do
+            sources=
+            for ARCH in ${{ join(fromJson(needs.platforms.outputs.platforms), ' ') }}; do
+              uarch=$(echo "$ARCH" | tr / _)
+              BUILD_TAG="$TAG-$uarch"
+              sources="$sources $BUILD_TAG"
+            done
+            docker buildx imagetools create --tag "$TAG"$sources
+          done
