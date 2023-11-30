@@ -25,7 +25,7 @@ else
   echo "Upgrade info is not valid JSON: $info"
   exit $status
 fi
-agd tx gov submit-proposal software-upgrade "$UPGRADE_TO" \
+agd tx -bblock gov submit-proposal software-upgrade "$UPGRADE_TO" \
   --upgrade-height="$height" --upgrade-info="$info" \
   --title="Upgrade to ${UPGRADE_TO}" --description="upgrades" \
   --from=validator --chain-id="$CHAINID" \

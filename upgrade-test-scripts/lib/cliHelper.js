@@ -17,7 +17,7 @@ export const agd = {
     return JSON.parse(data);
   },
   tx: async (...params) => {
-    const newParams = ['tx', ...params, '-o json'];
+    const newParams = ['tx', '-bblock', ...params, '-o json'];
     const data = await executeCommand(BINARY, newParams, { shell: true });
     return JSON.parse(data);
   },

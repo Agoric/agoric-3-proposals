@@ -80,10 +80,10 @@ provisionSmartWallet() {
   addr="$1"
   amount="$2"
   echo "funding $addr"
-  agd tx bank send "validator" "$addr" "$amount" -y --keyring-backend=test --chain-id="$CHAINID"
+  agd tx -bblock bank send "validator" "$addr" "$amount" -y --keyring-backend=test --chain-id="$CHAINID"
   waitForBlock
   echo "provisioning $addr"
-  agd tx swingset provision-one my-wallet "$addr" SMART_WALLET --keyring-backend=test --yes --chain-id="$CHAINID" --from="$addr"
+  agd tx -bblock swingset provision-one my-wallet "$addr" SMART_WALLET --keyring-backend=test --yes --chain-id="$CHAINID" --from="$addr"
   echo "Waiting for wallet $addr to reach vstorage"
   waitForBlock 5
   echo "Reading $addr from vstorage"
@@ -164,9 +164,9 @@ voteLatestProposalAndWait() {
   waitForBlock
   proposal=$($binary q gov proposals -o json | jq -r '.proposals[-1].proposal_id')
   waitForBlock
-  $binary tx gov deposit $proposal 50000000ubld --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
+  $binary tx -bblock gov deposit $proposal 50000000ubld --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
   waitForBlock
-  $binary tx gov vote $proposal yes --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
+  $binary tx -bblock gov vote $proposal yes --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
   waitForBlock
 
   while true; do

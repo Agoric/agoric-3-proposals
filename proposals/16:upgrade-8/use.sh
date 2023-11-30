@@ -22,7 +22,7 @@ waitForBlock 2
 waitForBlock 3
 # fund provision pool
 stakeamount="20000000${USDC_DENOM}"
-agd tx bank send "validator" "agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346" "$stakeamount" -y --keyring-backend=test --chain-id="$CHAINID"
+agd tx bank send "validator" "agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346" "$stakeamount" -y --keyring-backend=test --chain-id="$CHAINID" -bblock
 waitForBlock 3
 
 govaccounts=("$GOV1ADDR" "$GOV2ADDR" "$GOV3ADDR")
