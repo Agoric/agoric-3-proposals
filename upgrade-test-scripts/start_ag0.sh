@@ -80,13 +80,13 @@ echo "Chain in to-be-upgraded state for $UPGRADE_TO"
 
 while true; do
   latest_height=$(ag0 status | jq -r .SyncInfo.latest_block_height)
-  if [ "$latest_height" != "$height" ]; then
-    echo "Waiting for upgrade height to be reached (need $height, have $latest_height)"
-    sleep 1
-  else
-    echo "Upgrade height for $UPGRADE_TO reached. Killing ag0"
+  if [ "$latest_height" -ge "$height" ]; then
+    echo "Upgrade height for $UPGRADE_TO reached. Killing agd"
     echo "(CONSENSUS FAILURE above for height $height is expected)"
     break
+  else
+    echo "Waiting for upgrade height for $UPGRADE_TO to be reached (need $height, have $latest_height)"
+    sleep 1
   fi
 done
 
