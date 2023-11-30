@@ -170,13 +170,15 @@ voteLatestProposalAndWait() {
   waitForBlock
 
   while true; do
-    status=$($binary q gov proposal $proposal -ojson | jq -r .status)
+    json=$($binary q gov proposal $proposal -ojson)
+    status=$(echo "$json" | jq -r .status)
     case $status in
     PROPOSAL_STATUS_PASSED)
       break
       ;;
-    PROPOSAL_STATUS_REJECTED)
-      echo "Proposal rejected"
+    PROPOSAL_STATUS_REJECTED | PROPOSAL_STATUS_FAILED)
+      echo "Proposal did not pass (status=$status)"
+      echo "$json" | jq .
       exit 1
       ;;
     *)
