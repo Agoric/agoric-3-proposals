@@ -61,12 +61,11 @@ wait_for_bootstrap
 waitForBlock 2
 
 voting_period_s=10
-latest_height=$(ag0 status | jq -r .SyncInfo.latest_block_height)
-height=$(($latest_height + $voting_period_s + 10))
-
+latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
+height=$((latest_height + voting_period_s + 20))
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
-  :
+  echo "upgrade-info: $info"
 else
   status=$?
   echo "Upgrade info is not valid JSON: $info"
@@ -89,10 +88,9 @@ while true; do
     echo "Upgrade height for $UPGRADE_TO reached. Killing agd"
     echo "(CONSENSUS FAILURE above for height $height is expected)"
     break
-  else
-    echo "Waiting for upgrade height for $UPGRADE_TO to be reached (need $height, have $latest_height)"
-    sleep 1
   fi
+  echo "Waiting for upgrade height for $UPGRADE_TO to be reached (need $height, have $latest_height)"
+  sleep 1
 done
 
 kill $agd_PID

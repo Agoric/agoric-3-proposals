@@ -16,7 +16,7 @@ fi
 
 voting_period_s=10
 latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
-height=$((latest_height + voting_period_s + 10))
+height=$((latest_height + voting_period_s + 20))
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
   echo "upgrade-info: $info"
