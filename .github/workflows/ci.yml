@@ -90,7 +90,7 @@ jobs:
         # The .ts scripts depend upon this
       - run: tsx --version || npm install --global tsx
 
-      - name: build test images ${{ matrix.platform }} == ${{ env.DEFAULT_PLATFORM }}
+      - name: build test images if ${{ matrix.platform }} == ${{ env.DEFAULT_PLATFORM }}
         run: |
           docker info
           ./buildTestImages.ts ${{ matrix.platform == env.DEFAULT_PLATFORM && ' ' || '--dry' }}
