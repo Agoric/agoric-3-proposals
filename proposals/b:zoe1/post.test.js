@@ -21,12 +21,13 @@ test(`Zoe vat was upgraded`, async t => {
 });
 
 /**
- * 1. make an offer that stays open
+ * 1. make a new offer that stays open
  * 2. restart the vat-admin vat
  * 3. make sure the offer is still open
  */
 test('offer stays open after vat-admin restart', async t => {
-  // make an offer that stays open
+  // XXX consider reusing bid-1701709689406 from upgrade-10
+  // make an offer that stays open.
   console.log('making an offer that stays open');
 
   const openOut = await execAgops(
