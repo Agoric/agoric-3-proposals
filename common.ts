@@ -29,6 +29,8 @@ function readInfo(proposalPath: string): ProposalInfo {
   const packageJsonPath = path.join('proposals', proposalPath, 'package.json');
   const packageJson = fs.readFileSync(packageJsonPath, 'utf-8');
   const { agoricProposal } = JSON.parse(packageJson);
+  // TODO mustMatch a shape
+  assert(agoricProposal, 'missing agoricProposal in package.json');
   const [proposalIdentifier, proposalName] = proposalPath.split(':');
   return {
     ...agoricProposal,
