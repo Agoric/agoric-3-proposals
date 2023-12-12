@@ -46,7 +46,7 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 
 ### Files
 
-- `config.json` specifies what kind of proposal it is. If it's a "Software Upgrade Proposal" it also includes additional parameters.
+- `package.json` specifies what kind of proposal it is in a `agoricProposal` field. If it's a "Software Upgrade Proposal" it also includes additional parameters.
 - `use.sh` is the script that will be run in the USE stage of the build
 - `test.sh` is the script that will be _included_ in the TEST stage of the build, and run in CI
 
