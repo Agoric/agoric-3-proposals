@@ -57,8 +57,8 @@ const makeSwingstore = db => {
     findVat: vatName => {
       /** @type {string[]} */
       const dynamicIDs = kvGetJSON('vat.dynamicIDs');
-      const targetVat = dynamicIDs.find(
-        vatID => lookupVat(vatID).options().name === vatName,
+      const targetVat = dynamicIDs.find(vatID =>
+        lookupVat(vatID).options().name.includes(vatName),
       );
       if (!targetVat) throw Error(vatName);
       return targetVat;

@@ -84,4 +84,3 @@ startAgd
 
 # # TODO fully test bidding
 # # TODO test liquidations
-agops inter bid by-price --price 1 --give 1.0IST --from $GOV1ADDR --keyring-backend test
