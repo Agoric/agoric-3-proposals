@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
@@ -22,9 +23,18 @@ export const buildProposalSubmissions = (proposals: ProposalInfo[]) => {
       cwd: submissionPath,
       env: { ...process.env, HOME: '.' },
     });
-    // UNTIL https://github.com/Agoric/agoric-sdk/pull/8559 is merged
-    // Move bundles from submission subdir to submission path.
-    execSync(`mv ${submissionPath}/.agoric/cache/* ${submissionPath}`);
+    // find the one file ending in -plan.json
+    // TODO error if there is more than one
+    const planPath = execSync(
+      `find ${submissionPath} -maxdepth 1 -type f -name '*-plan.json'`,
+    )
+      .toString()
+      .trim();
+    const plan = JSON.parse(fs.readFileSync(planPath, 'utf-8'));
+    for (const { fileName } of plan.bundles) {
+      // Copy the bundle into the submission path.
+      execSync(`cp ${fileName} ${submissionPath}`);
+    }
   }
 };
 

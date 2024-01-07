@@ -7,12 +7,6 @@ import type {
   ProposalInfo,
   SoftwareUpgradeProposal,
 } from './proposals.js';
-import { readProposals } from './proposals.js';
-
-const agZeroUpgrade = 'agoric-upgrade-7-2';
-
-// TODO change the tag to 'main' after multi-platform support https://github.com/Agoric/agoric-3-proposals/pull/32
-const baseImage = 'ghcr.io/agoric/agoric-3-proposals:pr-32-linux_arm64_v8';
 
 /**
  * Templates for Dockerfile stages
@@ -24,6 +18,7 @@ const stage = {
    * @param to
    */
   START(proposalName: string, to: string) {
+    const agZeroUpgrade = 'agoric-upgrade-7-2';
     return `
 ## START
 # on ${agZeroUpgrade}, with upgrade to ${to}
@@ -40,15 +35,16 @@ RUN /usr/src/upgrade-test-scripts/start_ag0.sh
 `;
   },
   /**
-   * Resume from latest production state
+   * Resume from state of an existing image
+   * @param fromTag
    * @param proposalName
    * @param to
    */
-  RESUME(proposalName: string, to: string) {
+  RESUME(fromTag: string, proposalName: string, to: string) {
     return `
 ## RESUME
 # on a3p base, with upgrade to ${to}
-FROM ${baseImage} as prepare-${proposalName}
+FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as prepare-${proposalName}
 `;
   },
 
@@ -209,7 +205,10 @@ ENTRYPOINT ./start_agd.sh
   },
 };
 
-export function refreshDockerfile(allProposals: ProposalInfo[]) {
+export function writeDockerfile(
+  allProposals: ProposalInfo[],
+  fromTag?: string,
+) {
   // Each stage tests something about the left argument and prepare an upgrade to the right side (by passing the proposal and halting the chain.)
   // The upgrade doesn't happen until the next stage begins executing.
   const blocks: string[] = [];
@@ -227,9 +226,11 @@ export function refreshDockerfile(allProposals: ProposalInfo[]) {
       // handle the first proposal specially
       if (previousProposal) {
         blocks.push(stage.PREPARE(proposal, previousProposal));
+      } else if (fromTag) {
+        blocks.push(
+          stage.RESUME(fromTag, proposal.proposalName, proposal.planName),
+        );
       } else {
-        // TODO for external use, provide a way to stack upgrades onto an existing chain
-        // blocks.push(stage.RESUME(proposal.proposalName, proposal.planName));
         blocks.push(stage.START(proposal.proposalName, proposal.planName));
       }
       blocks.push(stage.EXECUTE(proposal));
