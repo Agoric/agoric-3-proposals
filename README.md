@@ -24,7 +24,7 @@ All proposals then have two additional stages:
 - `USE` Perform actions to update the chain state, to persist through the chain history. E.g. adding a vault that will be tested again in the future.
 - `TEST` Test the chain state and perform new actions that should not be part of history. E.g. adding a contract that never was on Mainnet.
 
-The `TEST` stage does not RUN as part of the build. It only deifnes the ENTRYPOINT and CI runs them all.
+The `TEST` stage does not RUN as part of the build. It only defines the ENTRYPOINT and CI runs them all.
 
 ## Proposals
 
