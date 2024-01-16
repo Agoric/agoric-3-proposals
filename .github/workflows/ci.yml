@@ -15,6 +15,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DEFAULT_PLATFORM: linux/amd64
 
 jobs:
   platforms:
