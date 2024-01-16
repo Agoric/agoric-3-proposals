@@ -35,7 +35,7 @@ jobs:
             platforms='["linux/amd64","linux/arm64/v8"]'
           fi
           echo "platforms=$platforms" >> $GITHUB_OUTPUT
-    
+
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
   test-proposals:
     needs: [platforms]
@@ -113,14 +113,15 @@ jobs:
       - run: corepack enable || sudo corepack enable
       - run: yarn install
 
-      - name: build test images ${{ matrix.platform }} == ${{ env.DEFAULT_PLATFORM }}
+      - name: build test images
+        if: ${{ matrix.platform == env.DEFAULT_PLATFORM }}
         run: |
           docker info
-          node_modules/.bin/synthetic-chain build ${{ matrix.platform == env.DEFAULT_PLATFORM && ' ' || '--dry' }}
+          node_modules/.bin/synthetic-chain build
       - name: run test images
         if: ${{ matrix.platform == env.DEFAULT_PLATFORM }}
         run: node_modules/.bin/synthetic-chain test
-      
+
       # XXX this should be instant for the local platform because all the stages
       # were already built in the steps above but it's re-building the last
       # stage. This is deemed good enough for now.  see
@@ -170,7 +171,7 @@ jobs:
         id: docker-tags
         run: |
           echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
-      
+
       - name: Push multiarch image
         run: |
           set -ex
