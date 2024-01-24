@@ -8,6 +8,7 @@ import { fromBase64 } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { QueryClient, setupGovExtension } from '@cosmjs/stargate';
 import { ProposalStatus } from 'cosmjs-types/cosmos/gov/v1beta1/gov.js';
+import { copyFromCache } from '../lib/bundles.js';
 import { isPassed, type ProposalInfo } from './proposals.js';
 
 const DEFAULT_ARCHIVE_NODE = 'https://main-a.rpc.agoric.net:443';
@@ -96,26 +97,39 @@ export async function saveProposalContents(proposal: ProposalInfo) {
         'submission',
       );
       await fsp.mkdir(submissionDir, { recursive: true });
-      for (const { jsonPermits, jsCode } of evals) {
+
+      // Save original core eval files
+      for (const [i, evalItem] of evals.entries()) {
+        const { jsonPermits, jsCode } = evalItem;
+        // Use index for unique filenames if proposalName is reused across multiple evals
+        const baseFilename = `${proposal.proposalName}${evals.length > 1 ? `-${i}` : ''}`;
         await fsp.writeFile(
-          path.join(submissionDir, `${proposal.proposalName}.json`),
+          path.join(submissionDir, `${baseFilename}-permit.json`),
           jsonPermits,
         );
         await fsp.writeFile(
-          path.join(submissionDir, `${proposal.proposalName}.js`),
+          path.join(submissionDir, `${baseFilename}.js`),
           jsCode,
         );
       }
-      console.log(
-        'Proposal saved to',
-        submissionDir,
-        '. Now find these bundles and save them there too:',
-      );
-      // At this point we can trust the bundles because the jsCode has the hash
-      // and SwingSet kernel verifies that the provided bundles match the hash in their filename.
+      console.log('Proposal eval files saved to', submissionDir);
+
+      // Find and save referenced bundles
+      const allBundleIds = new Set<string>();
       for (const { jsCode } of evals) {
-        const bundleIds = jsCode.match(/b1-[a-z0-9]+/g);
-        console.log(bundleIds);
+        const ids = jsCode.match(/b1-[a-z0-9]+/g);
+        if (ids) {
+          ids.forEach(id => allBundleIds.add(id));
+        }
+      }
+
+      if (allBundleIds.size > 0) {
+        console.log('Found referenced bundle IDs:', Array.from(allBundleIds));
+        for (const bundleId of allBundleIds) {
+          await copyFromCache(bundleId, submissionDir, console);
+        }
+      } else {
+        console.log('No bundle IDs found in proposal eval code.');
       }
       break;
     case '/cosmos.params.v1beta1.ParameterChangeProposal':
