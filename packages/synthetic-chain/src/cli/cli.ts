@@ -32,7 +32,8 @@ const allProposals = readProposals(root);
 
 const { match } = values;
 const proposals = match
-  ? allProposals.filter(p => p.path.includes(match))
+  ? // TODO match on proposal identifier too (or simply proposal path)
+    allProposals.filter(p => p.path.includes(match))
   : allProposals;
 
 const [cmd] = positionals;
@@ -50,6 +51,8 @@ test            - build the "test" images and run them
   [-m <name>]   - target a particular proposal by substring match
     [--debug]   - run containers with interactive TTY and port mapping
   [--dry]       - print the config without building images
+
+save <id>       - query resources from the proposal on chain and save to disk
 
 doctor          - diagnostics and quick fixes
 `;

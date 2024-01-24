@@ -52,6 +52,7 @@ export const makeAgd = ({
       query: async (
         qArgs:
           | [kind: 'gov', domain: string, ...rest: any]
+          | [kind: 'txs', filter: string]
           | [kind: 'tx', txhash: string]
           | [mod: 'vstorage', kind: 'data' | 'children', path: string],
       ) => {
