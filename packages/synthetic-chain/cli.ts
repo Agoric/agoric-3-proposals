@@ -42,6 +42,8 @@ const [cmd] = positionals;
 
 // TODO consider a lib like Commander for auto-gen help
 const usage = `USAGE:
+prepare-ci      - generate dependencies of Docker bake config (when CI controls build)
+
 build           - build the synthetic-chain "use" images
 
 test [--debug]  - build the "test" images and run them
@@ -63,6 +65,9 @@ const prepareDockerBuild = () => {
 };
 
 switch (cmd) {
+  case 'prepare-ci':
+    prepareDockerBuild();
+    break;
   case 'build': {
     prepareDockerBuild();
     bakeTarget('use', values.dry);

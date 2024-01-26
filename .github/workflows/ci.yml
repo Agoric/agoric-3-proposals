@@ -108,6 +108,9 @@ jobs:
       # Enable corepack for packageManager config
       - run: corepack enable || sudo corepack enable
       - run: yarn install
+      # Set up docker-bake files used by docker/bake-action
+      # Unnecessary with `yarn test` but that step gets skipped in some flows
+      - run: node_modules/.bin/synthetic-chain prepare-ci
 
       - run: docker system df
       - run: docker buildx du --verbose
