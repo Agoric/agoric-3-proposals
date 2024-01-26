@@ -30,9 +30,9 @@ jobs:
         run: |
           if ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}; then
             # JSON-encoded list consisting only of the default platform.
-            platforms='["'"$X86_PLATFORM"'"]'
+            platforms='["${{ env.X86_PLATFORM }}"]'
           else
-            platforms='["$X86_PLATFORM","$ARM_PLATFORM"]'
+            platforms='["${{ env.X86_PLATFORM }}", "${{ env.ARM_PLATFORM }}"]'
           fi
           echo "platforms=$platforms" >> $GITHUB_OUTPUT
 
@@ -140,6 +140,8 @@ jobs:
             ./docker-bake.hcl
             ${{ steps.meta.outputs.bake-file }}
           targets: use
+          set: |
+            *.platform=${{ matrix.platform }}
 
       - run: docker system df
       - run: docker buildx du --verbose
