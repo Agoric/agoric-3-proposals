@@ -1,6 +1,23 @@
 name: Proposal tests
 
-# run on all PRs
+# NB: This job works differently for PRs and non-PRs. If you make significant changes,
+# be sure to manually trigger the non-PR workflow before merging.
+
+# In PRS,
+# - build and run 'test' images
+# - push a tagged image for *all passed proposals* in the branch (e.g. pr-2)
+#
+# In `main` pushs and manually triggers,
+# - build and run 'test' images
+# - matrix across arm64 and amd64
+#   - build 'use' images for *all passed proposals* AND push to registry (e.g. use-upgrade-10)
+#   - push a tagged image for *all passed proposals* in main (always `main`)
+# - merge those image into multi-platform ones
+
+# If `main` fails, you'll make a PR to fix it but its CI will only run the PR flow above.
+# To test the non-PR way, you need to manually trigger this workflow by going to,
+# https://github.com/Agoric/agoric-3-proposals/actions/workflows/ci.yml
+# and clicking "Run workflow", specifying this branch.
 on:
   pull_request:
   workflow_dispatch:
