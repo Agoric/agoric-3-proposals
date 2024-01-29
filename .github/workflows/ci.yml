@@ -129,18 +129,23 @@ jobs:
       # Unnecessary with `yarn test` but that step gets skipped in some flows
       - run: node_modules/.bin/synthetic-chain prepare-ci
 
-      - run: docker system df
-      - run: docker buildx du --verbose
-      - run: df -h
+      # The growth in Local Volumes is a little surprising. Probably due to https://github.com/docker/buildx/pull/672
+      - name: Disk usage report
+        run: |
+          docker system df
+          docker buildx du --verbose
+          df -h
 
       # Test before pushing the images.
       - name: Build and run proposal tests
         if: ${{ matrix.platform == env.X86_PLATFORM }}
         run: yarn test
 
-      - run: docker system df
-      - run: docker buildx du --verbose
-      - run: df -h
+      - name: Disk usage report
+        run: |
+          docker system df
+          docker buildx du --verbose
+          df -h
 
       # Build a "use" image for each proposal. This uses Docker Bake's
       # matrix feature. We could have each "use" image built in a different runner
@@ -160,9 +165,11 @@ jobs:
           set: |
             *.platform=${{ matrix.platform }}
 
-      - run: docker system df
-      - run: docker buildx du --verbose
-      - run: df -h
+      - name: Disk usage report
+        run: |
+          docker system df
+          docker buildx du --verbose
+          df -h
 
       - name: Build and push default image
         uses: docker/build-push-action@v5
@@ -175,9 +182,11 @@ jobs:
           tags: ${{ steps.docker-tags.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - run: docker system df
-      - run: docker buildx du --verbose
-      - run: df -h
+      - name: Disk usage report
+        run: |
+          docker system df
+          docker buildx du --verbose
+          df -h
 
   # Merge the default image from each platform into one multi-arch image,
   # then publish that multiarch image.
