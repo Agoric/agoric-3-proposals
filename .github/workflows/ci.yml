@@ -66,6 +66,24 @@ jobs:
     # Run on our own self-hosted ARM64 machine if the platform is ARMish.
     runs-on: ${{ contains(matrix.platform, '/arm') && fromJSON('["self-hosted","Linux","ARM64"]') || 'ubuntu-latest' }}
     steps:
+      # FIXME this is installing 25.0.1 from Docker but it doesn't get into the path.
+      # Upgrade default 0.24.7 to latest stable, 25.0.1,
+      # https://docs.docker.com/engine/release-notes/25.0/
+      # which has https://github.com/moby/moby/pull/45966
+      # If this is slow and doesn't help, remove it.
+      # Or if the default is updated à la https://github.com/actions/actions-runner-controller/pull/3053
+      - name: Install Latest Docker
+        run: |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable"
+          sudo apt-get update
+          # per https://docs.docker.com/engine/install/ubuntu/
+          # "noninteractive" and "yqq" https://unix.stackexchange.com/a/701288/541449
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -yqq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          docker run hello-world
+      - name: Check Docker Version
+        run: docker --version
+
       - name: free up disk space
         if: ${{ !contains(matrix.platform, '/arm') }}
         run: |
@@ -86,20 +104,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      # FIXME this is installing 25.0.1 from Docker but it doesn't get into the path.
-      # Upgrade default 0.24.7 to latest stable, 25.0.1,
-      # https://docs.docker.com/engine/release-notes/25.0/
-      # If this is slow and doesn't help, remove it.
-      # Or if the default is updated à la https://github.com/actions/actions-runner-controller/pull/3053
-      # - name: Install Latest Docker
-      #   run: |
-      #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-      #     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-      #     sudo apt-get update
-      #     sudo apt-get install docker-ce
-      # - name: Check Docker Version
-      #   run: docker --version
 
       - name: Set up QEMU for cross-platform builds
         uses: docker/setup-qemu-action@v3
