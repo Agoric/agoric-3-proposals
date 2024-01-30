@@ -45,12 +45,14 @@ jobs:
       - name: Compute Docker platforms
         id: platforms
         run: |
-          if ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}; then
-            # JSON-encoded list consisting only of the default platform.
-            platforms='["${{ env.X86_PLATFORM }}"]'
-          else
-            platforms='["${{ env.X86_PLATFORM }}", "${{ env.ARM_PLATFORM }}"]'
-          fi
+          # DONOTMERGE debugging CI
+          # if ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}; then
+          #   # JSON-encoded list consisting only of the default platform.
+          #   platforms='["${{ env.X86_PLATFORM }}"]'
+          # else
+          #   platforms='["${{ env.X86_PLATFORM }}", "${{ env.ARM_PLATFORM }}"]'
+          # fi
+          platforms='["${{ env.X86_PLATFORM }}", "${{ env.ARM_PLATFORM }}"]'
           echo "platforms=$platforms" >> $GITHUB_OUTPUT
 
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
@@ -174,7 +176,8 @@ jobs:
         uses: docker/bake-action@v4
         # If we pushed from PRs, each one would overwrite main's (e.g. use-upgrade-8)
         # To push PR "use" images we'll need to qualify the tag (e.g. use-upgrade-8-pr-2).
-        if: ${{ github.event_name != 'pull_request' }}
+        # DONOTMERGE debugging CI
+        # if: ${{ github.event_name != 'pull_request' }}
         with:
           files: |
             ./docker-bake.json
