@@ -183,6 +183,7 @@ jobs:
         # DONOTMERGE debugging CI
         # if: ${{ github.event_name != 'pull_request' }}
         with:
+          push: true
           files: |
             ./docker-bake.json
             ./docker-bake.hcl
