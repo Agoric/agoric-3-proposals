@@ -197,16 +197,17 @@ jobs:
           docker buildx du --verbose
           df -h
 
-      - name: Build and push default image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: ${{ matrix.platform }}
-          # push to registry on every repo push. A PR #2 will push with tag `pr-2` and `main` will have tag `main`.
-          # See https://github.com/docker/metadata-action?tab=readme-ov-file#basic.
-          push: true
-          tags: ${{ steps.docker-tags.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      # DONOTMERGE see if the next job works
+      # - name: Build and push default image
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     platforms: ${{ matrix.platform }}
+      #     # push to registry on every repo push. A PR #2 will push with tag `pr-2` and `main` will have tag `main`.
+      #     # See https://github.com/docker/metadata-action?tab=readme-ov-file#basic.
+      #     push: true
+      #     tags: ${{ steps.docker-tags.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
 
       - name: Disk usage report
         run: |
