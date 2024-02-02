@@ -1,0 +1,10 @@
+{
+    "agoricProposal": {
+        "type": "/cosmos.params.v1beta1.ParameterChangeProposal"
+    },
+    "type": "module",
+    "dependencies": {
+        "@agoric/synthetic-chain": "^0.0.4-2"
+    },
+    "packageManager": "yarn@4.0.2"
+}

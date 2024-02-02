@@ -3,12 +3,13 @@
 
 import fs from 'node:fs';
 import {
-  lastPassedProposal,
-  type CoreEvalProposal,
-  type ProposalInfo,
-  type SoftwareUpgradeProposal,
   encodeUpgradeInfo,
   imageNameForProposal,
+  isPassed,
+  type CoreEvalProposal,
+  type ParameterChangeProposal,
+  type ProposalInfo,
+  type SoftwareUpgradeProposal,
 } from './proposals.js';
 
 /**
@@ -102,7 +103,10 @@ RUN ./start_to_to.sh
    * - Run the core-eval scripts from the proposal. They are only guaranteed to have started, not completed.
    */
   EVAL(
-    { proposalIdentifier, proposalName }: CoreEvalProposal,
+    {
+      proposalIdentifier,
+      proposalName,
+    }: CoreEvalProposal | ParameterChangeProposal,
     lastProposal: ProposalInfo,
   ) {
     return `
@@ -223,6 +227,7 @@ export function writeDockerfile(
 
     switch (proposal.type) {
       case '/agoric.swingset.CoreEvalProposal':
+      case '/cosmos.params.v1beta1.ParameterChangeProposal':
         blocks.push(stage.EVAL(proposal, previousProposal!));
         break;
       case 'Software Upgrade Proposal':
@@ -247,7 +252,7 @@ export function writeDockerfile(
     previousProposal = proposal;
   }
   // If one of the proposals is a passed proposal, make the latest one the default entrypoint
-  const lastPassed = lastPassedProposal(allProposals);
+  const lastPassed = allProposals.findLast(isPassed);
   if (lastPassed) {
     blocks.push(stage.DEFAULT(lastPassed));
   }

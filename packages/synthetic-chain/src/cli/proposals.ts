@@ -27,7 +27,14 @@ export type CoreEvalProposal = ProposalCommon & {
       }
   );
 
-export type ProposalInfo = SoftwareUpgradeProposal | CoreEvalProposal;
+export type ParameterChangeProposal = ProposalCommon & {
+  type: '/cosmos.params.v1beta1.ParameterChangeProposal';
+};
+
+export type ProposalInfo =
+  | SoftwareUpgradeProposal
+  | CoreEvalProposal
+  | ParameterChangeProposal;
 
 function readInfo(proposalPath: string): ProposalInfo {
   const packageJsonPath = path.join('proposals', proposalPath, 'package.json');
@@ -78,12 +85,6 @@ export const matchOneProposal = (
   return proposals[0];
 };
 
-export function lastPassedProposal(
-  proposals: ProposalInfo[],
-): ProposalInfo | undefined {
-  return proposals.findLast(p => p.proposalIdentifier.match(/^\d/));
-}
-
 export function imageNameForProposal(
   proposal: Pick<ProposalCommon, 'proposalName'>,
   stage: 'test' | 'use',
@@ -93,4 +94,8 @@ export function imageNameForProposal(
     name: `${repository}:${target}`,
     target,
   };
+}
+
+export function isPassed(proposal: ProposalInfo) {
+  return proposal.proposalIdentifier.match(/^\d/);
 }

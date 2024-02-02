@@ -1,43 +1,49 @@
-// @ts-check
-// @jessie-check
+import { ExecFileSyncOptionsWithStringEncoding } from 'child_process';
 
 const { freeze } = Object;
 
 const agdBinary = 'agd';
 
-/** @param {{ execFileSync: typeof import('child_process').execFileSync }} io */
-export const makeAgd = ({ execFileSync }) => {
-  console.warn('XXX is sync IO essential?');
-
-  /** @param {{ home?: string, keyringBackend?: string, rpcAddrs?: string[] }} keyringOpts */
-  const make = ({ home, keyringBackend, rpcAddrs } = {}) => {
+export const makeAgd = ({
+  execFileSync,
+}: {
+  execFileSync: typeof import('child_process').execFileSync;
+}) => {
+  const make = (
+    { home, keyringBackend, rpcAddrs } = {} as {
+      home?: string;
+      keyringBackend?: string;
+      rpcAddrs?: string[];
+    },
+  ) => {
     const keyringArgs = [
       ...(home ? ['--home', home] : []),
       ...(keyringBackend ? [`--keyring-backend`, keyringBackend] : []),
     ];
-    console.warn('XXX: rpcAddrs after [0] are ignored');
+    // XXX: rpcAddrs after [0] are ignored
     const nodeArgs = [...(rpcAddrs ? [`--node`, rpcAddrs[0]] : [])];
 
-    /**
-     * @param {string[]} args
-     * @param {*} [opts]
-     */
-    const exec = (args, opts) => execFileSync(agdBinary, args, opts).toString();
+    const exec = (
+      args: string[],
+      opts?: ExecFileSyncOptionsWithStringEncoding,
+    ) => execFileSync(agdBinary, args, opts).toString();
 
     const outJson = ['--output', 'json'];
 
     const ro = freeze({
       status: async () => JSON.parse(exec([...nodeArgs, 'status'])),
-      /**
-       * @param {
-       *  | [kind: 'tx', txhash: string]
-       *  | [mod: 'vstorage', kind: 'data' | 'children', path: string]
-       * } qArgs
-       */
-      query: async qArgs => {
+      query: async (
+        qArgs:
+          | [kind: 'gov', domain: string, ...rest: any]
+          | [kind: 'txs', filter: string]
+          | [kind: 'tx', txhash: string]
+          | [mod: 'vstorage', kind: 'data' | 'children', path: string],
+      ) => {
         const out = await exec(['query', ...qArgs, ...nodeArgs, ...outJson], {
+          encoding: 'utf-8',
           stdio: ['ignore', 'pipe', 'ignore'],
         });
+
         try {
           return JSON.parse(out);
         } catch (e) {
@@ -67,11 +73,15 @@ export const makeAgd = ({ execFileSync }) => {
     const rw = freeze({
       /**
        * TODO: gas
-       *
-       * @param {string[]} txArgs
-       * @param {{ chainId: string, from: string, yes?: boolean }} opts
        */
-      tx: async (txArgs, { chainId, from, yes }) => {
+      tx: async (
+        txArgs: string[],
+        {
+          chainId,
+          from,
+          yes,
+        }: { chainId: string; from: string; yes?: boolean },
+      ) => {
         const yesArg = yes ? ['--yes'] : [];
         const args = [
           ...nodeArgs,
@@ -97,7 +107,7 @@ export const makeAgd = ({ execFileSync }) => {
       readOnly: () => ro,
       nameHub: () => nameHub,
       keys: {
-        add: (name, mnemonic) => {
+        add: (name: string, mnemonic: string) => {
           return execFileSync(
             agdBinary,
             [...keyringArgs, 'keys', 'add', name, '--recover'],
@@ -105,7 +115,8 @@ export const makeAgd = ({ execFileSync }) => {
           ).toString();
         },
       },
-      withOpts: opts => make({ home, keyringBackend, rpcAddrs, ...opts }),
+      withOpts: (opts: Record<string, unknown>) =>
+        make({ home, keyringBackend, rpcAddrs, ...opts }),
     });
     return rw;
   };
