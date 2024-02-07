@@ -65,7 +65,7 @@ ENV UPGRADE_TO=${planName} UPGRADE_INFO=${JSON.stringify(
       encodeUpgradeInfo(upgradeInfo),
     )}
 
-COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_prepare.sh /usr/src/upgrade-test-scripts/
+COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_prepare.sh ./upgrade-test-scripts/start_to_to.sh /usr/src/upgrade-test-scripts/
 WORKDIR /usr/src/upgrade-test-scripts
 SHELL ["/bin/bash", "-c"]
 RUN ./run_prepare.sh
@@ -89,7 +89,7 @@ WORKDIR /usr/src/upgrade-test-scripts
 
 # base is a fresh sdk image so set up the proposal and its dependencies
 COPY --link --chmod=755 ./proposals/${proposalIdentifier}:${proposalName} /usr/src/proposals/${proposalIdentifier}:${proposalName}
-COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_execute.sh ./upgrade-test-scripts/install_deps.sh /usr/src/upgrade-test-scripts/
+COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_execute.sh  ./upgrade-test-scripts/start_to_to.sh ./upgrade-test-scripts/install_deps.sh /usr/src/upgrade-test-scripts/
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${proposalIdentifier}:${proposalName}
 
 COPY --link --from=prepare-${proposalName} /root/.agoric /root/.agoric
