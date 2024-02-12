@@ -150,24 +150,35 @@ export const addUser = async user => {
 export const voteLatestProposalAndWait = async () => {
   await waitForBlock();
   const proposalsData = await agd.query('gov', 'proposals');
-  const lastProposalId = proposalsData.proposals.at(-1).proposal_id;
+  let lastProposal = proposalsData.proposals.at(-1);
 
-  await waitForBlock();
+  lastProposal || Fail`No proposal found`;
 
-  await agd.tx(
-    'gov',
-    'deposit',
-    lastProposalId,
-    '50000000ubld',
-    '--from',
-    VALIDATORADDR,
-    `--chain-id=${CHAINID}`,
-    '--yes',
-    '--keyring-backend',
-    'test',
-  );
+  const lastProposalId = lastProposal.proposal_id || lastProposal.id;
 
-  await waitForBlock();
+  lastProposalId || Fail`Invalid proposal ${lastProposal}`;
+
+  if (lastProposal.status === 'PROPOSAL_STATUS_DEPOSIT_PERIOD') {
+    await agd.tx(
+      'gov',
+      'deposit',
+      lastProposalId,
+      '50000000ubld',
+      '--from',
+      VALIDATORADDR,
+      `--chain-id=${CHAINID}`,
+      '--yes',
+      '--keyring-backend',
+      'test',
+    );
+
+    await waitForBlock();
+
+    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+  }
+
+  lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
+    Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposal.status})`;
 
   await agd.tx(
     'gov',
@@ -182,19 +193,19 @@ export const voteLatestProposalAndWait = async () => {
     'test',
   );
 
-  let info = {};
   for (
     ;
-    info.status !== 'PROPOSAL_STATUS_REJECTED' &&
-    info.status !== 'PROPOSAL_STATUS_PASSED';
+    lastProposal.status !== 'PROPOSAL_STATUS_PASSED' &&
+    lastProposal.status !== 'PROPOSAL_STATUS_REJECTED' &&
+    lastProposal.status !== 'PROPOSAL_STATUS_FAILED';
     await waitForBlock()
   ) {
-    info = await agd.query('gov', 'proposal', lastProposalId);
+    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
     console.log(
-      `Waiting for proposal ${lastProposalId} to pass (status=${info.status})`,
+      `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,
     );
   }
-  return info;
+  return { proposal_id: lastProposalId, ...lastProposal };
 };
 
 const Fail = (template, ...args) => {

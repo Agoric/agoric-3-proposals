@@ -172,7 +172,7 @@ test_not_val() {
 
 voteLatestProposalAndWait() {
   waitForBlock
-  proposal=$($binary q gov proposals -o json | jq -r '.proposals[-1].proposal_id')
+  proposal=$($binary q gov proposals -o json | jq -r '.proposals | last | if .proposal_id == null then .id else .proposal_id end')
   waitForBlock
   $binary tx -bblock gov deposit $proposal 50000000ubld --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
   waitForBlock
