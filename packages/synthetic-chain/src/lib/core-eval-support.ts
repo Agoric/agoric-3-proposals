@@ -36,29 +36,6 @@ export const getContractInfo = async (path: string, io = {} as any) => {
   return m.fromCapData({ body, slots });
 };
 
-// not really core-eval related
-export const testIncludes = (
-  t: ExecutionContext,
-  needle: unknown,
-  haystack: unknown[],
-  label: string,
-  sense = true,
-) => {
-  t.log(needle, sense ? 'in' : 'not in', haystack.length, label, '?');
-  const check = sense ? t.deepEqual : t.notDeepEqual;
-  if (sense) {
-    t.deepEqual(
-      haystack.filter(c => c === needle),
-      [needle],
-    );
-  } else {
-    t.deepEqual(
-      haystack.filter(c => c === needle),
-      [],
-    );
-  }
-};
-
 /**
  * @param record - e.g. { color: 'blue' }
  * @returns e.g. ['--color', 'blue']
