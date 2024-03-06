@@ -14,11 +14,8 @@ harden(isStreamCell);
 /**
  * Extract one value from a the vstorage stream cell in a QueryDataResponse
  *
- * @param {object} data
+ * @param {import('@agoric/cosmic-proto/dist/codegen/agoric/vstorage/query.js').QueryDataResponse} data
  * @param {number} [index] index of the desired value in a deserialized stream cell
- *
- * XXX import('@agoric/cosmic-proto/vstorage/query').QueryDataResponse doesn't worksomehow
- * @typedef {Awaited<ReturnType<import('@agoric/cosmic-proto/vstorage/query.js').QueryClientImpl['Data']>>} QueryDataResponseT
  */
 export const extractStreamCellValue = (data, index = -1) => {
   const { value: serialized } = data;
