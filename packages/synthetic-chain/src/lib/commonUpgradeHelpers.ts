@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import { agd, agoric, agops } from './cliHelper.js';
 import { CHAINID, HOME, VALIDATORADDR } from './constants.js';
+import assert from 'node:assert';
 
 const waitForBootstrap = async () => {
   const endpoint = 'localhost';
@@ -153,29 +154,33 @@ export const addUser = async (user: string) => {
  */
 export const voteLatestProposalAndWait = async (title: string) => {
   await waitForBlock();
-  let { proposals } = await agd.query('gov', 'proposals');
+  let { proposals } = (await agd.query('gov', 'proposals')) as {
+    proposals: Array<{
+      content?: { title: string };
+      messages?: Array<{ '@type': string; content: { title: string } }>;
+      proposal_id?: string;
+      id?: string;
+      status: string;
+    }>;
+  };
   if (title) {
-    proposals = proposals.filter(
-      (proposal: { content?: any; messages?: any }) => {
-        if (proposal.content) {
-          return proposal.content.title === title;
-        } else if (proposal.messages) {
-          return proposal.messages.some(
-            (message: { [x: string]: any; content: { title: any } }) => {
-              message['@type'] === '/cosmos.gov.v1.MsgExecLegacyContent' ||
-                Fail`Unsupported proposal message type ${message['@type']}`;
-              return message.content.title === title;
-            },
-          );
-        } else {
-          Fail`Unrecognized proposal shape ${Object.keys(proposal)}`;
-        }
-      },
-    );
+    proposals = proposals.filter(proposal => {
+      if (proposal.content) {
+        return proposal.content.title === title;
+      } else if (proposal.messages) {
+        return proposal.messages.some(message => {
+          message['@type'] === '/cosmos.gov.v1.MsgExecLegacyContent' ||
+            Fail`Unsupported proposal message type ${message['@type']}`;
+          return message.content.title === title;
+        });
+      } else {
+        Fail`Unrecognized proposal shape ${Object.keys(proposal)}`;
+      }
+    });
   }
   let lastProposal = proposals.at(-1);
 
-  lastProposal || Fail`No proposal found`;
+  assert(lastProposal, 'No proposal found');
 
   const lastProposalId = lastProposal.proposal_id || lastProposal.id;
 
@@ -198,6 +203,7 @@ export const voteLatestProposalAndWait = async (title: string) => {
     await waitForBlock();
 
     lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+    assert(lastProposal, `Proposal ${lastProposalId} not found`);
   }
 
   lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
@@ -224,6 +230,7 @@ export const voteLatestProposalAndWait = async (title: string) => {
     await waitForBlock()
   ) {
     lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+    assert(lastProposal, `Proposal ${lastProposalId} not found`);
     console.log(
       `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,
     );
@@ -233,7 +240,7 @@ export const voteLatestProposalAndWait = async (title: string) => {
 
 const Fail = (
   template: { raw: readonly string[] | ArrayLike<string> },
-  ...args: any[]
+  ...args: unknown[]
 ) => {
   throw Error(String.raw(template, ...args.map(val => String(val))));
 };
@@ -277,7 +284,7 @@ export const proposalBuilder = async (fileName: TemplateExpression) => {
   return { evals: evalsWithLocation, bundles };
 };
 
-export const installBundle = async (addr: any, bundlePath: any) => {
+export const installBundle = async (addr: string, bundlePath: string) => {
   await agd.tx(
     'swingset',
     'install-bundle',
@@ -294,10 +301,10 @@ export const installBundle = async (addr: any, bundlePath: any) => {
 };
 
 export const submitProposal = async (
-  scriptPath: any,
-  permitPath: any,
-  title: any,
-  description: any,
+  scriptPath: string,
+  permitPath: string,
+  title: string,
+  description: string,
 ) => {
   await agd.tx(
     'gov',
