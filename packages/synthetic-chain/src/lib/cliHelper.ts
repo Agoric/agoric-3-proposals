@@ -1,7 +1,11 @@
 import { $, execaCommand } from 'execa';
 import { BINARY } from './constants.js';
 
-export const executeCommand = async (command, params, options = {}) => {
+export const executeCommand = async (
+  command: string,
+  params: string[],
+  options = {},
+) => {
   const { stdout } = await execaCommand(
     `${command} ${params.join(' ')}`,
     options,
@@ -10,17 +14,17 @@ export const executeCommand = async (command, params, options = {}) => {
 };
 
 export const agd = {
-  query: async (...params) => {
+  query: async (...params: string[]) => {
     const newParams = ['query', ...params, '-o json'];
     const data = await executeCommand(BINARY, newParams);
     return JSON.parse(data);
   },
-  tx: async (...params) => {
+  tx: async (...params: string[]) => {
     const newParams = ['tx', '-bblock', ...params, '-o json'];
     const data = await executeCommand(BINARY, newParams, { shell: true });
     return JSON.parse(data);
   },
-  keys: async (...params) => {
+  keys: async (...params: string[]) => {
     let newParams = ['keys', ...params];
     let shouldParse = true;
 
@@ -41,7 +45,7 @@ export const agd = {
 
     return JSON.parse(data);
   },
-  export: async (...params) => {
+  export: async (...params: string[]) => {
     const newParams = ['export', ...params];
     const data = await executeCommand(BINARY, newParams);
     return JSON.parse(data);
@@ -49,7 +53,7 @@ export const agd = {
 };
 
 export const agoric = {
-  follow: async (...params) => {
+  follow: async (...params: string[]) => {
     let newParams = ['follow', ...params];
     let parseJson = false;
 
@@ -65,11 +69,11 @@ export const agoric = {
 
     return data;
   },
-  wallet: async (...params) => {
+  wallet: async (...params: string[]) => {
     const newParams = ['wallet', ...params];
     return executeCommand('agoric', newParams);
   },
-  run: async (...params) => {
+  run: async (...params: string[]) => {
     const newParams = ['run', ...params];
     return executeCommand('agoric', newParams);
   },
@@ -81,7 +85,7 @@ export const { stdout: agopsLocation } = await $({
 })`yarn bin agops`;
 
 export const agops = {
-  vaults: async (...params) => {
+  vaults: async (...params: string[]) => {
     const newParams = ['vaults', ...params];
 
     const result = await executeCommand(agopsLocation, newParams);
@@ -94,19 +98,19 @@ export const agops = {
 
     return result;
   },
-  ec: async (...params) => {
+  ec: async (...params: string[]) => {
     const newParams = ['ec', ...params];
     return executeCommand(agopsLocation, newParams);
   },
-  oracle: async (...params) => {
+  oracle: async (...params: string[]) => {
     const newParams = ['oracle', ...params];
     return executeCommand(agopsLocation, newParams);
   },
-  perf: async (...params) => {
+  perf: async (...params: string[]) => {
     const newParams = ['perf', ...params];
     return executeCommand(agopsLocation, newParams);
   },
-  auctioneer: async (...params) => {
+  auctioneer: async (...params: string[]) => {
     const newParams = ['auctioneer', ...params];
     return executeCommand(agopsLocation, newParams);
   },
@@ -118,11 +122,9 @@ export const { stdout: bundleSourceLocation } = await $({
 })`yarn bin bundle-source`;
 
 /**
- * @param {string} filePath
- * @param {string} bundleName
- * @returns {Promise<string>} Returns the filepath of the bundle
+ * @returns Returns the filepath of the bundle
  */
-export const bundleSource = async (filePath, bundleName) => {
+export const bundleSource = async (filePath: string, bundleName: string) => {
   const output =
     await $`${bundleSourceLocation} --cache-json /tmp ${filePath} ${bundleName}`;
   console.log(output.stderr);
@@ -130,11 +132,13 @@ export const bundleSource = async (filePath, bundleName) => {
 };
 
 export const wellKnownIdentities = async (io = {}) => {
+  // @ts-expect-error
   const { agoric: { follow = agoric.follow } = {} } = io;
-  const zip = (xs, ys) => xs.map((x, i) => [x, ys[i]]);
-  const fromSmallCapsEntries = txt => {
+  const zip = (xs: unknown[], ys: unknown[]) => xs.map((x, i) => [x, ys[i]]);
+  const fromSmallCapsEntries = (txt: string) => {
     const { body, slots } = JSON.parse(txt);
     const theEntries = zip(JSON.parse(body.slice(1)), slots).map(
+      // @ts-expect-error
       ([[name, ref], boardID]) => {
         const iface = ref.replace(/^\$\d+\./, '');
         return [name, { iface, boardID }];
@@ -159,11 +163,11 @@ export const wellKnownIdentities = async (io = {}) => {
 };
 
 export const smallCapsContext = () => {
-  const slots = []; // XXX global mutable state
+  const slots = [] as string[]; // XXX global mutable state
   const smallCaps = {
-    Nat: n => `+${n}`,
+    Nat: (n: number | bigint) => `+${n}`,
     // XXX mutates obj
-    ref: obj => {
+    ref: (obj: any) => {
       if (obj.ix) return obj.ix;
       const ix = slots.length;
       slots.push(obj.boardID);
@@ -172,7 +176,7 @@ export const smallCapsContext = () => {
     },
   };
 
-  const toCapData = body => {
+  const toCapData = (body: unknown) => {
     const capData = { body: `#${JSON.stringify(body)}`, slots };
     return JSON.stringify(capData);
   };
