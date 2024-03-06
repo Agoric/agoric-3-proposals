@@ -5,8 +5,8 @@
         "checkJs": false, // opt in
         "strict": true,
         "maxNodeModuleJsDepth": 2,
-        "module": "NodeNext",
-        "moduleResolution": "nodenext",
+        "module": "ES2022",
+        "moduleResolution": "Node",
         "noEmit": true,
         "target": "ESNext"
     },
