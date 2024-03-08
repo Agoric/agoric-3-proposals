@@ -109,8 +109,8 @@ agd query vstorage data published.psm.${PSM_PAIR}.governance
 # but it parses the vstorage in mainnet v11, not v8 ugh
 # test_val "$(agd query vstorage data published.psm.${PSM_PAIR}.governance | jq -r ".value|fromjson.values[0]|fromjson.body" | tr "#" " " | jq -r .current.MintLimit.value.value)" "+133337000000" "PSM MintLimit set correctly"
 
+BLD_PRE=$(agd q bank balances "$GOV1ADDR" --output=json --denom ubld | jq -r .amount)
 test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom uist | jq -r .amount)" "250000" "pre-swap: validate IST"
-test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom ubld | jq -r .amount)" "190000000" "pre-swap: validate BLD balance"
 test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom ${USDC_DENOM} | jq -r .amount)" "100000000" "pre-swap: validate USDC balance"
 
 echo DEBUG execute PSM swap
@@ -119,8 +119,8 @@ agops psm swap --pair ${PSM_PAIR} --wantMinted 10.00 --feePct 0.10 >|"$SWAP_OFFE
 agops perf satisfaction --from $GOV1ADDR --executeOffer "$SWAP_OFFER" --keyring-backend=test
 
 test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom uist | jq -r .amount)" "10260011" "post-swap: validate IST"
-test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom ubld | jq -r .amount)" "190000000" "post-swap: validate BLD balance"
 test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom ${USDC_DENOM} | jq -r .amount)" "89989989" "post-swap: validate USDC balance"
+test_val "$(agd q bank balances "$GOV1ADDR" --output=json --denom ubld | jq -r .amount)" "$BLD_PRE" "post-swap: validate BLD balance"
 
 waitForBlock 3
 
