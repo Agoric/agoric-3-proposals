@@ -170,6 +170,13 @@ test_not_val() {
   fi
 }
 
+# gas=200000 is the default but gas used may be higher or lower. Setting it
+# to "auto" makes the proposal executions less brittle.
+GAS_ADJUSTMENT=1.2
+export SUBMIT_PROPOSAL_OPTS="--keyring-backend=test --chain-id=$CHAINID \
+		--gas=auto --gas-adjustment=$GAS_ADJUSTMENT \
+		--yes --broadcast-mode block --from validator"
+
 voteLatestProposalAndWait() {
   waitForBlock
   proposal=$($binary q gov proposals -o json | jq -r '.proposals | last | if .proposal_id == null then .id else .proposal_id end')
