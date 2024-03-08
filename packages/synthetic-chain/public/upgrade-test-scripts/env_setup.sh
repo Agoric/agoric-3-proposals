@@ -88,10 +88,12 @@ provisionSmartWallet() {
   addr="$1"
   amount="$2"
   echo "funding $addr"
-  agd tx -bblock bank send "validator" "$addr" "$amount" -y --keyring-backend=test --chain-id="$CHAINID"
+  # shellcheck disable=SC2086
+  agd tx bank send "validator" "$addr" "$amount" $SIGN_BROADCAST_OPTS
   waitForBlock
   echo "provisioning $addr"
-  agd tx -bblock swingset provision-one my-wallet "$addr" SMART_WALLET --keyring-backend=test --yes --chain-id="$CHAINID" --from="$addr"
+  # shellcheck disable=SC2086
+  agd tx swingset provision-one my-wallet "$addr" SMART_WALLET --from="$addr" $SIGN_BROADCAST_OPTS
   echo "Waiting for wallet $addr to reach vstorage"
   waitForBlock 5
   echo "Reading $addr from vstorage"
@@ -173,7 +175,7 @@ test_not_val() {
 # gas=200000 is the default but gas used may be higher or lower. Setting it
 # to "auto" makes the proposal executions less brittle.
 GAS_ADJUSTMENT=1.2
-export SUBMIT_PROPOSAL_OPTS="--keyring-backend=test --chain-id=$CHAINID \
+export SIGN_BROADCAST_OPTS="--keyring-backend=test --chain-id=$CHAINID \
 		--gas=auto --gas-adjustment=$GAS_ADJUSTMENT \
 		--yes --broadcast-mode block --from validator"
 
@@ -183,9 +185,11 @@ voteLatestProposalAndWait() {
   proposal=$($binary q gov proposals -o json | jq -r '.proposals | last | if .proposal_id == null then .id else .proposal_id end')
   echo "Latest proposal: $proposal"
   waitForBlock
-  $binary tx -bblock gov deposit "$proposal" 50000000ubld --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
+  # shellcheck disable=SC2086
+  $binary tx gov deposit "$proposal" 50000000ubld $SIGN_BROADCAST_OPTS
   waitForBlock
-  $binary tx -bblock gov vote "$proposal" yes --from=validator --chain-id="$CHAINID" --yes --keyring-backend test
+  # shellcheck disable=SC2086
+  $binary tx gov vote "$proposal" yes $SIGN_BROADCAST_OPTS
   waitForBlock
 
   echo "Voted in proposal $proposal"

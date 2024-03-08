@@ -32,7 +32,7 @@ fi
 agd tx gov submit-proposal software-upgrade "$UPGRADE_TO" \
   --upgrade-height="$height" --upgrade-info="$info" \
   --title="Upgrade to ${UPGRADE_TO}" --description="upgrades" \
-  ${SUBMIT_PROPOSAL_OPTS="--missing-env-setup"}
+  ${SIGN_BROADCAST_OPTS="--missing-env-setup"}
 waitForBlock
 
 voteLatestProposalAndWait
