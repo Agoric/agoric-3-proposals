@@ -49,7 +49,7 @@ import {
   loadedBundleIds,
   testIncludes,
   txAbbr,
-} from './core-eval-support.js';
+} from '@agoric/synthetic-chain';
 
 /** @typedef {Awaited<ReturnType<typeof makeTestContext>>} TestContext */
 /** @type {import('ava').TestFn<TestContext>}} */

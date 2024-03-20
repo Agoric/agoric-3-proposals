@@ -26,6 +26,7 @@
     "execa": "^8.0.1"
   },
   "devDependencies": {
+    "@agoric/smart-wallet": "0.5.4-u14.1",
     "@types/better-sqlite3": "^7.6.9",
     "@types/node": "^18.19.14",
     "ava": "^5.3.1",

@@ -84,8 +84,7 @@ export const agoric = {
 
 export const { stdout: agopsLocation } = await $({
   shell: true,
-  cwd: '/usr/src/agoric-sdk',
-})`yarn bin agops`;
+})`YARN_IGNORE_NODE=1 yarn bin agops`;
 
 export const agops = {
   vaults: async (...params) => {

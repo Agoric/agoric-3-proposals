@@ -25,7 +25,7 @@ import {
   loadedBundleIds,
   testIncludes,
   txAbbr,
-} from './core-eval-support.js';
+} from '@agoric/synthetic-chain';
 import {
   agoric,
   wellKnownIdentities,
@@ -49,7 +49,7 @@ const assetInfo = {
       'CoreEval Proposal and Permits for Inter Vault Collateral Type',
   },
   branch: 'auction-update',
-  /** @type {Record<string, import('./core-eval-support.js').ProposalInfo>} */
+  /** @type {Record<string, import('@agoric/synthetic-chain').ProposalInfo>} */
   buildAssets: {
     'add-stATOM': {
       evals: [{ permit: 'add-stATOM-permit.json', script: 'add-stATOM.js' }],

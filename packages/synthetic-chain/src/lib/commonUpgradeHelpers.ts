@@ -4,6 +4,11 @@ import * as path from 'node:path';
 import { agd, agoric, agops } from './cliHelper.js';
 import { CHAINID, HOME, VALIDATORADDR } from './constants.js';
 
+import type { OfferSpec } from '@agoric/smart-wallet/src/offers.js';
+import assert from 'node:assert';
+
+type ERef<T> = T | Promise<T>;
+
 const waitForBootstrap = async () => {
   const endpoint = 'localhost';
   while (true) {
@@ -50,7 +55,7 @@ export const waitForBlock = async (times = 1) => {
   }
 };
 
-export const provisionSmartWallet = async (address, amount) => {
+export const provisionSmartWallet = async (address: string, amount: string) => {
   console.log(`funding ${address}`);
   await agd.tx(
     'bank',
@@ -88,14 +93,14 @@ export const newOfferId = async () => {
   return date;
 };
 
-export const mkTemp = async template => {
+export const mkTemp = async (template: string) => {
   const { stdout: data } = await $({
     shell: true,
   })`mktemp -t ${template}`;
   return data;
 };
 
-export const calculateWalletState = async addr => {
+export const calculateWalletState = async (addr: string) => {
   const result = await agoric.follow(
     '-lF',
     `:published.wallet.${addr}`,
@@ -117,10 +122,19 @@ export const calculateWalletState = async addr => {
   return state;
 };
 
-export const executeOffer = async (address, offerPromise) => {
+export const executeOffer = async (
+  address: string,
+  offerJsonOrStringP: ERef<OfferSpec>,
+) => {
   const offerPath = await mkTemp('agops.XXX');
-  const offer = await offerPromise;
-  await fsp.writeFile(offerPath, offer);
+  const offerJsonOrString = await offerJsonOrStringP;
+  const offerJson: OfferSpec =
+    typeof offerJsonOrString === 'string'
+      ? // this is going to be stringified again but this we we guarantee it's valid JSON
+        JSON.parse(offerJsonOrString)
+      : offerJsonOrString;
+
+  await fsp.writeFile(offerPath, JSON.stringify(offerJson));
 
   await agops.perf(
     'satisfaction',
@@ -132,11 +146,11 @@ export const executeOffer = async (address, offerPromise) => {
   );
 };
 
-export const getUser = async user => {
+export const getUser = async (user: string) => {
   return agd.keys('show', user, '-a', '--keyring-backend=test');
 };
 
-export const addUser = async user => {
+export const addUser = async (user: string) => {
   const userKeyData = await agd.keys('add', user, '--keyring-backend=test');
   await fsp.writeFile(`${HOME}/.agoric/${user}.key`, userKeyData.mnemonic);
 
@@ -144,13 +158,18 @@ export const addUser = async user => {
   return userAddress;
 };
 
-/**
- * @params {string} [title]
- * @returns {Promise<{ proposal_id: string, voting_end_time: unknown, status: string }>}
- */
-export const voteLatestProposalAndWait = async title => {
+export const voteLatestProposalAndWait = async (title?: string) => {
   await waitForBlock();
-  let { proposals } = await agd.query('gov', 'proposals');
+  let { proposals } = (await agd.query('gov', 'proposals')) as {
+    proposals: {
+      proposal_id?: string;
+      id?: string;
+      voting_end_time: unknown;
+      status: string;
+      content: any;
+      messages: any[];
+    }[];
+  };
   if (title) {
     proposals = proposals.filter(proposal => {
       if (proposal.content) {
@@ -168,7 +187,9 @@ export const voteLatestProposalAndWait = async title => {
   }
   let lastProposal = proposals.at(-1);
 
-  lastProposal || Fail`No proposal found`;
+  if (!lastProposal) {
+    throw Fail`No proposal found`;
+  }
 
   const lastProposalId = lastProposal.proposal_id || lastProposal.id;
 
@@ -192,6 +213,8 @@ export const voteLatestProposalAndWait = async title => {
 
     lastProposal = await agd.query('gov', 'proposal', lastProposalId);
   }
+
+  assert(lastProposal);
 
   lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
     Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposal.status})`;
@@ -217,6 +240,7 @@ export const voteLatestProposalAndWait = async title => {
     await waitForBlock()
   ) {
     lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+    assert(lastProposal);
     console.log(
       `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,
     );
@@ -224,7 +248,7 @@ export const voteLatestProposalAndWait = async title => {
   return { proposal_id: lastProposalId, ...lastProposal };
 };
 
-const Fail = (template, ...args) => {
+const Fail = (template: any, ...args: any[]) => {
   throw Error(String.raw(template, ...args.map(val => String(val))));
 };
 
@@ -235,7 +259,7 @@ const Fail = (template, ...args) => {
  *
  * adapted from packages/boot/test/bootstrapTests/supports.js
  */
-const parseProposalParts = txt => {
+const parseProposalParts = (txt: string) => {
   const evals = [
     ...txt.matchAll(/swingset-core-eval (?<permit>\S+) (?<script>\S+)/g),
   ].map(m => {
@@ -253,7 +277,7 @@ const parseProposalParts = txt => {
   return { evals, bundles };
 };
 
-export const proposalBuilder = async fileName => {
+export const proposalBuilder = async (fileName: string) => {
   const { stdout: output } = await $({ cwd: '/tmp' })`agoric run ${fileName}`;
   const { evals, bundles } = parseProposalParts(output);
 
@@ -267,7 +291,7 @@ export const proposalBuilder = async fileName => {
   return { evals: evalsWithLocation, bundles };
 };
 
-export const installBundle = async (addr, bundlePath) => {
+export const installBundle = async (addr: string, bundlePath: string) => {
   await agd.tx(
     'swingset',
     'install-bundle',
@@ -283,10 +307,10 @@ export const installBundle = async (addr, bundlePath) => {
 };
 
 export const submitProposal = async (
-  scriptPath,
-  permitPath,
-  title,
-  description,
+  scriptPath: string,
+  permitPath: string,
+  title: string,
+  description: string,
 ) => {
   await agd.tx(
     'gov',

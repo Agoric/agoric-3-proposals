@@ -25,7 +25,7 @@ import {
   loadedBundleIds,
   testIncludes,
   txAbbr,
-} from './core-eval-support.js';
+} from '@agoric/synthetic-chain';
 import {
   agoric,
   wellKnownIdentities,
@@ -47,7 +47,7 @@ const assetInfo = {
     description:
       'expand walletFactory (aka smart wallet) contract to support NFTs etc.',
   },
-  /** @type {Record<string, import('./core-eval-support.js').ProposalInfo>} */
+  /** @type {Record<string, import('@agoric/synthetic-chain').ProposalInfo>} */
   buildAssets: {
     'upgrade-walletFactory-proposal': {
       evals: [

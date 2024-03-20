@@ -21,7 +21,7 @@ import {
   loadedBundleIds,
   readBundles,
   txAbbr,
-} from './core-eval-support.js';
+} from '@agoric/synthetic-chain';
 import { step } from './logging.js';
 
 export const staticConfig = {

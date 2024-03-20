@@ -3,29 +3,32 @@ import test from 'ava';
 
 import fsp from 'node:fs/promises';
 
-import {
-  agd,
-  agops,
-  agoric,
-} from '@agoric/synthetic-chain/src/lib/cliHelper.js';
+import { StargateClient } from '@cosmjs/stargate';
 
-import { getUser } from '@agoric/synthetic-chain/src/lib/commonUpgradeHelpers.js';
 import {
   GOV1ADDR,
   GOV2ADDR,
   GOV3ADDR,
   PSM_PAIR,
-} from '@agoric/synthetic-chain/src/lib/constants.js';
+  agd,
+  agops,
+  agoric,
+  getUser,
+} from '@agoric/synthetic-chain';
 
-test(`there's only uist`, async t => {
-  const result = await agd.query(
-    'bank',
-    'balances',
-    'agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346',
-  );
+const client = await StargateClient.connect('http://localhost:26657');
 
-  t.is(result.balances.length, 1);
-  t.is(result.balances[0].denom, 'uist');
+const provisionPoolAddr = 'agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346';
+
+test(`Provision pool balances`, async t => {
+  const balances = await client.getAllBalances(provisionPoolAddr);
+
+  t.deepEqual(balances, [
+    {
+      amount: '19000000',
+      denom: 'uist',
+    },
+  ]);
 });
 
 test('gov1 provisioned', async t => {
@@ -75,16 +78,6 @@ test('no vaults exist', async t => {
   );
 
   t.is(result.value, '');
-});
-
-test(`Provision pool has right balance`, async t => {
-  const result = await agd.query(
-    'bank',
-    'balances',
-    'agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346',
-  );
-
-  t.is(result.balances[0].amount, '19000000');
 });
 
 test('PSM gov params were preserved', async t => {
