@@ -60,12 +60,31 @@ if [[ "$binary" == "agd" ]]; then
   sed -i 's/minSubmissionCount": 3/minSubmissionCount": 1/g' "$configdir"/*.json
 fi
 
+# XXX race conditions between build stages
+await_agd_startable() {
+  local retries="$1"
+
+  local wait="10s"
+
+  if agd status >/dev/null 2>&1; then
+    # agd is running
+    if [[ $retries -gt 0 ]]; then
+      echo "Waiting $wait for agd to stop"
+      sleep $wait
+
+      await_agd_startable $((retries - 1))
+    else
+      echo "Cannot start agd because it's already running"
+      return 1
+    fi
+  fi
+}
+
 startAgd() {
   echo "startAgd()"
 
-  # XXX debugging https://github.com/Agoric/agoric-3-proposals/issues/93
-  apt install net-tools
-  netstat
+  # precondition check
+  await_agd_startable 10
 
   agd start --log_level warn "$@" &
   AGD_PID=$!
