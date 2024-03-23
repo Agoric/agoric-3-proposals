@@ -34,8 +34,8 @@ Finally there is a `DEFAULT` target which take the last `USE` image and sets its
 
 ### Types
 
-- Software Upgrade à la https://hub.cosmos.network/main/hub-tutorials/live-upgrade-tutorial.html
-- Core Eval
+- Software Upgrade à la https://hub.cosmos.network/hub-tutorials/live-upgrade-tutorial
+- Core Eval à la https://github.com/Agoric/agoric-sdk/tree/master/packages/vats/src/core
 - Not yet supported: combo Upgrade/Eval
 
 ### Naming
