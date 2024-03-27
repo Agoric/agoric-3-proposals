@@ -8,8 +8,7 @@ agd() {
   ag0 ${1+"$@"}
 }
 
-export CHAINID=agoriclocal
-agd init localnet --chain-id "$CHAINID"
+agd init localnet --chain-id agoriclocal
 
 allaccounts=("gov1" "gov2" "gov3" "user1" "validator")
 # WARNING: these mnemonics are purely for testing purposes, do not implement
@@ -80,11 +79,11 @@ else
   echo "Upgrade info is not valid JSON: $info"
   exit $status
 fi
-agd tx -bblock gov submit-proposal software-upgrade "$UPGRADE_TO" \
+# shellcheck disable=SC2086
+agd tx gov submit-proposal software-upgrade "$UPGRADE_TO" \
   --upgrade-height="$height" --upgrade-info="$info" \
   --title="Upgrade to ${UPGRADE_TO}" --description="upgrades" \
-  --from=validator --chain-id="$CHAINID" \
-  --yes --keyring-backend=test
+  ${SIGN_BROADCAST_OPTS="--missing-env-setup"}
 waitForBlock
 
 voteLatestProposalAndWait
