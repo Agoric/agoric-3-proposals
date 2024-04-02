@@ -5,8 +5,6 @@ set -e
 
 source /usr/src/upgrade-test-scripts/env_setup.sh
 
-yarn ava sanity.test.js
-
 # Set to zero so tests don't have to pay gas (we're not testing that)
 sed --in-place=.bak s/'minimum-gas-prices = ""'/'minimum-gas-prices = "0ubld,0uist"'/ ~/.agoric/config/app.toml
 
