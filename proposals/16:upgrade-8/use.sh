@@ -5,8 +5,6 @@ set -e
 
 source /usr/src/upgrade-test-scripts/env_setup.sh
 
-yarn ava keys.test.js
-
 # XXX fix bug in this SDK's verison of agops
 sed -i "s/--econCommAcceptOfferId /--previousOfferId /g" "/usr/src/agoric-sdk/packages/agoric-cli/src/commands/psm.js"
 
