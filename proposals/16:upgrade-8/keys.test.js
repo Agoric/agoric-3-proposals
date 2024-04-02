@@ -1,4 +1,4 @@
-/** @file adapted from upgrade-9's sanity, ensure addresses are what we expected */
+/** @file adapted from upgrade-9's sanity test, ensure addresses are what we expected */
 import test from 'ava';
 
 import {
