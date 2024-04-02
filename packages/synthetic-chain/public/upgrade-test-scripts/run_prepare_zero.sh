@@ -13,7 +13,7 @@ agd init localnet --chain-id "$CHAINID"
 
 allaccounts=("gov1" "gov2" "gov3" "user1" "validator")
 for i in "${allaccounts[@]}"; do
-  cat "/usr/src/upgrade-test-scripts/keys_for_test_only/$i.key" | agd keys add $i --keyring-backend=test 2>&1
+  cat "/usr/src/upgrade-test-scripts/keys_for_test_only/$i.key" | agd keys add $i --recover --keyring-backend=test 2>&1
 done
 
 source /usr/src/upgrade-test-scripts/env_setup.sh
