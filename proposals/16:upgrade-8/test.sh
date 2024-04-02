@@ -4,7 +4,7 @@ set -e
 
 source /usr/src/upgrade-test-scripts/env_setup.sh
 
-yarn ava keys.test.js
+yarn ava addresses.test.js
 
 # ensure there's only uist
 test_val "$(agd q bank balances agoric1megzytg65cyrgzs6fvzxgrcqvwwl7ugpt62346 -o json | jq -r '.balances | length')" "1"
