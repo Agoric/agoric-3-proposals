@@ -3,5 +3,10 @@
         "sdkImageTag": "29",
         "planName": "agoric-upgrade-8",
         "type": "Software Upgrade Proposal"
-    }
+    },
+    "type": "module",
+    "devDependencies": {
+        "ava": "^5.3.1"
+    },
+    "packageManager": "yarn@4.1.0"
 }
