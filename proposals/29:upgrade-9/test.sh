@@ -1,7 +1,7 @@
 #!/bin/bash
 source /usr/src/upgrade-test-scripts/env_setup.sh
 
-yarn ava
+YARN_IGNORE_NODE=1 yarn ava
 
 test_val $(agd q vstorage children published.psm.IST -o json | jq -r '.children | length') 4
 test_val $(agd q vstorage children published.psm.IST -o json | jq -r '.children | first') ${PSM_PAIR//IST./}
