@@ -7,15 +7,15 @@ import {
   agd,
   agops,
   agoric,
-} from '@agoric/synthetic-chain/src/lib/cliHelper.js';
+} from '@agoric/synthetic-chain';
 
-import { getUser } from '@agoric/synthetic-chain/src/lib/commonUpgradeHelpers.js';
+import { getUser } from '@agoric/synthetic-chain';
 import {
   GOV1ADDR,
   GOV2ADDR,
   GOV3ADDR,
   PSM_PAIR,
-} from '@agoric/synthetic-chain/src/lib/constants.js';
+} from '@agoric/synthetic-chain';
 
 test(`there's only uist`, async t => {
   const result = await agd.query(
