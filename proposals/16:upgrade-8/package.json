@@ -6,6 +6,7 @@
     },
     "type": "module",
     "devDependencies": {
+        "@agoric/synthetic-chain": "^0.0.7",
         "ava": "^5.3.1"
     },
     "packageManager": "yarn@4.1.0"
