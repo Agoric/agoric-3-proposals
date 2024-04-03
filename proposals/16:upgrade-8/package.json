@@ -9,5 +9,8 @@
         "@agoric/synthetic-chain": "^0.0.7",
         "ava": "^5.3.1"
     },
+    "scripts": {
+        "agops": "yarn --cwd /usr/src/agoric-sdk/ --silent agops"
+    },
     "packageManager": "yarn@4.1.0"
 }

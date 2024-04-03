@@ -7,7 +7,7 @@ import {
   GOV3ADDR,
   USER1ADDR,
   VALIDATORADDR,
-} from '@agoric/synthetic-chain/src/lib/constants.js';
+} from '@agoric/synthetic-chain';
 
 test('gov1 address', async t => {
   t.is(process.env.GOV1ADDR, GOV1ADDR);
