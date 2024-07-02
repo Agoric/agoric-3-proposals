@@ -35,7 +35,11 @@ const fixupProposal = (proposal: ProposalInfo) => {
 
       // refresh install
       execSync('rm -rf node_modules', { cwd: proposalPath });
-      execSync('yarn install', { cwd: proposalPath });
+      // install to update yarn.lock and get importable typed modules but
+      // skip building because the proposal never runs on the local filesystem.
+      // Without this the local environment may install binaries (e.g. better_sqlite3.node)
+      // that fail when mounted in the Docker environment by the test debug mode.
+      execSync('yarn install --mode=skip-build', { cwd: proposalPath });
     }
   }
 };
