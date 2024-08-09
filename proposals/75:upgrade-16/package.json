@@ -1,0 +1,28 @@
+{
+  "agoricProposal": {
+    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-15",
+    "sdkImageTag": "43",
+    "planName": "agoric-upgrade-15",
+    "upgradeInfo": {
+      "binaries": {
+        "any": "https://github.com/Agoric/agoric-sdk/archive/734e8635002e01b3e27477e93998dda942c7fae8.zip//agoric-sdk-734e8635002e01b3e27477e93998dda942c7fae8?checksum=sha256:2d8ace2ab8b3f998336c63847925de63fa9801bc3b5219129d1b193e2b12270a"
+      },
+      "source": "https://github.com/Agoric/agoric-sdk/archive/734e8635002e01b3e27477e93998dda942c7fae8.zip?checksum=sha256:2d8ace2ab8b3f998336c63847925de63fa9801bc3b5219129d1b193e2b12270a"
+    },
+    "type": "Software Upgrade Proposal"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@agoric/synthetic-chain": "^0.1.0",
+    "ava": "^5.3.1"
+  },
+  "ava": {
+    "concurrency": 1,
+    "serial": true
+  },
+  "scripts": {
+    "agops": "yarn --cwd /usr/src/agoric-sdk/ --silent agops"
+  },
+  "packageManager": "yarn@4.1.1"
+}
