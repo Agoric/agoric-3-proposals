@@ -1,0 +1,21 @@
+{
+  "consume": {
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "vatStore": true,
+    "walletBridgeManager": true,
+    "walletFactoryStartResult": true,
+    "provisionPoolStartResult": true,
+    "chainStorage": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
