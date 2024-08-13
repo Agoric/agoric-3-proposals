@@ -1,5 +1,5 @@
-# Proposal to upgrade the chain software to upgrade-15
+# Proposal to upgrade the chain software to agoric-upgrade-16
 
-This software upgrade executes core proposals during the upgrade block, as
-defined by the `agoric-upgrade-15` upgrade handler. See `upgrade15Handler` in
-`agoric-sdk/golang/cosmos/app/app.go`.
+The `agoric-upgrade-16` software upgrade executes core proposals defined in
+its upgrade handler. See `CoreProposalSteps` in the `upgrade16Handler` in
+[golang/cosmos/app/app.go](../../../golang/cosmos/app/app.go).

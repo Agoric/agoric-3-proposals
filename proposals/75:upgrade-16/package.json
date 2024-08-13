@@ -1,14 +1,15 @@
 {
   "agoricProposal": {
-    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-15",
-    "sdkImageTag": "43",
-    "planName": "agoric-upgrade-15",
+    "releaseNotes": false,
+    "sdkImageTag": "unreleased",
+    "planName": "agoric-upgrade-16",
     "upgradeInfo": {
-      "binaries": {
-        "any": "https://github.com/Agoric/agoric-sdk/archive/734e8635002e01b3e27477e93998dda942c7fae8.zip//agoric-sdk-734e8635002e01b3e27477e93998dda942c7fae8?checksum=sha256:2d8ace2ab8b3f998336c63847925de63fa9801bc3b5219129d1b193e2b12270a"
-      },
-      "source": "https://github.com/Agoric/agoric-sdk/archive/734e8635002e01b3e27477e93998dda942c7fae8.zip?checksum=sha256:2d8ace2ab8b3f998336c63847925de63fa9801bc3b5219129d1b193e2b12270a"
+      "coreProposals": []
     },
+    "sdk-generate": [
+      "vats/probe-zcf-bundle.js probe-submission",
+      "vats/test-localchain.js localchaintest-submission"
+    ],
     "type": "Software Upgrade Proposal"
   },
   "type": "module",
@@ -19,10 +20,13 @@
   },
   "ava": {
     "concurrency": 1,
-    "serial": true
+    "timeout": "2m",
+    "files": [
+      "!submission"
+    ]
   },
   "scripts": {
     "agops": "yarn --cwd /usr/src/agoric-sdk/ --silent agops"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.2.2"
 }
