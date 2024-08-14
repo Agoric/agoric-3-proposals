@@ -6,22 +6,22 @@
     {
       "entrypoint": "@agoric/vats/src/vat-zoe.js",
       "bundleID": "b1-db507028460b0c9ad9b16a1e1094b4cd09cfbdc1779c992b42d828745788d98393ca4740599ac4b2e3a6f4bd8d9018aad6d509107eced9253fe7d3c0085709a7",
-      "fileName": "/home/connolly/.agoric/cache/b1-db507028460b0c9ad9b16a1e1094b4cd09cfbdc1779c992b42d828745788d98393ca4740599ac4b2e3a6f4bd8d9018aad6d509107eced9253fe7d3c0085709a7.json"
+      "fileName": "./b1-db507028460b0c9ad9b16a1e1094b4cd09cfbdc1779c992b42d828745788d98393ca4740599ac4b2e3a6f4bd8d9018aad6d509107eced9253fe7d3c0085709a7.json"
     },
     {
       "entrypoint": "@agoric/zoe/src/contractFacet/vatRoot.js",
       "bundleID": "b1-5ce9bb36ceb21c4af80b3c11098ac049ddfaa1898cf7a9e33d100c44f5fc68e5a14a96a5d2f9af0117929b3e5b4ab58c4a404416fb5688b03a2c0e398194e6b2",
-      "fileName": "/home/connolly/.agoric/cache/b1-5ce9bb36ceb21c4af80b3c11098ac049ddfaa1898cf7a9e33d100c44f5fc68e5a14a96a5d2f9af0117929b3e5b4ab58c4a404416fb5688b03a2c0e398194e6b2.json"
+      "fileName": "./b1-5ce9bb36ceb21c4af80b3c11098ac049ddfaa1898cf7a9e33d100c44f5fc68e5a14a96a5d2f9af0117929b3e5b4ab58c4a404416fb5688b03a2c0e398194e6b2.json"
     },
     {
       "entrypoint": "@agoric/smart-wallet/src/walletFactory.js",
       "bundleID": "b1-a997ea6407012922585f0f875401809989086af74977eb93894d94c420111418a9da59d2e994199d8079e2779db08677201a0f6ffcadac6a14c5135562d4c1ec",
-      "fileName": "/home/connolly/.agoric/cache/b1-a997ea6407012922585f0f875401809989086af74977eb93894d94c420111418a9da59d2e994199d8079e2779db08677201a0f6ffcadac6a14c5135562d4c1ec.json"
+      "fileName": "./b1-a997ea6407012922585f0f875401809989086af74977eb93894d94c420111418a9da59d2e994199d8079e2779db08677201a0f6ffcadac6a14c5135562d4c1ec.json"
     },
     {
       "entrypoint": "@agoric/vats/src/proposals/probeZcfBundle.js",
       "bundleID": "b1-beef1628ca0d7da6e1ba7e765a0a59841f3678392c50146adfffb81bef74b4089641b7f6de5b4ec45ef461c499ef0bd04a289c3a2c3696c206f3cba0fdb73d62",
-      "fileName": "/home/connolly/.agoric/cache/b1-beef1628ca0d7da6e1ba7e765a0a59841f3678392c50146adfffb81bef74b4089641b7f6de5b4ec45ef461c499ef0bd04a289c3a2c3696c206f3cba0fdb73d62.json"
+      "fileName": "./b1-beef1628ca0d7da6e1ba7e765a0a59841f3678392c50146adfffb81bef74b4089641b7f6de5b4ec45ef461c499ef0bd04a289c3a2c3696c206f3cba0fdb73d62.json"
     }
   ]
 }
