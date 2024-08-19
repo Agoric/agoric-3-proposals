@@ -1,4 +1,5 @@
 import { assert, Fail } from './assert.js';
+import { agd } from './cliHelper.js';
 
 const { freeze: harden } = Object; // XXX
 
@@ -35,3 +36,19 @@ export const extractStreamCellValue = (data, index = -1) => {
   return value;
 };
 harden(extractStreamCellValue);
+
+export const queryVstorage = path =>
+  agd.query('vstorage', 'data', '--output', 'json', path);
+
+// XXX use endo/marshal?
+export const getQuoteBody = async path => {
+  const queryOut = await queryVstorage(path);
+
+  const body = JSON.parse(JSON.parse(queryOut.value).values[0]);
+  return JSON.parse(body.body.substring(1));
+};
+
+export const getProvisionPoolMetrics = async () => {
+  const path = `published.provisionPool.metrics`;
+  return getQuoteBody(path);
+};
