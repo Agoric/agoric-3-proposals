@@ -1,5 +1,7 @@
 import assert from 'node:assert';
 import { ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
+import { CHAINID, VALIDATORADDR } from './constants';
+import { agd } from './cliHelper';
 
 const { freeze } = Object;
 
@@ -129,4 +131,13 @@ export const makeAgd = ({
     return rw;
   };
   return make();
+};
+
+export const bankSend = (addr: string, wanted: string) => {
+  const chain = ['--chain-id', CHAINID];
+  const from = ['--from', VALIDATORADDR];
+  const testKeyring = ['--keyring-backend', 'test'];
+  const noise = [...from, ...chain, ...testKeyring, '--yes'];
+
+  return agd.tx('bank', 'send', VALIDATORADDR, addr, wanted, ...noise);
 };

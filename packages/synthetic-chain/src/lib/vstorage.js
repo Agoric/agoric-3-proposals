@@ -13,7 +13,7 @@ const isStreamCell = cell =>
 harden(isStreamCell);
 
 /**
- * Extract one value from a the vstorage stream cell in a QueryDataResponse
+ * Extract one value from the vstorage stream cell in a QueryDataResponse
  *
  * @param {import('@agoric/cosmic-proto/dist/codegen/agoric/vstorage/query.js').QueryDataResponse} data
  * @param {number} [index] index of the desired value in a deserialized stream cell
@@ -48,7 +48,3 @@ export const getQuoteBody = async path => {
   return JSON.parse(body.body.substring(1));
 };
 
-export const getProvisionPoolMetrics = async () => {
-  const path = `published.provisionPool.metrics`;
-  return getQuoteBody(path);
-};
