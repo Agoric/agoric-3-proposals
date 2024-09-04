@@ -1,0 +1,31 @@
+{
+  "consume": {
+    "auctionUpgradeNewInstance": "upgradeVaults",
+    "chainTimerService": "upgradeVaults",
+    "economicCommitteeCreatorFacet": "upgradeVaults",
+    "reserveKit": "upgradeVaults",
+    "vaultFactoryKit": "upgradeVaults",
+    "zoe": "upgradeVaults",
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "auctionUpgradeNewInstance": "upgradeVaults"
+  },
+  "installation": {
+    "produce": {
+      "VaultFactory": true
+    }
+  },
+  "instance": {
+    "consume": {
+      "auctioneer": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
