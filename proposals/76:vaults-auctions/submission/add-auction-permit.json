@@ -1,0 +1,45 @@
+{
+  "consume": {
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "auctioneerKit": true,
+    "board": true,
+    "chainStorage": true,
+    "chainTimerService": true,
+    "econCharterKit": true,
+    "economicCommitteeCreatorFacet": true,
+    "priceAuthority": true,
+    "zoe": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "auctioneerKit": true,
+    "auctionUpgradeNewInstance": true
+  },
+  "instance": {
+    "consume": {
+      "reserve": true
+    },
+    "produce": {
+      "auctioneer": true
+    }
+  },
+  "installation": {
+    "consume": {
+      "contractGovernor": true
+    },
+    "produce": {
+      "auctioneer": true
+    }
+  },
+  "issuer": {
+    "consume": {
+      "IST": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
