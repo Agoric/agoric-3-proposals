@@ -62,6 +62,14 @@ const makeSwingstore = db => {
       if (!targetVat) throw Error(`vat not found: ${vatName}`);
       return targetVat;
     },
+    /** @param {string} vatName */
+    findVats: vatName => {
+      /** @type {string[]} */
+      const dynamicIDs = kvGetJSON('vat.dynamicIDs');
+      return dynamicIDs.filter(vatID =>
+        lookupVat(vatID).options().name.includes(vatName),
+      );
+    },
     lookupVat,
   });
 };
@@ -91,4 +99,25 @@ export const getIncarnation = async vatName => {
   console.error(JSON.stringify(details));
 
   return details.incarnation;
+};
+
+/** @param {string} vatName */
+export const getDetailsMatchingVats = async vatName => {
+  const fullPath = swingstorePath.replace(/^~/, NonNullish(HOME));
+
+  const db = dbOpenAmbient(fullPath, { readonly: true });
+  const kStore = makeSwingstore(db);
+
+  const vatIDs = kStore.findVats(vatName);
+  const infos = [];
+  for (const vatID of vatIDs) {
+    const vatInfo = kStore.lookupVat(vatID);
+    const name = vatInfo.options().name;
+    const source = vatInfo.source();
+    // @ts-expect-error cast
+    const { incarnation } = vatInfo.currentSpan();
+    infos.push({ vatName: name, vatID, incarnation, ...source });
+  }
+
+  return infos;
 };
