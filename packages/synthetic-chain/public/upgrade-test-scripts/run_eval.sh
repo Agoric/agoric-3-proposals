@@ -6,7 +6,7 @@ set -eo pipefail
 
 source ./env_setup.sh
 
-PROPOSAL=$1
+export PROPOSAL=$1
 if [ -z "$PROPOSAL" ]; then
     fail "Must specify what proposal to use"
 fi
