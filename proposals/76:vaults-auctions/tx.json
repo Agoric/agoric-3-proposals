@@ -1,0 +1,403 @@
+{
+  "height": "16506877",
+  "txhash": "B5221480AA956CD052DD77F8D424FBCFD9E8A7375706168C075FE558F3A3085F",
+  "codespace": "",
+  "code": 0,
+  "data": "12330A2D2F636F736D6F732E676F762E763162657461312E4D73675375626D697450726F706F73616C526573706F6E73651202084C",
+  "raw_log": "[{\"msg_index\":0,\"events\":[{\"type\":\"coin_received\",\"attributes\":[{\"key\":\"receiver\",\"value\":\"agoric10d07y265gmmuvt4z0w9aw880jnsr700jgl36x9\"},{\"key\":\"amount\",\"value\":\"5000000000ubld\"}]},{\"type\":\"coin_spent\",\"attributes\":[{\"key\":\"spender\",\"value\":\"agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8\"},{\"key\":\"amount\",\"value\":\"5000000000ubld\"}]},{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/cosmos.gov.v1beta1.MsgSubmitProposal\"},{\"key\":\"sender\",\"value\":\"agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8\"},{\"key\":\"module\",\"value\":\"governance\"},{\"key\":\"sender\",\"value\":\"agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8\"}]},{\"type\":\"proposal_deposit\",\"attributes\":[{\"key\":\"amount\",\"value\":\"5000000000ubld\"},{\"key\":\"proposal_id\",\"value\":\"76\"}]},{\"type\":\"submit_proposal\",\"attributes\":[{\"key\":\"proposal_id\",\"value\":\"76\"},{\"key\":\"proposal_messages\",\"value\":\",/cosmos.gov.v1.MsgExecLegacyContent\"},{\"key\":\"voting_period_start\",\"value\":\"76\"}]},{\"type\":\"transfer\",\"attributes\":[{\"key\":\"recipient\",\"value\":\"agoric10d07y265gmmuvt4z0w9aw880jnsr700jgl36x9\"},{\"key\":\"sender\",\"value\":\"agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8\"},{\"key\":\"amount\",\"value\":\"5000000000ubld\"}]}]}]",
+  "logs": [
+    {
+      "msg_index": 0,
+      "log": "",
+      "events": [
+        {
+          "type": "coin_received",
+          "attributes": [
+            {
+              "key": "receiver",
+              "value": "agoric10d07y265gmmuvt4z0w9aw880jnsr700jgl36x9"
+            },
+            {
+              "key": "amount",
+              "value": "5000000000ubld"
+            }
+          ]
+        },
+        {
+          "type": "coin_spent",
+          "attributes": [
+            {
+              "key": "spender",
+              "value": "agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8"
+            },
+            {
+              "key": "amount",
+              "value": "5000000000ubld"
+            }
+          ]
+        },
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmos.gov.v1beta1.MsgSubmitProposal"
+            },
+            {
+              "key": "sender",
+              "value": "agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8"
+            },
+            {
+              "key": "module",
+              "value": "governance"
+            },
+            {
+              "key": "sender",
+              "value": "agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8"
+            }
+          ]
+        },
+        {
+          "type": "proposal_deposit",
+          "attributes": [
+            {
+              "key": "amount",
+              "value": "5000000000ubld"
+            },
+            {
+              "key": "proposal_id",
+              "value": "76"
+            }
+          ]
+        },
+        {
+          "type": "submit_proposal",
+          "attributes": [
+            {
+              "key": "proposal_id",
+              "value": "76"
+            },
+            {
+              "key": "proposal_messages",
+              "value": ",/cosmos.gov.v1.MsgExecLegacyContent"
+            },
+            {
+              "key": "voting_period_start",
+              "value": "76"
+            }
+          ]
+        },
+        {
+          "type": "transfer",
+          "attributes": [
+            {
+              "key": "recipient",
+              "value": "agoric10d07y265gmmuvt4z0w9aw880jnsr700jgl36x9"
+            },
+            {
+              "key": "sender",
+              "value": "agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8"
+            },
+            {
+              "key": "amount",
+              "value": "5000000000ubld"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "info": "",
+  "gas_wanted": "4405394",
+  "gas_used": "3401304",
+  "tx": {
+    "@type": "/cosmos.tx.v1beta1.Tx",
+    "body": {
+      "messages": [
+        {
+          "@type": "/cosmos.gov.v1beta1.MsgSubmitProposal",
+          "content": {
+            "@type": "/agoric.swingset.CoreEvalProposal",
+            "title": "Replace Auctioneer and Upgrade Vaults",
+            "description": "This release provides materials to upgrade the vaultFactory and install new auctioneer contract.\n\n",
+            "evals": [
+              {
+                "json_permits": "{\n  \"consume\": {\n    \"agoricNamesAdmin\": \"makeCoreProposalBehavior\",\n    \"auctioneerKit\": true,\n    \"board\": true,\n    \"chainStorage\": true,\n    \"chainTimerService\": true,\n    \"econCharterKit\": true,\n    \"economicCommitteeCreatorFacet\": true,\n    \"priceAuthority\": true,\n    \"zoe\": \"makeCoreProposalBehavior\",\n    \"vatAdminSvc\": \"makeCoreProposalBehavior\"\n  },\n  \"produce\": {\n    \"auctioneerKit\": true,\n    \"auctionUpgradeNewInstance\": true\n  },\n  \"instance\": {\n    \"consume\": {\n      \"reserve\": true\n    },\n    \"produce\": {\n      \"auctioneer\": true\n    }\n  },\n  \"installation\": {\n    \"consume\": {\n      \"contractGovernor\": true\n    },\n    \"produce\": {\n      \"auctioneer\": true\n    }\n  },\n  \"issuer\": {\n    \"consume\": {\n      \"IST\": true\n    }\n  },\n  \"evaluateBundleCap\": \"makeCoreProposalBehavior\",\n  \"modules\": {\n    \"utils\": {\n      \"runModuleBehaviors\": \"makeCoreProposalBehavior\"\n    }\n  }\n}",
+                "js_code": "// This is generated by writeCoreEval; please edit!\n/* eslint-disable */\n\nconst manifestBundleRef = {bundleID:\"b1-47c15fc48569fde3afe4e4947f877242d2d6367c07876951acea99a20d9c890974f3d237f22b5033a84c5e3d506acc6e899e519590a8557d49d6d43611dc9c65\"};\nconst getManifestCall = harden([\n  \"getManifestForAddAuction\",\n  {\n    auctionsRef: {\n      bundleID: \"b1-31bf1ef20dd190a9f541471bc15238a51f621ff2340e6eb225214b9fdf3970f2bc3bc4fe151a79ef2e740b2679cf03f553b89a828da704dec9ccba9463fc3f79\",\n    },\n  },\n]);\nconst customManifest = {\n  addAuction: {\n    consume: {\n      agoricNamesAdmin: true,\n      auctioneerKit: true,\n      board: true,\n      chainStorage: true,\n      chainTimerService: true,\n      econCharterKit: true,\n      economicCommitteeCreatorFacet: true,\n      priceAuthority: true,\n      zoe: true,\n    },\n    installation: {\n      consume: {\n        contractGovernor: true,\n      },\n      produce: {\n        auctioneer: true,\n      },\n    },\n    instance: {\n      consume: {\n        reserve: true,\n      },\n      produce: {\n        auctioneer: true,\n      },\n    },\n    issuer: {\n      consume: {\n        IST: true,\n      },\n    },\n    produce: {\n      auctionUpgradeNewInstance: true,\n      auctioneerKit: true,\n    },\n  },\n};\n\n// Make a behavior function and \"export\" it by way of script completion value.\n// It is constructed by an anonymous invocation to ensure the absence of a global binding\n// for makeCoreProposalBehavior, which may not be necessary but preserves behavior pre-dating\n// https://github.com/Agoric/agoric-sdk/pull/8712 .\nconst behavior = (({\n  manifestBundleRef,\n  getManifestCall: [manifestGetterName, ...manifestGetterArgs],\n  customManifest,\n  E,\n  log = console.info,\n  customRestoreRef,\n}) => {\n  const { entries, fromEntries } = Object;\n\n  /**\n   * Given an object whose properties may be promise-valued, return a promise\n   * for an analogous object in which each such value has been replaced with its\n   * fulfillment.\n   * This is a non-recursive form of endo `deeplyFulfilled`.\n   *\n   * @template T\n   * @param {{[K in keyof T]: (T[K] | Promise<T[K]>)}} obj\n   * @returns {Promise<T>}\n   */\n  const shallowlyFulfilled = async obj => {\n    if (!obj) {\n      return obj;\n    }\n    const awaitedEntries = await Promise.all(\n      entries(obj).map(async ([key, valueP]) => {\n        const value = await valueP;\n        return [key, value];\n      }),\n    );\n    return fromEntries(awaitedEntries);\n  };\n\n  const makeRestoreRef = (vatAdminSvc, zoe) => {\n    /** @type {(ref: import\\('./externalTypes.js').ManifestBundleRef) => Promise<Installation<unknown>>} */\n    const defaultRestoreRef = async bundleRef => {\n      // extract-proposal.js creates these records, and bundleName is\n      // the optional name under which the bundle was installed into\n      // config.bundles\n      const bundleIdP =\n        'bundleName' in bundleRef\n          ? E(vatAdminSvc).getBundleIDByName(bundleRef.bundleName)\n          : bundleRef.bundleID;\n      const bundleID = await bundleIdP;\n      const label = bundleID.slice(0, 8);\n      return E(zoe).installBundleID(bundleID, label);\n    };\n    return defaultRestoreRef;\n  };\n\n  /** @param {ChainBootstrapSpace & BootstrapPowers & { evaluateBundleCap: any }} powers */\n  const coreProposalBehavior = async powers => {\n    // NOTE: `powers` is expected to match or be a superset of the above `permits` export,\n    // which should therefore be kept in sync with this deconstruction code.\n    // HOWEVER, do note that this function is invoked with at least the *union* of powers\n    // required by individual moduleBehaviors declared by the manifest getter, which is\n    // necessary so it can use `runModuleBehaviors` to provide the appropriate subset to\n    // each one (see ./writeCoreEvalParts.js).\n    // Handle `powers` with the requisite care.\n    const {\n      consume: { vatAdminSvc, zoe, agoricNamesAdmin },\n      evaluateBundleCap,\n      installation: { produce: produceInstallations },\n      modules: {\n        utils: { runModuleBehaviors },\n      },\n    } = powers;\n\n    // Get the on-chain installation containing the manifest and behaviors.\n    log('evaluateBundleCap', {\n      manifestBundleRef,\n      manifestGetterName,\n      vatAdminSvc,\n    });\n    let bcapP;\n    if ('bundleName' in manifestBundleRef) {\n      bcapP = E(vatAdminSvc).getNamedBundleCap(manifestBundleRef.bundleName);\n    } else if ('bundleID' in manifestBundleRef) {\n      bcapP = E(vatAdminSvc).getBundleCap(manifestBundleRef.bundleID);\n    } else {\n      const keys = Reflect.ownKeys(manifestBundleRef).map(key =>\n        typeof key === 'string' ? JSON.stringify(key) : String(key),\n      );\n      const keysStr = `[${keys.join(', ')}]`;\n      throw Error(\n        `bundleRef must have own bundleName or bundleID, missing in ${keysStr}`,\n      );\n    }\n    const bundleCap = await bcapP;\n\n    const proposalNS = await evaluateBundleCap(bundleCap);\n\n    // Get the manifest and its metadata.\n    log('execute', {\n      manifestGetterName,\n      bundleExports: Object.keys(proposalNS),\n    });\n    const restoreRef = customRestoreRef || makeRestoreRef(vatAdminSvc, zoe);\n    const {\n      manifest,\n      options: rawOptions,\n      installations: rawInstallations,\n    } = await proposalNS[manifestGetterName](\n      harden({ restoreRef }),\n      ...manifestGetterArgs,\n    );\n\n    // Await promises in the returned options and installations records.\n    const [options, installations] = await Promise.all(\n      [rawOptions, rawInstallations].map(shallowlyFulfilled),\n    );\n\n    // Publish the installations for our dependencies.\n    const installationEntries = entries(installations || {});\n    if (installationEntries.length > 0) {\n      const installAdmin = E(agoricNamesAdmin).lookupAdmin('installation');\n      await Promise.all(\n        installationEntries.map(([key, value]) => {\n          produceInstallations[key].resolve(value);\n          return E(installAdmin).update(key, value);\n        }),\n      );\n    }\n\n    // Evaluate the manifest.\n    return runModuleBehaviors({\n      // Remember that `powers` may be arbitrarily broad.\n      allPowers: powers,\n      behaviors: proposalNS,\n      manifest: customManifest || manifest,\n      makeConfig: (name, _permit) => {\n        log('coreProposal:', name);\n        return { options };\n      },\n    });\n  };\n\n  return coreProposalBehavior;\n})({ manifestBundleRef, getManifestCall, customManifest, E });\nbehavior;\n"
+              },
+              {
+                "json_permits": "{\n  \"consume\": {\n    \"auctionUpgradeNewInstance\": \"upgradeVaults\",\n    \"chainTimerService\": \"upgradeVaults\",\n    \"economicCommitteeCreatorFacet\": \"upgradeVaults\",\n    \"reserveKit\": \"upgradeVaults\",\n    \"vaultFactoryKit\": \"upgradeVaults\",\n    \"zoe\": \"upgradeVaults\",\n    \"agoricNamesAdmin\": \"makeCoreProposalBehavior\",\n    \"vatAdminSvc\": \"makeCoreProposalBehavior\"\n  },\n  \"produce\": {\n    \"auctionUpgradeNewInstance\": \"upgradeVaults\"\n  },\n  \"installation\": {\n    \"produce\": {\n      \"VaultFactory\": true\n    }\n  },\n  \"instance\": {\n    \"consume\": {\n      \"auctioneer\": true\n    }\n  },\n  \"evaluateBundleCap\": \"makeCoreProposalBehavior\",\n  \"modules\": {\n    \"utils\": {\n      \"runModuleBehaviors\": \"makeCoreProposalBehavior\"\n    }\n  }\n}",
+                "js_code": "// This is generated by writeCoreEval; please edit!\n/* eslint-disable */\n\nconst manifestBundleRef = {bundleID:\"b1-7db1fff8ee711a4bffe21a81f731d540c3d88c671b2ba6a457c4c9677df123008c310633f738b0eae3042e9593bb2569d0ca59a3f1d12752bcc2124c3240ee97\"};\nconst getManifestCall = harden([\n  \"getManifestForUpgradeVaults\",\n  {\n    vaultsRef: {\n      bundleID: \"b1-8859b141114716b24cca1bd8bc14f81c066880556b5e94eb1767c0ca3d5f4917a6762dcbab85d84bcdf06ba64179a34bfd7cbb5b43c9ab459b5abe09aeb7cdd9\",\n    },\n  },\n]);\nconst customManifest = {\n  upgradeVaults: {\n    consume: {\n      auctionUpgradeNewInstance: \"upgradeVaults\",\n      chainTimerService: \"upgradeVaults\",\n      economicCommitteeCreatorFacet: \"upgradeVaults\",\n      reserveKit: \"upgradeVaults\",\n      vaultFactoryKit: \"upgradeVaults\",\n      zoe: \"upgradeVaults\",\n    },\n    installation: {\n      produce: {\n        VaultFactory: true,\n      },\n    },\n    instance: {\n      consume: {\n        auctioneer: true,\n      },\n    },\n    produce: {\n      auctionUpgradeNewInstance: \"upgradeVaults\",\n    },\n  },\n};\n\n// Make a behavior function and \"export\" it by way of script completion value.\n// It is constructed by an anonymous invocation to ensure the absence of a global binding\n// for makeCoreProposalBehavior, which may not be necessary but preserves behavior pre-dating\n// https://github.com/Agoric/agoric-sdk/pull/8712 .\nconst behavior = (({\n  manifestBundleRef,\n  getManifestCall: [manifestGetterName, ...manifestGetterArgs],\n  customManifest,\n  E,\n  log = console.info,\n  customRestoreRef,\n}) => {\n  const { entries, fromEntries } = Object;\n\n  /**\n   * Given an object whose properties may be promise-valued, return a promise\n   * for an analogous object in which each such value has been replaced with its\n   * fulfillment.\n   * This is a non-recursive form of endo `deeplyFulfilled`.\n   *\n   * @template T\n   * @param {{[K in keyof T]: (T[K] | Promise<T[K]>)}} obj\n   * @returns {Promise<T>}\n   */\n  const shallowlyFulfilled = async obj => {\n    if (!obj) {\n      return obj;\n    }\n    const awaitedEntries = await Promise.all(\n      entries(obj).map(async ([key, valueP]) => {\n        const value = await valueP;\n        return [key, value];\n      }),\n    );\n    return fromEntries(awaitedEntries);\n  };\n\n  const makeRestoreRef = (vatAdminSvc, zoe) => {\n    /** @type {(ref: import\\('./externalTypes.js').ManifestBundleRef) => Promise<Installation<unknown>>} */\n    const defaultRestoreRef = async bundleRef => {\n      // extract-proposal.js creates these records, and bundleName is\n      // the optional name under which the bundle was installed into\n      // config.bundles\n      const bundleIdP =\n        'bundleName' in bundleRef\n          ? E(vatAdminSvc).getBundleIDByName(bundleRef.bundleName)\n          : bundleRef.bundleID;\n      const bundleID = await bundleIdP;\n      const label = bundleID.slice(0, 8);\n      return E(zoe).installBundleID(bundleID, label);\n    };\n    return defaultRestoreRef;\n  };\n\n  /** @param {ChainBootstrapSpace & BootstrapPowers & { evaluateBundleCap: any }} powers */\n  const coreProposalBehavior = async powers => {\n    // NOTE: `powers` is expected to match or be a superset of the above `permits` export,\n    // which should therefore be kept in sync with this deconstruction code.\n    // HOWEVER, do note that this function is invoked with at least the *union* of powers\n    // required by individual moduleBehaviors declared by the manifest getter, which is\n    // necessary so it can use `runModuleBehaviors` to provide the appropriate subset to\n    // each one (see ./writeCoreEvalParts.js).\n    // Handle `powers` with the requisite care.\n    const {\n      consume: { vatAdminSvc, zoe, agoricNamesAdmin },\n      evaluateBundleCap,\n      installation: { produce: produceInstallations },\n      modules: {\n        utils: { runModuleBehaviors },\n      },\n    } = powers;\n\n    // Get the on-chain installation containing the manifest and behaviors.\n    log('evaluateBundleCap', {\n      manifestBundleRef,\n      manifestGetterName,\n      vatAdminSvc,\n    });\n    let bcapP;\n    if ('bundleName' in manifestBundleRef) {\n      bcapP = E(vatAdminSvc).getNamedBundleCap(manifestBundleRef.bundleName);\n    } else if ('bundleID' in manifestBundleRef) {\n      bcapP = E(vatAdminSvc).getBundleCap(manifestBundleRef.bundleID);\n    } else {\n      const keys = Reflect.ownKeys(manifestBundleRef).map(key =>\n        typeof key === 'string' ? JSON.stringify(key) : String(key),\n      );\n      const keysStr = `[${keys.join(', ')}]`;\n      throw Error(\n        `bundleRef must have own bundleName or bundleID, missing in ${keysStr}`,\n      );\n    }\n    const bundleCap = await bcapP;\n\n    const proposalNS = await evaluateBundleCap(bundleCap);\n\n    // Get the manifest and its metadata.\n    log('execute', {\n      manifestGetterName,\n      bundleExports: Object.keys(proposalNS),\n    });\n    const restoreRef = customRestoreRef || makeRestoreRef(vatAdminSvc, zoe);\n    const {\n      manifest,\n      options: rawOptions,\n      installations: rawInstallations,\n    } = await proposalNS[manifestGetterName](\n      harden({ restoreRef }),\n      ...manifestGetterArgs,\n    );\n\n    // Await promises in the returned options and installations records.\n    const [options, installations] = await Promise.all(\n      [rawOptions, rawInstallations].map(shallowlyFulfilled),\n    );\n\n    // Publish the installations for our dependencies.\n    const installationEntries = entries(installations || {});\n    if (installationEntries.length > 0) {\n      const installAdmin = E(agoricNamesAdmin).lookupAdmin('installation');\n      await Promise.all(\n        installationEntries.map(([key, value]) => {\n          produceInstallations[key].resolve(value);\n          return E(installAdmin).update(key, value);\n        }),\n      );\n    }\n\n    // Evaluate the manifest.\n    return runModuleBehaviors({\n      // Remember that `powers` may be arbitrarily broad.\n      allPowers: powers,\n      behaviors: proposalNS,\n      manifest: customManifest || manifest,\n      makeConfig: (name, _permit) => {\n        log('coreProposal:', name);\n        return { options };\n      },\n    });\n  };\n\n  return coreProposalBehavior;\n})({ manifestBundleRef, getManifestCall, customManifest, E });\nbehavior;\n"
+              }
+            ]
+          },
+          "initial_deposit": [
+            {
+              "denom": "ubld",
+              "amount": "5000000000"
+            }
+          ],
+          "proposer": "agoric1e00863hftlyja7d7t43l0wl9c00z95jaqpu8l8"
+        }
+      ],
+      "memo": "",
+      "timeout_height": "0",
+      "extension_options": [],
+      "non_critical_extension_options": []
+    },
+    "auth_info": {
+      "signer_infos": [
+        {
+          "public_key": {
+            "@type": "/cosmos.crypto.secp256k1.PubKey",
+            "key": "A8NYQgmcVJPZkT6llag0dcD4kW/YxP9oFwpvQCo5HDZH"
+          },
+          "mode_info": {
+            "single": {
+              "mode": "SIGN_MODE_DIRECT"
+            }
+          },
+          "sequence": "77"
+        }
+      ],
+      "fee": {
+        "amount": [
+          {
+            "denom": "ubld",
+            "amount": "220270"
+          }
+        ],
+        "gas_limit": "4405394",
+        "payer": "",
+        "granter": ""
+      },
+      "tip": null
+    },
+    "signatures": [
+      "5TJyauDfiX5/yzn6VB1zJd2haWM1/7PsHBtxQmTi7p1WqUcnW24JxuYqJdqjVJqEu79MlGHdo4UJ/KyFCySntQ=="
+    ]
+  },
+  "timestamp": "2024-09-01T19:47:11Z",
+  "events": [
+    {
+      "type": "coin_spent",
+      "attributes": [
+        {
+          "key": "c3BlbmRlcg==",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "MjIwMjcwdWJsZA==",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "coin_received",
+      "attributes": [
+        {
+          "key": "cmVjZWl2ZXI=",
+          "value": "YWdvcmljMWFlMGxtdHpsZ3JjbmxhOXhqa3BhYXJxNWQ1ZGZlejYzaDNudWNs",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "MjIwMjcwdWJsZA==",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "transfer",
+      "attributes": [
+        {
+          "key": "cmVjaXBpZW50",
+          "value": "YWdvcmljMWFlMGxtdHpsZ3JjbmxhOXhqa3BhYXJxNWQ1ZGZlejYzaDNudWNs",
+          "index": true
+        },
+        {
+          "key": "c2VuZGVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "MjIwMjcwdWJsZA==",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "message",
+      "attributes": [
+        {
+          "key": "c2VuZGVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "tx",
+      "attributes": [
+        {
+          "key": "ZmVl",
+          "value": "MjIwMjcwdWJsZA==",
+          "index": true
+        },
+        {
+          "key": "ZmVlX3BheWVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "tx",
+      "attributes": [
+        {
+          "key": "YWNjX3NlcQ==",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4Lzc3",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "tx",
+      "attributes": [
+        {
+          "key": "c2lnbmF0dXJl",
+          "value": "NVRKeWF1RGZpWDUveXpuNlZCMXpKZDJoYVdNMS83UHNIQnR4UW1UaTdwMVdxVWNuVzI0Snh1WXFKZHFqVkpxRXU3OU1sR0hkbzRVSi9LeUZDeVNudFE9PQ==",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "message",
+      "attributes": [
+        {
+          "key": "YWN0aW9u",
+          "value": "L2Nvc21vcy5nb3YudjFiZXRhMS5Nc2dTdWJtaXRQcm9wb3NhbA==",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "submit_proposal",
+      "attributes": [
+        {
+          "key": "cHJvcG9zYWxfaWQ=",
+          "value": "NzY=",
+          "index": true
+        },
+        {
+          "key": "cHJvcG9zYWxfbWVzc2FnZXM=",
+          "value": "LC9jb3Ntb3MuZ292LnYxLk1zZ0V4ZWNMZWdhY3lDb250ZW50",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "coin_spent",
+      "attributes": [
+        {
+          "key": "c3BlbmRlcg==",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "NTAwMDAwMDAwMHVibGQ=",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "coin_received",
+      "attributes": [
+        {
+          "key": "cmVjZWl2ZXI=",
+          "value": "YWdvcmljMTBkMDd5MjY1Z21tdXZ0NHowdzlhdzg4MGpuc3I3MDBqZ2wzNng5",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "NTAwMDAwMDAwMHVibGQ=",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "transfer",
+      "attributes": [
+        {
+          "key": "cmVjaXBpZW50",
+          "value": "YWdvcmljMTBkMDd5MjY1Z21tdXZ0NHowdzlhdzg4MGpuc3I3MDBqZ2wzNng5",
+          "index": true
+        },
+        {
+          "key": "c2VuZGVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        },
+        {
+          "key": "YW1vdW50",
+          "value": "NTAwMDAwMDAwMHVibGQ=",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "message",
+      "attributes": [
+        {
+          "key": "c2VuZGVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "proposal_deposit",
+      "attributes": [
+        {
+          "key": "YW1vdW50",
+          "value": "NTAwMDAwMDAwMHVibGQ=",
+          "index": true
+        },
+        {
+          "key": "cHJvcG9zYWxfaWQ=",
+          "value": "NzY=",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "message",
+      "attributes": [
+        {
+          "key": "bW9kdWxl",
+          "value": "Z292ZXJuYW5jZQ==",
+          "index": true
+        },
+        {
+          "key": "c2VuZGVy",
+          "value": "YWdvcmljMWUwMDg2M2hmdGx5amE3ZDd0NDNsMHdsOWMwMHo5NWphcXB1OGw4",
+          "index": true
+        }
+      ]
+    },
+    {
+      "type": "submit_proposal",
+      "attributes": [
+        {
+          "key": "dm90aW5nX3BlcmlvZF9zdGFydA==",
+          "value": "NzY=",
+          "index": true
+        }
+      ]
+    }
+  ]
+}
