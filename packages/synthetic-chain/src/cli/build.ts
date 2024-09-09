@@ -12,13 +12,22 @@ export type AgoricSyntheticChainConfig = {
    * Defaults to `latest`, which containing all passed proposals
    */
   fromTag: string | null;
-  platforms?: Platform[];
+  repositoryColon?: string;
+  sdkRepositoryColon?: string;
+  platforms?: Platform[] | null;
+  ag0FromTag?: string;
+  ag0RepositoryColon?: string;
 };
 
 const defaultConfig: AgoricSyntheticChainConfig = {
   // Tag of the agoric-3 image containing all passed proposals
   // Must match the Bake file and CI config
   fromTag: 'latest',
+  repositoryColon: 'ghcr.io/agoric/agoric-3-proposals:',
+  sdkRepositoryColon: 'ghcr.io/agoric/agoric-sdk:',
+  platforms: null,
+  ag0FromTag: 'agoric-upgrade-7-2',
+  ag0RepositoryColon: 'ghcr.io/agoric/ag0:',
 };
 
 export function readBuildConfig(root: string): AgoricSyntheticChainConfig {

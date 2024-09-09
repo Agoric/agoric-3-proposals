@@ -1,16 +1,16 @@
 import { execSync } from 'node:child_process';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
-export const runTestImage = (proposal: ProposalInfo) => {
+export const runTestImage = (proposal: ProposalInfo, repositoryColon: string) => {
   console.log(`Running test image for proposal ${proposal.proposalName}`);
-  const { name } = imageNameForProposal(proposal, 'test');
+  const { name } = imageNameForProposal(proposal, 'test', repositoryColon);
   // 'rm' to remove the container when it exits
   const cmd = `docker run --rm ${name}`;
   execSync(cmd, { stdio: 'inherit' });
 };
 
-export const debugTestImage = (proposal: ProposalInfo) => {
-  const { name } = imageNameForProposal(proposal, 'test');
+export const debugTestImage = (proposal: ProposalInfo, repositoryColon: string) => {
+  const { name } = imageNameForProposal(proposal, 'test', repositoryColon);
   console.log(
     `
   Starting chain of test image for proposal ${proposal.proposalName}

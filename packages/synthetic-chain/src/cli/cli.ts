@@ -8,6 +8,7 @@ import { execSync } from 'node:child_process';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
+  AgoricSyntheticChainConfig,
   bakeTarget,
   buildProposalSubmissions,
   readBuildConfig,
@@ -27,7 +28,9 @@ const { positionals, values } = parseArgs({
 });
 
 const root = path.resolve('.');
-const buildConfig = readBuildConfig(root);
+const buildConfig = readBuildConfig(
+  root,
+) as Required<AgoricSyntheticChainConfig>;
 const allProposals = readProposals(root);
 
 const { match } = values;
@@ -66,8 +69,23 @@ const prepareDockerBuild = () => {
   const publicDir = path.resolve(cliPath, '..', '..');
   // copy and generate files of the build context that aren't in the build contents
   execSync(`cp -r ${path.resolve(publicDir, 'docker-bake.hcl')} .`);
-  writeDockerfile(allProposals, buildConfig.fromTag);
-  writeBakefileProposals(allProposals, buildConfig.platforms);
+  writeDockerfile(
+    allProposals,
+    buildConfig.fromTag,
+    buildConfig.repositoryColon,
+    buildConfig.sdkRepositoryColon,
+    buildConfig.ag0FromTag,
+    buildConfig.ag0RepositoryColon,
+  );
+  writeBakefileProposals(
+    allProposals,
+    buildConfig.platforms,
+    buildConfig.fromTag,
+    buildConfig.repositoryColon,
+    buildConfig.sdkRepositoryColon,
+    buildConfig.ag0FromTag,
+    buildConfig.ag0RepositoryColon,
+  );
   // copy and generate files to include in the build
   execSync(`cp -r ${path.resolve(publicDir, 'upgrade-test-scripts')} .`);
   buildProposalSubmissions(proposals);
@@ -103,16 +121,24 @@ switch (cmd) {
       assert(proposals.length === 1, 'too many proposals match');
       const proposal = proposals[0];
       console.log(chalk.yellow.bold(`Debugging ${proposal.proposalName}`));
-      bakeTarget(imageNameForProposal(proposal, 'test').target, values.dry);
-      debugTestImage(proposal);
+      bakeTarget(
+        imageNameForProposal(proposal, 'test', buildConfig.repositoryColon)
+          .target,
+        values.dry,
+      );
+      debugTestImage(proposal, buildConfig.repositoryColon);
       // don't bother to delete the test image because there's just one
       // and the user probably wants to run it again.
     } else {
       for (const proposal of proposals) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
-        const image = imageNameForProposal(proposal, 'test');
+        const image = imageNameForProposal(
+          proposal,
+          'test',
+          buildConfig.repositoryColon,
+        );
         bakeTarget(image.target, values.dry);
-        runTestImage(proposal);
+        runTestImage(proposal, buildConfig.repositoryColon);
         // delete the image to reclaim disk space. The next build
         // will use the build cache.
         execSync('docker system df', { stdio: 'inherit' });

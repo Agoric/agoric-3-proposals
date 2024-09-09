@@ -13,8 +13,8 @@ test('imageNameForProposal', t => {
     source: 'build',
     buildScript: 'n/a',
   };
-  t.deepEqual(imageNameForProposal(proposal, 'test'), {
-    name: 'ghcr.io/agoric/agoric-3-proposals:test-foo',
+  t.deepEqual(imageNameForProposal(proposal, 'test', 'example.net/org/repo:'), {
+    name: 'example.net/org/repo:test-foo',
     target: 'test-foo',
   });
 });

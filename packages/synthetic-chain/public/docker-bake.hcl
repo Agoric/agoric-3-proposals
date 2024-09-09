@@ -23,7 +23,7 @@ target "use" {
     proposal = PROPOSALS
   }
   // TODO proposal *number* would be immutable
-  tags = ["ghcr.io/agoric/agoric-3-proposals:use-${proposal}"]
+  tags = ["${REPOSITORY_COLON}use-${proposal}"]
   labels = {
     "org.opencontainers.image.title": "Use ${proposal}",
     "org.opencontainers.image.description": "Use agoric-3 synthetic chain after ${proposal} proposal",
@@ -37,7 +37,7 @@ target "test" {
   matrix = {
     proposal = PROPOSALS
   }
-  tags = ["ghcr.io/agoric/agoric-3-proposals:test-${proposal}"]
+  tags = ["${REPOSITORY_COLON}test-${proposal}"]
   labels = {
     "org.opencontainers.image.title": "Test ${proposal}",
   }
@@ -49,7 +49,7 @@ target "test" {
 target "latest" {
   inherits = ["docker-metadata-action"]
   platforms = PLATFORMS
-  tags = ["ghcr.io/agoric/agoric-3-proposals:latest"]
+  tags = ["${REPOSITORY_COLON}latest"]
   labels = {
     "org.opencontainers.image.title": "All passed proposals",
     "org.opencontainers.image.description": "Use agoric-3 synthetic chain including all passed proposals",

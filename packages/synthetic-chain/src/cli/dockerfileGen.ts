@@ -17,12 +17,16 @@ const stage = {
   /**
    * Prepare an upgrade from ag0, start of the chain
    */
-  PREPARE_ZERO(proposalName: string, to: string) {
-    const agZeroUpgrade = 'agoric-upgrade-7-2';
+  PREPARE_ZERO(
+    proposalName: string,
+    to: string,
+    ag0FromTag: string,
+    ag0RepositoryColon: string,
+  ) {
     return `
 ## START
-# on ${agZeroUpgrade}, with upgrade to ${to}
-FROM ghcr.io/agoric/ag0:${agZeroUpgrade} as prepare-${proposalName}
+# on ${ag0FromTag}, with upgrade to ${to}
+FROM \${AG0_REPOSITORY_COLON:-${ag0RepositoryColon}\}\${AG0_FROM_TAG:-${ag0FromTag}\} as prepare-${proposalName}
 ENV UPGRADE_TO=${to}
 
 # put env functions into shell environment
@@ -39,10 +43,10 @@ RUN /usr/src/upgrade-test-scripts/run_prepare_zero.sh
    * Resume from state of an existing image.
    * Creates a "use" stage upon which a PREPARE or EVAL can stack.
    */
-  RESUME(fromTag: string) {
+  RESUME(fromTag: string, repositoryColon: string) {
     return `
 ## RESUME
-FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as use-${fromTag}
+FROM \${REPOSITORY_COLON:-${repositoryColon}\}\${FROM_TAG:-${fromTag}\} as use-${fromTag}
 `;
   },
 
@@ -84,15 +88,13 @@ RUN ./run_prepare.sh ${path}
    * - Start agd with the SDK that has the upgradeHandler
    * - Run any core-evals associated with the proposal (either the ones specified in prepare, or straight from the proposal)
    */
-  EXECUTE({
-    path,
-    planName,
-    proposalName,
-    sdkImageTag,
-  }: SoftwareUpgradePackage) {
+  EXECUTE(
+    { path, planName, proposalName, sdkImageTag }: SoftwareUpgradePackage,
+    sdkRepositoryColon: string,
+  ) {
     return `
 # EXECUTE ${proposalName}
-FROM ghcr.io/agoric/agoric-sdk:${sdkImageTag} as execute-${proposalName}
+FROM \${SDK_REPOSITORY_COLON:-${sdkRepositoryColon}\}\${SDK_TAG:-${sdkImageTag}\} as execute-${proposalName}
 
 WORKDIR /usr/src/upgrade-test-scripts
 
@@ -175,12 +177,16 @@ ENTRYPOINT ./run_test.sh ${path}
   /**
    * The last target in the file, for untargeted `docker build`
    */
-  LAST(lastProposal: ProposalInfo) {
+  LAST(lastProposal: ProposalInfo, repositoryColon: string) {
     // Assumes the 'use' image is built and tagged.
     // This isn't necessary for a multi-stage build, but without it CI
     // rebuilds the last "use" image during the "default" image step
     // Some background: https://github.com/moby/moby/issues/34715
-    const useImage = imageNameForProposal(lastProposal, 'use').name;
+    const useImage = imageNameForProposal(
+      lastProposal,
+      'use',
+      repositoryColon,
+    ).name;
     return `
 # LAST
 FROM ${useImage} as latest
@@ -190,15 +196,35 @@ FROM ${useImage} as latest
 
 export function writeBakefileProposals(
   allProposals: ProposalInfo[],
-  platforms?: Platform[],
+  platforms: Platform[] | null,
+  fromTag: string | null,
+  repositoryColon: string,
+  sdkRepositoryColon: string,
+  ag0FromTag: string,
+  ag0RepositoryColon: string,
 ) {
   const json = {
     variable: {
       PLATFORMS: {
-        default: platforms || null,
+        default: platforms,
       },
       PROPOSALS: {
         default: allProposals.map(p => p.proposalName),
+      },
+      FROM_TAG: {
+        default: fromTag,
+      },
+      REPOSITORY_COLON: {
+        default: repositoryColon,
+      },
+      SDK_REPOSITORY_COLON: {
+        default: sdkRepositoryColon,
+      },
+      AG0_FROM_TAG: {
+        default: ag0FromTag,
+      },
+      AG0_REPOSITORY_COLON: {
+        default: ag0RepositoryColon,
       },
     },
   };
@@ -207,17 +233,30 @@ export function writeBakefileProposals(
 
 export function writeDockerfile(
   allProposals: ProposalInfo[],
-  fromTag?: string | null,
+  fromTag: string | null,
+  repositoryColon: string,
+  sdkRepositoryColon: string,
+  ag0FromTag: string,
+  ag0RepositoryColon: string,
 ) {
   // Each stage tests something about the left argument and prepare an upgrade to the right side (by passing the proposal and halting the chain.)
   // The upgrade doesn't happen until the next stage begins executing.
-  const blocks: string[] = ['# syntax=docker/dockerfile:1.4'];
+  const blocks: string[] = [
+    `\
+# syntax=docker/dockerfile:1.4
+ARG FROM_TAG
+ARG REPOSITORY_COLON
+ARG SDK_TAG
+ARG SDK_REPOSITORY_COLON
+ARG AG0_FROM_TAG
+ARG AG0_REPOSITORY_COLON`,
+  ];
 
   let previousProposal: ProposalInfo | null = null;
 
   // appending to a previous image, so set up the 'use' stage
   if (fromTag) {
-    blocks.push(stage.RESUME(fromTag));
+    blocks.push(stage.RESUME(fromTag, repositoryColon));
     // define a previous proposal that matches what later stages expect
     previousProposal = {
       proposalName: fromTag,
@@ -245,10 +284,15 @@ export function writeDockerfile(
           blocks.push(stage.PREPARE(proposal, previousProposal));
         } else {
           blocks.push(
-            stage.PREPARE_ZERO(proposal.proposalName, proposal.planName),
+            stage.PREPARE_ZERO(
+              proposal.proposalName,
+              proposal.planName,
+              ag0FromTag,
+              ag0RepositoryColon,
+            ),
           );
         }
-        blocks.push(stage.EXECUTE(proposal));
+        blocks.push(stage.EXECUTE(proposal, sdkRepositoryColon));
         break;
       default:
         // UNTIL https://github.com/Agoric/agoric-3-proposals/issues/77
@@ -265,7 +309,7 @@ export function writeDockerfile(
   // If one of the proposals is a passed proposal, make the latest one the default entrypoint
   const lastPassed = allProposals.findLast(isPassed);
   if (lastPassed) {
-    blocks.push(stage.LAST(lastPassed));
+    blocks.push(stage.LAST(lastPassed, repositoryColon));
   }
 
   const contents = blocks.join('\n');
