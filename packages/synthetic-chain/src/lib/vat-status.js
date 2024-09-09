@@ -62,7 +62,7 @@ const makeSwingstore = db => {
       if (!targetVat) throw Error(`vat not found: ${vatName}`);
       return targetVat;
     },
-    /** @param {string} string a string to search for within the vat name. */
+    /** @param {string} string a substring to search for within the vat name. */
     findVats: string => {
       /** @type {string[]} */
       const dynamicIDs = kvGetJSON('vat.dynamicIDs');
