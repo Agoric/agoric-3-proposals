@@ -180,3 +180,4 @@ const behavior = (({
   return coreProposalBehavior;
 })({ manifestBundleRef, getManifestCall, customManifest, E });
 behavior;
+
