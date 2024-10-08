@@ -1,6 +1,12 @@
 import { executeOffer, waitForBlock } from './commonUpgradeHelpers.js';
 import { ATOM_DENOM, CHAINID, VALIDATORADDR } from './constants.js';
-import { agd, agops, executeCommand, agopsLocation } from './cliHelper.js';
+import {
+  agd,
+  agops,
+  executeCommand,
+  agopsLocation,
+  agoric as agoricAmbient,
+} from './cliHelper.js';
 import { GOV1ADDR, GOV2ADDR, GOV3ADDR } from './constants.js';
 import { queryVstorage, getQuoteBody, getInstanceBoardId } from './vstorage.js';
 
@@ -196,6 +202,16 @@ export const pushPrices = async (price, brandIn, oraclesByBrand, round) => {
     );
     await executeOffer(oracle.address, oracleCmd);
   }
+};
+
+export const getRoundId = async (price, io = {}) => {
+  const {
+    agoric = { follow: agoricAmbient.follow },
+    prefix = 'published.',
+  } = io;
+  const path = `:${prefix}priceFeed.${price}-USD_price_feed.latestRound`;
+  const round = await agoric.follow('-lF', path);
+  return parseInt(round.roundId);
 };
 
 export const getPriceQuote = async price => {
