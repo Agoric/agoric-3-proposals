@@ -133,11 +133,15 @@ export const makeAgd = ({
   return make();
 };
 
-export const bankSend = (addr: string, wanted: string) => {
+export const bankSend = (
+  addr: string,
+  wanted: string,
+  from: string = VALIDATORADDR,
+) => {
   const chain = ['--chain-id', CHAINID];
-  const from = ['--from', VALIDATORADDR];
+  const fromArg = ['--from', from];
   const testKeyring = ['--keyring-backend', 'test'];
-  const noise = [...from, ...chain, ...testKeyring, '--yes'];
+  const noise = [...fromArg, ...chain, ...testKeyring, '--yes'];
 
-  return agd.tx('bank', 'send', VALIDATORADDR, addr, wanted, ...noise);
+  return agd.tx('bank', 'send', from, addr, wanted, ...noise);
 };
