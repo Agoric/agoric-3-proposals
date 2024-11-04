@@ -1,0 +1,53 @@
+{
+  "vatParameters": {
+    "chainStorageEntries": true
+  },
+  "consume": {
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "bankManager": "bank",
+    "startUpgradable": true,
+    "anchorBalancePayments": true,
+    "anchorKits": true,
+    "board": true,
+    "chainStorage": true,
+    "diagnostics": true,
+    "zoe": "zoe",
+    "feeMintAccess": "zoe",
+    "economicCommitteeCreatorFacet": "economicCommittee",
+    "provisionPoolStartResult": true,
+    "econCharterKit": "econCommitteeCharter",
+    "chainTimerService": "timer",
+    "psmKit": true,
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "installation": {
+    "consume": {
+      "mintHolder": "zoe",
+      "contractGovernor": "zoe",
+      "psm": "zoe"
+    }
+  },
+  "produce": {
+    "testFirstAnchorKit": true,
+    "anchorBalancePayments": true,
+    "anchorKits": true,
+    "psmKit": "true"
+  },
+  "instance": {
+    "consume": {
+      "economicCommittee": "economicCommittee"
+    }
+  },
+  "brand": {
+    "consume": {
+      "IST": "zoe"
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
+
