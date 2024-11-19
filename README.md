@@ -118,6 +118,8 @@ docker run -it --entrypoint bash --mount type=bind,src=.,dst=/usr/src/a3p ghcr.i
 
 ### Common errors
 
+`yarn doctor` can diagnose (and fix!) a number of common problems.
+
 #### JS exception
 
 If running `yarn synthetic-chain` throws an exception, it may because the Node version is too old. The `@agoric/synthetic-chain` package declares its "engines" range, but Yarn ignores it when running the bin in this repo. Be sure your Node version is compatible with the range.
