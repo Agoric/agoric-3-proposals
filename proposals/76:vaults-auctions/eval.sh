@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "[$PROPOSAL] Recording the auctioneer instance"
 ./saveAuctionInstance.js

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit when any command fails
-set -uxeo pipefail
+set -euxo pipefail
 
 # Place here any actions that should happen before the upgrade is proposed. The
 # actions are executed in the previous chain software, and the effects are

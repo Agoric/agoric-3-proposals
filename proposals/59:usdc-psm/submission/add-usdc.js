@@ -3,17 +3,17 @@
 
 const manifestBundleRef = {
   bundleID:
-    "b1-4c34c89b707bc8ece5a41e97e6a354081f7ae8a40391f1462848348613dd1218dcce574b3e30901a9825a966cb85bda6a92ba9f9ce9ba325e4c475f9a678b930",
+    'b1-4c34c89b707bc8ece5a41e97e6a354081f7ae8a40391f1462848348613dd1218dcce574b3e30901a9825a966cb85bda6a92ba9f9ce9ba325e4c475f9a678b930',
 };
 const getManifestCall = harden([
-  "getManifestForPsm",
+  'getManifestForPsm',
   {
     anchorOptions: {
       decimalPlaces: 6,
       denom:
-        "ibc/FE98AAD68F02F03565E9FA39A5E627946699B2B07115889ED812D8BA639576A9",
-      keyword: "USDC",
-      proposedName: "USDC",
+        'ibc/FE98AAD68F02F03565E9FA39A5E627946699B2B07115889ED812D8BA639576A9',
+      keyword: 'USDC',
+      proposedName: 'USDC',
     },
     installKeys: {},
   },
@@ -24,12 +24,12 @@ const overrideManifest = {
       agoricNamesAdmin: true,
       anchorBalancePayments: true,
       anchorKits: true,
-      bankManager: "bank",
+      bankManager: 'bank',
       startUpgradable: true,
     },
     installation: {
       consume: {
-        mintHolder: "zoe",
+        mintHolder: 'zoe',
       },
     },
     produce: {
@@ -44,7 +44,7 @@ const overrideManifest = {
   startPSM: {
     brand: {
       consume: {
-        IST: "zoe",
+        IST: 'zoe',
       },
     },
     consume: {
@@ -52,28 +52,28 @@ const overrideManifest = {
       anchorBalancePayments: true,
       board: true,
       chainStorage: true,
-      chainTimerService: "timer",
+      chainTimerService: 'timer',
       diagnostics: true,
-      econCharterKit: "econCommitteeCharter",
-      economicCommitteeCreatorFacet: "economicCommittee",
-      feeMintAccess: "zoe",
+      econCharterKit: 'econCommitteeCharter',
+      economicCommitteeCreatorFacet: 'economicCommittee',
+      feeMintAccess: 'zoe',
       provisionPoolStartResult: true,
       psmKit: true,
-      zoe: "zoe",
+      zoe: 'zoe',
     },
     installation: {
       consume: {
-        contractGovernor: "zoe",
-        psm: "zoe",
+        contractGovernor: 'zoe',
+        psm: 'zoe',
       },
     },
     instance: {
       consume: {
-        economicCommittee: "economicCommittee",
+        economicCommittee: 'economicCommittee',
       },
     },
     produce: {
-      psmKit: "true",
+      psmKit: 'true',
     },
     vatParameters: {
       chainStorageEntries: true,
@@ -93,7 +93,7 @@ const overrideManifest = {
   const { entries, fromEntries } = Object;
 
   // deeplyFulfilled is a bit overkill for what we need.
-  const shallowlyFulfilled = async (obj) => {
+  const shallowlyFulfilled = async obj => {
     if (!obj) {
       return obj;
     }
@@ -101,13 +101,13 @@ const overrideManifest = {
       entries(obj).map(async ([key, valueP]) => {
         const value = await valueP;
         return [key, value];
-      })
+      }),
     );
     return fromEntries(ents);
   };
 
   /** @param {ChainBootstrapSpace & BootstrapPowers & { evaluateBundleCap: any }} allPowers */
-  const behavior = async (allPowers) => {
+  const behavior = async allPowers => {
     // NOTE: If updating any of these names extracted from `allPowers`, you must
     // change `permits` above to reflect their accessibility.
     const {
@@ -120,13 +120,13 @@ const overrideManifest = {
     const [exportedGetManifest, ...manifestArgs] = getManifestCall;
 
     // Get the on-chain installation containing the manifest and behaviors.
-    console.info("evaluateBundleCap", {
+    console.info('evaluateBundleCap', {
       manifestBundleRef,
       exportedGetManifest,
       vatAdminSvc,
     });
     let bcapP;
-    if ("bundleName" in manifestBundleRef) {
+    if ('bundleName' in manifestBundleRef) {
       bcapP = E(vatAdminSvc).getNamedBundleCap(manifestBundleRef.bundleName);
     } else {
       bcapP = E(vatAdminSvc).getBundleCap(manifestBundleRef.bundleID);
@@ -135,7 +135,7 @@ const overrideManifest = {
 
     const manifestNS = await evaluateBundleCap(bundleCap);
 
-    console.error("execute", {
+    console.error('execute', {
       exportedGetManifest,
       behaviors: Object.keys(manifestNS),
     });
@@ -153,7 +153,7 @@ const overrideManifest = {
       behaviors: manifestNS,
       manifest: overrideManifest || manifest,
       makeConfig: (name, _permit) => {
-        log("coreProposal:", name);
+        log('coreProposal:', name);
         return { options };
       },
     });
@@ -162,4 +162,3 @@ const overrideManifest = {
   // Make the behavior the completion value.
   return behavior;
 })({ manifestBundleRef, getManifestCall, overrideManifest, E });
-

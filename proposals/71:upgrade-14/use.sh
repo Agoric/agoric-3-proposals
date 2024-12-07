@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Place here any actions that should happen after the upgrade has executed. The
 # actions are executed in the upgraded chain software and the effects are

@@ -5,7 +5,6 @@ import {
   GOV2ADDR,
   GOV3ADDR,
   USER1ADDR,
-
   agd,
   agoric,
   calculateWalletState,

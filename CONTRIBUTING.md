@@ -19,4 +19,3 @@ Each proposal to Mainnet (agoric-3) should be contributed to this repo before be
    1. Move generally useful tools to the [`@agoric/synthetic-chain` package](https://github.com/Agoric/agoric-3-proposals/tree/main/packages/synthetic-chain).
    2. Move tests that should continue to pass afterwards into [proposals/z:acceptance](https://github.com/Agoric/agoric-sdk/tree/master/a3p-integration/proposals/z%3Aacceptance).
    3. Remove the passed proposal.
-
