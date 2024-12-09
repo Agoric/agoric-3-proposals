@@ -205,10 +205,8 @@ export const pushPrices = async (price, brandIn, oraclesByBrand, round) => {
 };
 
 export const getRoundId = async (price, io = {}) => {
-  const {
-    agoric = { follow: agoricAmbient.follow },
-    prefix = 'published.',
-  } = io;
+  const { agoric = { follow: agoricAmbient.follow }, prefix = 'published.' } =
+    io;
   const path = `:${prefix}priceFeed.${price}-USD_price_feed.latestRound`;
   const round = await agoric.follow('-lF', path);
   return parseInt(round.roundId);

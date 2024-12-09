@@ -10,7 +10,6 @@ import {
   getUser,
   newOfferId,
   waitForBlock,
-
   openVault,
   adjustVault,
   closeVault,

@@ -20,7 +20,7 @@ harden(isStreamCell);
 /**
  * Extract one value from the vstorage stream cell in a QueryDataResponse
  *
- * @param {import('@agoric/cosmic-proto/dist/codegen/agoric/vstorage/query.js').QueryDataResponse} data
+ * @param {import('@agoric/cosmic-proto/vstorage/query.js').QueryDataResponse} data
  * @param {number} [index] index of the desired value in a deserialized stream cell
  */
 export const extractStreamCellValue = (data, index = -1) => {

@@ -1,11 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { glob } from 'glob';
 import { ProposalInfo } from './proposals.js';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
 
+const checkShellScripts = (proposalPath: string) => {
+  const shellScripts = glob.sync('*.sh', { cwd: proposalPath });
+  for (const script of shellScripts) {
+    const scriptPath = path.join(proposalPath, script);
+    const content = fs.readFileSync(scriptPath, 'utf-8');
+    assert(
+      content.includes('set -e'),
+      `${script} must include "set -e"; otherwise lines may fail silently. "set -euo pipefail" is recommended.`,
+    );
+  }
+};
+
 const fixupProposal = (proposal: ProposalInfo) => {
   const proposalPath = path.join('proposals', proposal.path);
+  checkShellScripts(proposalPath);
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(proposalPath, 'package.json'), 'utf-8'),
   );

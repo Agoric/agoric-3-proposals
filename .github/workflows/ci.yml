@@ -50,14 +50,14 @@ jobs:
           corepack enable || sudo corepack enable
           yarn install
 
-      - name: Format
-        run: yarn format --check
+      - name: Lint repo
+        run: yarn lint
 
-      - name: Typecheck
+      - name: Typecheck synthetic-chain
         run: yarn tsc
         working-directory: packages/synthetic-chain
 
-      - name: Test
+      - name: Test synthetic-chain
         run: yarn test
         working-directory: packages/synthetic-chain
 
