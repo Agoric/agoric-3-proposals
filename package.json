@@ -7,7 +7,6 @@
     "build-cli": "cd packages/synthetic-chain && yarn build --silent",
     "build": "yarn build-cli && synthetic-chain build",
     "doctor": "yarn synthetic-chain doctor",
-    "prepare-build": "yarn build-cli && synthetic-chain prepare-build",
     "test": "yarn build-cli && synthetic-chain test",
     "lint": "prettier --check ."
   },
@@ -22,6 +21,7 @@
     ]
   },
   "license": "Apache-2.0",
+  "packageManager": "yarn@4.5.3",
   "devDependencies": {
     "prettier": "^3.3.3"
   }
