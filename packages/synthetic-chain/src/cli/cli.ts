@@ -124,6 +124,10 @@ switch (cmd) {
         execSync(`docker rmi ${image.name}`, { stdio: 'inherit' });
         execSync('docker system df', { stdio: 'inherit' });
       }
+      execSync('ls -al /root/.agoric', { stdio: 'inherit' });
+      execSync('cat /root/.agoric/last_observed_block_height', {
+        stdio: 'inherit',
+      });
     }
     break;
   case 'doctor':
