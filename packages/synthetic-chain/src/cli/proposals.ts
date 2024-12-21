@@ -102,7 +102,7 @@ export function readProposals(proposalsParent: string): ProposalInfo[] {
           dirent.name,
         );
       }
-      return dirent.name.includes('71:upgrade-14') && hasPackageJson;
+      return hasPackageJson;
     })
     .map(dirent => dirent.name)
     .sort(compareProposalDirNames);
