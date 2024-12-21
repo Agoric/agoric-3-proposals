@@ -79,7 +79,14 @@ export const buildProposalSubmissions = (proposals: ProposalInfo[]) => {
  * @param [dry] - Whether to skip building and just print the build config.
  */
 export const bakeTarget = (target: string, dry = false) => {
-  const cmd = `docker buildx bake --load ${target} ${dry ? '--print' : ''}`;
+  const cmd = [
+    'docker buildx bake',
+    `--load "${target}"`,
+    `--progress "plain"`,
+    dry && '--print',
+  ]
+    .filter(Boolean)
+    .join(' ');
   console.log(cmd);
   execSync(cmd, { stdio: 'inherit' });
 };
