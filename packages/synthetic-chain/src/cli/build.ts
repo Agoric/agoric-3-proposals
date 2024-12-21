@@ -82,8 +82,9 @@ export const bakeTarget = (target: string, dry = false) => {
   const cmd = [
     'docker buildx bake',
     `--load "${target}"`,
-    `--progress "plain"`,
+    '--no-cache',
     dry && '--print',
+    `--progress "plain"`,
   ]
     .filter(Boolean)
     .join(' ');
