@@ -35,18 +35,4 @@ cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 
 echo "[$PROPOSAL] Testing completed."
 
-PID_FILE="$HOME/.agoric/agd.pid"
-
-if test -f "$PID_FILE"
-then
-  PID="$(cat "$PID_FILE")"
-  if ps --pid "$PID" > /dev/null
-  then
-    echo "Running chain process: $PID"
-    echo "Block Height: $(agd status | jq --raw-output '.SyncInfo.latest_block_height')"
-  else
-    echo "Chain process not running"
-  fi
-else
-  echo "No pid file found"
-fi
+killAgd

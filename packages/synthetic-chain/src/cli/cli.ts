@@ -113,9 +113,7 @@ switch (cmd) {
       // don't bother to delete the test image because there's just one
       // and the user probably wants to run it again.
     } else {
-      for (const proposal of proposals.filter(
-        ({ proposalIdentifier }) => proposalIdentifier === '74',
-      )) {
+      for (const proposal of proposals) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
