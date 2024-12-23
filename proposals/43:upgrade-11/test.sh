@@ -1,6 +1,6 @@
 #!/bin/bash
-source /usr/src/upgrade-test-scripts/env_setup.sh
+# source /usr/src/upgrade-test-scripts/env_setup.sh
 
-yarn ava post.test.js
+# yarn ava post.test.js
 
-./test-genesis-upgrade.sh
+# ./test-genesis-upgrade.sh

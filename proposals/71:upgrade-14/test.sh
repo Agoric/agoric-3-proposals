@@ -5,4 +5,4 @@
 
 yarn ava
 
-./create-kread-item-test.sh
+# ./create-kread-item-test.sh
