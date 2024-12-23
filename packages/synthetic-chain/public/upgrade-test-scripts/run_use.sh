@@ -41,3 +41,5 @@ cd "$PROPOSAL_DIR"
 
 echo "[$PROPOSAL] Actions completed. Running for a few blocks and exiting."
 waitForBlock 5
+
+killAgd

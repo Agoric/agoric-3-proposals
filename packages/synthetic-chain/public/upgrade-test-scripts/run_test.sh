@@ -42,3 +42,5 @@ echo "[$PROPOSAL] Running test.sh."
 ./test.sh
 
 echo "[$PROPOSAL] Testing completed."
+
+killAgd
