@@ -24,8 +24,6 @@ echo '
  |_____| |_____|    |    |_____  |_____| |  |  | |______
 '
 
-echo "[$PROPOSAL] Starting agd"
-
 source ./env_setup.sh
 
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
@@ -35,6 +33,8 @@ then
   echo "[$PROPOSAL] Running prepare-test.sh."
   ./prepare-test.sh
 fi
+
+echo "[$PROPOSAL] Starting agd"
 
 startAgd
 
