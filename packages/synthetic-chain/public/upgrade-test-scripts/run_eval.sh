@@ -2,7 +2,7 @@
 # Starts agd in the background and runs eval.sh against it in the foreground
 # Note that STDOUT mixes the two. TODO separate them cleanly with log output.
 
-set -eo pipefail
+# set -eo pipefail
 
 source ./env_setup.sh
 

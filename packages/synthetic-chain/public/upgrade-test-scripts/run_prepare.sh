@@ -1,7 +1,7 @@
 #!/bin/bash
 # Prepare an upgrade
 
-set -eo pipefail
+# set -eo pipefail
 
 if [[ -z "${UPGRADE_TO}" ]]; then
   fail "Requires UPGRADE_TO to be set"
