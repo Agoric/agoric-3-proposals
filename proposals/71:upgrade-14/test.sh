@@ -6,3 +6,4 @@
 # yarn ava
 
 # ./create-kread-item-test.sh
+agd snapshots list --home "$HOME/.agoric"
