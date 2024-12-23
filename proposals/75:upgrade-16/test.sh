@@ -10,3 +10,5 @@ yarn ava initial.test.js
 
 # test more, in ways that changes system state
 yarn ava ./*.test.js
+
+agd snapshots list --home "$HOME/.agoric"

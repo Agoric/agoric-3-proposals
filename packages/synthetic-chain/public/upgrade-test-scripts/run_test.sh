@@ -41,8 +41,6 @@ startAgd
 echo "[$PROPOSAL] Running test.sh."
 ./test.sh
 
-agd snapshots list --home "$HOME/.agoric"
-
 echo "[$PROPOSAL] Testing completed."
 
 killAgd
