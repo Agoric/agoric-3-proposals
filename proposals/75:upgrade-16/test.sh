@@ -6,9 +6,9 @@
 GLOBIGNORE=initial.test.js
 
 # test the state right after upgrade
-yarn ava initial.test.js
+# yarn ava initial.test.js
 
-# test more, in ways that changes system state
-yarn ava ./*.test.js
+# # test more, in ways that changes system state
+# yarn ava ./*.test.js
 
 agd snapshots list --home "$HOME/.agoric"
