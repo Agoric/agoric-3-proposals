@@ -6,6 +6,7 @@
   "scripts": {
     "build-cli": "cd packages/synthetic-chain && yarn build --silent",
     "build": "yarn build-cli && synthetic-chain build",
+    "prepare-build": "yarn build-cli && synthetic-chain prepare-build",
     "doctor": "yarn synthetic-chain doctor",
     "test": "yarn build-cli && synthetic-chain test",
     "lint": "prettier --check ."
