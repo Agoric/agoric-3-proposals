@@ -169,6 +169,7 @@ WORKDIR /usr/src/upgrade-test-scripts
 
 COPY --link --chmod=755 ./upgrade-test-scripts/run_test.sh /usr/src/upgrade-test-scripts/
 SHELL ["/bin/bash", "-c"]
+RUN ls -al /usr/src/proposals/${path}
 ENTRYPOINT ./run_test.sh ${path}
 `;
   },
