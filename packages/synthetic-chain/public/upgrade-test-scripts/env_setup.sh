@@ -25,7 +25,8 @@ export GOV3ADDR=$($binary keys show gov3 -a --keyring-backend="test")
 export VALIDATORADDR=$($binary keys show validator -a --keyring-backend="test")
 export USER1ADDR=$($binary keys show user1 -a --keyring-backend="test")
 
-PID_FILE="$HOME/.agoric/agd.pid"
+export PID_FILE="$HOME/.agoric/agd.pid"
+export STATUS_FILE="$HOME/.agoric/last_observed_status"
 
 if [[ "$binary" == "agd" ]]; then
   configdir=/usr/src/agoric-sdk/packages/vm-config
@@ -82,17 +83,13 @@ await_agd_startable() {
   fi
 }
 
-save_latest_block_height() {
+save_latest_node_info() {
   PID="$(cat "$PID_FILE")"
 
   if ps --pid "$PID" > /dev/null
   then
-    BLOCK_HEIGHT="$(
-      agd status | \
-      jq --raw-output '.SyncInfo.latest_block_height'
-    )"
-    echo "Saving current block height: $BLOCK_HEIGHT"
-    echo "$BLOCK_HEIGHT" > "$HOME/.agoric/last_observed_block_height"
+    NODE_STATUS="$(agd status)"
+    echo "$NODE_STATUS" > "$STATUS_FILE"
   else
     echo "[FATAL] Chain process not running"
   fi
@@ -114,7 +111,7 @@ startAgd() {
 
 killAgd() {
   echo "killAgd()"
-  save_latest_block_height
+  save_latest_node_info
   AGD_PID=$(cat "$PID_FILE")
   kill $AGD_PID
   rm "$PID_FILE"
