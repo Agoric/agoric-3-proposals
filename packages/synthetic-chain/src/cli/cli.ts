@@ -5,6 +5,7 @@
 import chalk from 'chalk';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
+import { statSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
@@ -83,6 +84,14 @@ const prepareDockerBuild = () => {
   );
 };
 
+const fileExists = (filePath: string) => {
+  try {
+    return !!statSync(filePath);
+  } catch {
+    return false;
+  }
+};
+
 switch (cmd) {
   case 'prepare-build':
     prepareDockerBuild();
@@ -117,6 +126,10 @@ switch (cmd) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
+        if (fileExists(`${proposal.path}/pre_test.sh`))
+          execSync(`/bin/bash -x ${proposal.path}/pre_test.sh`, {
+            stdio: 'inherit',
+          });
         runTestImage(proposal);
         // delete the image to reclaim disk space. The next build
         // will use the build cache.
