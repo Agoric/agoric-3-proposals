@@ -25,6 +25,9 @@ export GOV3ADDR=$($binary keys show gov3 -a --keyring-backend="test")
 export VALIDATORADDR=$($binary keys show validator -a --keyring-backend="test")
 export USER1ADDR=$($binary keys show user1 -a --keyring-backend="test")
 
+export PID_FILE="$HOME/.agoric/agd.pid"
+export STATUS_FILE="$HOME/.agoric/last_observed_status"
+
 if [[ "$binary" == "agd" ]]; then
   configdir=/usr/src/agoric-sdk/packages/vm-config
   # Check specifically for package.json because the directory may persist in the file system
@@ -80,6 +83,20 @@ await_agd_startable() {
   fi
 }
 
+save_latest_node_info() {
+  PID="$(cat "$PID_FILE")"
+
+  if ps --pid "$PID" > /dev/null
+  then
+    NODE_STATUS="$(agd status)"
+    BLOCK_HEIGHT="$(echo "$NODE_STATUS" | jq '.SyncInfo.latest_block_height' --raw-output)"
+    echo "Saving node status at block height $BLOCK_HEIGHT"
+    echo "$NODE_STATUS" > "$STATUS_FILE"
+  else
+    echo "[FATAL] Chain process not running"
+  fi
+}
+
 startAgd() {
   echo "startAgd()"
 
@@ -88,7 +105,7 @@ startAgd() {
 
   agd start --log_level warn "$@" &
   AGD_PID=$!
-  echo $AGD_PID >$HOME/.agoric/agd.pid
+  echo $AGD_PID > "$PID_FILE"
   echo "startAgd() at height $(wait_for_bootstrap | tr '\n' ' ' | sed 's/ $//; s/ /... /g;')"
   waitForBlock 2
   echo "startAgd() done"
@@ -96,11 +113,12 @@ startAgd() {
 
 killAgd() {
   echo "killAgd()"
-  AGD_PID=$(cat $HOME/.agoric/agd.pid)
-  kill $AGD_PID
-  rm $HOME/.agoric/agd.pid
+  save_latest_node_info
+  AGD_PID=$(cat "$PID_FILE")
+  kill "$AGD_PID"
+  rm "$PID_FILE"
   # cf. https://stackoverflow.com/a/41613532
-  tail --pid=$AGD_PID -f /dev/null || true
+  tail --follow /dev/null --pid "$AGD_PID" || true
 }
 
 provisionSmartWallet() {

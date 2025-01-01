@@ -24,13 +24,23 @@ echo '
  |_____| |_____|    |    |_____  |_____| |  |  | |______
 '
 
+source ./env_setup.sh
+
+cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
+
+if test -f prepare-test.sh
+then
+  echo "[$PROPOSAL] Running prepare-test.sh"
+  ./prepare-test.sh
+fi
+
 echo "[$PROPOSAL] Starting agd"
 
-source ./env_setup.sh
 startAgd
 
 echo "[$PROPOSAL] Running test.sh."
-cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 ./test.sh
 
 echo "[$PROPOSAL] Testing completed."
+
+killAgd

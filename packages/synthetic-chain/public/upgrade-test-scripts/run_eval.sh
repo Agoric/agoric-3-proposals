@@ -30,3 +30,5 @@ fi
 
 echo "[$PROPOSAL] Eval completed. Running 10 blocks and exiting."
 waitForBlock 10
+
+killAgd
