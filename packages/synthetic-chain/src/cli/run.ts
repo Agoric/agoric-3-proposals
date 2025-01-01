@@ -2,6 +2,18 @@ import { execSync } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
+const propagateMessageFilePath = () => {
+  const timestamp = new Date().getTime();
+  const filePath = `/tmp/${timestamp}.tmp`;
+  execSync(`touch ${filePath}`);
+  return [
+    '--env',
+    `MESSAGE_FILE_PATH=${filePath}`,
+    '--mount',
+    `"source=${filePath},target=${filePath},type=bind"`,
+  ];
+};
+
 /**
  * Used to propagate a SLOGFILE environment variable into Docker containers.
  * Any file identified by such a variable will be created if it does not already
@@ -15,15 +27,27 @@ const propagateSlogfile = env => {
   if (!SLOGFILE) return [];
 
   execSync('touch "$SLOGFILE"');
-  return ['-e', 'SLOGFILE', '-v', `"$SLOGFILE:${realpathSync(SLOGFILE)}"`];
+  return [
+    '--env',
+    'SLOGFILE',
+    '--volume',
+    `"$SLOGFILE:${realpathSync(SLOGFILE)}"`,
+  ];
 };
 
 export const runTestImage = (proposal: ProposalInfo) => {
   console.log(`Running test image for proposal ${proposal.proposalName}`);
   const { name } = imageNameForProposal(proposal, 'test');
-  const slogOpts = propagateSlogfile(process.env);
-  // 'rm' to remove the container when it exits
-  const cmd = `docker run ${slogOpts.join(' ')} --rm ${name}`;
+  const cmd = [
+    'docker',
+    'run',
+    `--network "host"`,
+    '--rm',
+    `--user "root"`,
+    ...propagateSlogfile(process.env),
+    ...propagateMessageFilePath(),
+    name,
+  ].join(' ');
   execSync(cmd, { stdio: 'inherit' });
 };
 
