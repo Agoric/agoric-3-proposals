@@ -3,8 +3,7 @@ import { realpathSync } from 'node:fs';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
 const propagateMessageFilePath = () => {
-  const timestamp = new Date().getTime();
-  const filePath = `/tmp/${timestamp}.tmp`;
+  const filePath = '/tmp/message-file-path.tmp';
   execSync(`touch ${filePath}`);
   return [
     '--env',
