@@ -108,15 +108,17 @@ const testProposals = () => {
       const image = imageNameForProposal(proposal, 'test');
       bakeTarget(image.target, values.dry);
 
-      if (fileExists(`${proposal.path}/pre_test.sh`))
-        execSync(`/bin/bash ${proposal.path}/pre_test.sh`, {
+      const proposalPath = `${root}/proposals/${proposal.path}`;
+
+      if (fileExists(`${proposalPath}/pre_test.sh`))
+        execSync(`/bin/bash ${proposalPath}/pre_test.sh`, {
           stdio: 'inherit',
         });
 
       runTestImage(proposal);
 
-      if (fileExists(`${proposal.path}/post_test.sh`))
-        execSync(`/bin/bash ${proposal.path}/post_test.sh`, {
+      if (fileExists(`${proposalPath}/post_test.sh`))
+        execSync(`/bin/bash ${proposalPath}/post_test.sh`, {
           stdio: 'inherit',
         });
 

@@ -3,13 +3,18 @@ import { realpathSync } from 'node:fs';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
 const propagateMessageFilePath = () => {
-  const filePath = '/tmp/message-file-path.tmp';
+  const fileName = 'message-file-path.tmp';
+
+  const containerFilePath = `/root/${fileName}`;
+  const filePath = `$HOME/${fileName}`;
+
   execSync(`touch ${filePath}`);
+
   return [
     '--env',
-    `MESSAGE_FILE_PATH=${filePath}`,
+    `MESSAGE_FILE_PATH=${containerFilePath}`,
     '--mount',
-    `"source=${filePath},target=${filePath},type=bind"`,
+    `"source=${filePath},target=${containerFilePath},type=bind"`,
   ];
 };
 
@@ -17,11 +22,8 @@ const propagateMessageFilePath = () => {
  * Used to propagate a SLOGFILE environment variable into Docker containers.
  * Any file identified by such a variable will be created if it does not already
  * exist.
- *
- * @param {typeof process.env} env environment variables
- * @returns {string[]} docker run options
  */
-const propagateSlogfile = env => {
+const propagateSlogfile = (env: typeof process.env): string[] => {
   const { SLOGFILE } = env;
   if (!SLOGFILE) return [];
 
