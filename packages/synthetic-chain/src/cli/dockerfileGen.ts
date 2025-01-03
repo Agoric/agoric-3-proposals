@@ -184,6 +184,15 @@ ENTRYPOINT ./run_test.sh ${path}
     return `
 # LAST
 FROM ${useImage} as latest
+
+# Patching SwingSet to reduce the number of online vats
+COPY ./patches/min-vats-online.patch /usr/src/agoric-sdk/
+WORKDIR /usr/src/agoric-sdk/
+RUN git apply min-vats-online.patch
+WORKDIR /usr/src/agoric-sdk/packages/cosmic-swingset
+RUN make build
+
+WORKDIR /usr/src/upgrade-test-scripts
 `;
   },
 };
