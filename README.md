@@ -69,6 +69,7 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 - `package.json` specifies what kind of proposal it is in a `agoricProposal` field. If it's a "Software Upgrade Proposal" it also includes additional parameters.
 - `use.sh` is the script that will be run in the USE stage of the build
 - `test.sh` is the script that will be _included_ in the TEST stage of the build, and run in CI
+- `prepare-test.sh` is an optional script which can be used to run setup steps _inside_ the container
 
 ## Development
 
