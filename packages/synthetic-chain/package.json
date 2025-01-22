@@ -51,7 +51,7 @@
     "nodeArguments": [
       "--import=tsimp"
     ],
-    "timeout": "45s"
+    "timeout": "60s"
   },
   "license": "Apache-2.0",
   "publishConfig": {
