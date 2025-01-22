@@ -34,10 +34,10 @@ const propagateSlogfile = env => {
   spawnSync('touch', [SLOGFILE]);
 
   return [
-    "--env",
-    `SLOGFILE=${SLOGFILE}`,  
-    "--volume",
-    `${SLOGFILE}:${realpathSync(SLOGFILE)}`
+    '--env',
+    `SLOGFILE=${SLOGFILE}`,
+    '--volume',
+    `${SLOGFILE}:${realpathSync(SLOGFILE)}`,
   ];
 };
 
