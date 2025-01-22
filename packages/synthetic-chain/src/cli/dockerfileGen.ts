@@ -10,6 +10,9 @@ import {
   type SoftwareUpgradePackage,
 } from './proposals.js';
 
+// We need this unstable syntax for the `COPY --exclude` feature.
+const syntaxPragma = '# syntax=docker/dockerfile:1.7-labs';
+
 /**
  * Templates for Dockerfile stages
  */
@@ -72,7 +75,7 @@ ENV \
     UPGRADE_INFO=${JSON.stringify(encodeUpgradeInfo(upgradeInfo))} \
     SKIP_PROPOSAL_VALIDATION=${skipProposalValidation}
 
-COPY --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_prepare.sh ./upgrade-test-scripts/start_to_to.sh /usr/src/upgrade-test-scripts/
 WORKDIR /usr/src/upgrade-test-scripts
 SHELL ["/bin/bash", "-c"]
@@ -97,7 +100,7 @@ FROM ghcr.io/agoric/agoric-sdk:${sdkImageTag} as execute-${proposalName}
 WORKDIR /usr/src/upgrade-test-scripts
 
 # base is a fresh sdk image so set up the proposal and its dependencies
-COPY --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_execute.sh  ./upgrade-test-scripts/start_to_to.sh ./upgrade-test-scripts/install_deps.sh /usr/src/upgrade-test-scripts/
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
@@ -119,7 +122,7 @@ RUN ./run_execute.sh ${planName}
 # EVAL ${proposalName}
 FROM use-${lastProposal.proposalName} as eval-${proposalName}
 
-COPY --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 
 WORKDIR /usr/src/upgrade-test-scripts
 
@@ -164,6 +167,11 @@ ENTRYPOINT ./start_agd.sh
     return `
 # TEST ${proposalName}
 FROM use-${proposalName} as test-${proposalName}
+
+# Previous stages copied excluding test files (see COPY above). It would be good
+# to copy only missing files, but there may be none. Fortunately, copying extra
+# does not invalidate other images because nothing depends on this layer.
+COPY --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 
 WORKDIR /usr/src/upgrade-test-scripts
 
@@ -211,7 +219,7 @@ export function writeDockerfile(
 ) {
   // Each stage tests something about the left argument and prepare an upgrade to the right side (by passing the proposal and halting the chain.)
   // The upgrade doesn't happen until the next stage begins executing.
-  const blocks: string[] = ['# syntax=docker/dockerfile:1.4'];
+  const blocks: string[] = [syntaxPragma];
 
   let previousProposal: ProposalInfo | null = null;
 

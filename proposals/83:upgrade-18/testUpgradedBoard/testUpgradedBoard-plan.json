@@ -1,0 +1,12 @@
+{
+  "name": "testUpgradedBoard",
+  "script": "testUpgradedBoard.js",
+  "permit": "testUpgradedBoard-permit.json",
+  "bundles": [
+    {
+      "entrypoint": "@agoric/vats/src/proposals/testUpgradedBoard.js",
+      "bundleID": "b1-4c70b44626c0756a1a8587b250509d7743edb97ba680c6784ec0ce4aa469a71829afef0d0abc7ab91544aad3be3d07ecc54b3a7f01a1957ae1aa4532bcb775e1",
+      "fileName": "/Users/agoric/.agoric/cache/b1-4c70b44626c0756a1a8587b250509d7743edb97ba680c6784ec0ce4aa469a71829afef0d0abc7ab91544aad3be3d07ecc54b3a7f01a1957ae1aa4532bcb775e1.json"
+    }
+  ]
+}
