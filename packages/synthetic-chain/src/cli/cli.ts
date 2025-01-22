@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
@@ -64,6 +64,8 @@ Until https://github.com/docker/roadmap/issues/371, attempting it will error as 
 Instead use a builder that supports multiplatform such as depot.dev.
 `;
 
+const fileExists = (name: string) => existsSync(name);
+
 /**
  * Put into places files that building depends upon.
  */
@@ -84,53 +86,6 @@ const prepareDockerBuild = () => {
   );
 };
 
-const testProposals = () => {
-  const fileExists = (name: string) =>
-    !!statSync(name, { throwIfNoEntry: false });
-
-  // Always rebuild all test images to keep it simple. With the "use" stages
-  // cached, these are pretty fast building doesn't run agd.
-  prepareDockerBuild();
-
-  if (values.debug) {
-    assert(match, '--debug requires -m');
-    assert(proposals.length > 0, 'no proposals match');
-    assert(proposals.length === 1, 'too many proposals match');
-    const proposal = proposals[0];
-    console.log(chalk.yellow.bold(`Debugging ${proposal.proposalName}`));
-    bakeTarget(imageNameForProposal(proposal, 'test').target, values.dry);
-    debugTestImage(proposal);
-    // don't bother to delete the test image because there's just one
-    // and the user probably wants to run it again.
-  } else {
-    for (const proposal of proposals) {
-      console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
-      const image = imageNameForProposal(proposal, 'test');
-      bakeTarget(image.target, values.dry);
-
-      const proposalPath = `${root}/proposals/${proposal.path}`;
-
-      if (fileExists(`${proposalPath}/pre_test.sh`))
-        execSync(`/bin/bash ${proposalPath}/pre_test.sh`, {
-          stdio: 'inherit',
-        });
-
-      runTestImage(proposal);
-
-      if (fileExists(`${proposalPath}/post_test.sh`))
-        execSync(`/bin/bash ${proposalPath}/post_test.sh`, {
-          stdio: 'inherit',
-        });
-
-      // delete the image to reclaim disk space. The next build
-      // will use the build cache.
-      execSync('docker system df', { stdio: 'inherit' });
-      execSync(`docker rmi ${image.name}`, { stdio: 'inherit' });
-      execSync('docker system df', { stdio: 'inherit' });
-    }
-  }
-};
-
 switch (cmd) {
   case 'prepare-build':
     prepareDockerBuild();
@@ -146,7 +101,47 @@ switch (cmd) {
     break;
   }
   case 'test':
-    testProposals();
+    // Always rebuild all test images to keep it simple. With the "use" stages
+    // cached, these are pretty fast building doesn't run agd.
+    prepareDockerBuild();
+
+    if (values.debug) {
+      assert(match, '--debug requires -m');
+      assert(proposals.length > 0, 'no proposals match');
+      assert(proposals.length === 1, 'too many proposals match');
+      const proposal = proposals[0];
+      console.log(chalk.yellow.bold(`Debugging ${proposal.proposalName}`));
+      bakeTarget(imageNameForProposal(proposal, 'test').target, values.dry);
+      debugTestImage(proposal);
+      // don't bother to delete the test image because there's just one
+      // and the user probably wants to run it again.
+    } else {
+      for (const proposal of proposals) {
+        console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
+        const image = imageNameForProposal(proposal, 'test');
+        bakeTarget(image.target, values.dry);
+
+        const proposalPath = `${root}/proposals/${proposal.path}`;
+
+        if (fileExists(`${proposalPath}/pre_test.sh`))
+          execSync(`/bin/bash ${proposalPath}/pre_test.sh`, {
+            stdio: 'inherit',
+          });
+
+        runTestImage(proposal);
+
+        if (fileExists(`${proposalPath}/post_test.sh`))
+          execSync(`/bin/bash ${proposalPath}/post_test.sh`, {
+            stdio: 'inherit',
+          });
+
+        // delete the image to reclaim disk space. The next build
+        // will use the build cache.
+        execSync('docker system df', { stdio: 'inherit' });
+        execSync(`docker rmi ${image.name}`, { stdio: 'inherit' });
+        execSync('docker system df', { stdio: 'inherit' });
+      }
+    }
     break;
   case 'doctor':
     runDoctor(allProposals);
