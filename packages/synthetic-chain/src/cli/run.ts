@@ -1,20 +1,21 @@
-import { execSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
-const propagateMessageFilePath = () => {
+const propagateMessageFilePath = (env: typeof process.env) => {
   const fileName = 'message-file-path.tmp';
+  const { HOME } = env;
 
   const containerFilePath = `/root/${fileName}`;
-  const filePath = `$HOME/${fileName}`;
+  const filePath = `${HOME}/${fileName}`;
 
-  execSync(`touch ${filePath}`);
+  spawnSync('touch', [filePath]);
 
   return [
     '--env',
     `MESSAGE_FILE_PATH=${containerFilePath}`,
     '--mount',
-    `"source=${filePath},target=${containerFilePath},type=bind"`,
+    `source=${filePath},target=${containerFilePath},type=bind`,
   ];
 };
 
@@ -30,12 +31,13 @@ const propagateSlogfile = env => {
   const { SLOGFILE } = env;
   if (!SLOGFILE) return [];
 
-  execSync('touch "$SLOGFILE"');
+  spawnSync('touch', [SLOGFILE]);
+
   return [
-    '--env',
-    'SLOGFILE',
-    '--volume',
-    `"$SLOGFILE:${realpathSync(SLOGFILE)}"`,
+    "--env",
+    `SLOGFILE=${SLOGFILE}`,  
+    "--volume",
+    `${SLOGFILE}:${realpathSync(SLOGFILE)}`
   ];
 };
 
@@ -50,7 +52,7 @@ export const runTestImage = (proposal: ProposalInfo) => {
       'host',
       '--rm',
       ...propagateSlogfile(process.env),
-      ...propagateMessageFilePath(),
+      ...propagateMessageFilePath(process.env),
       name,
     ],
     { stdio: 'inherit' },
