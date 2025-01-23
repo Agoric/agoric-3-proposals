@@ -121,19 +121,18 @@ switch (cmd) {
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
 
-        const proposalPath = `${root}/proposals/${proposal.path}`;
+        const proposalHostScriptsDirectoryPath = `${root}/proposals/${proposal.path}/host`;
 
-        if (fileExists(`${proposalPath}/pre_test.sh`))
-          execSync(`/bin/bash ${proposalPath}/pre_test.sh`, {
-            stdio: 'inherit',
-          });
+        const afterHookScriptPath = `${proposalHostScriptsDirectoryPath}/after-test-run.sh`;
+        const beforeHookScriptPath = `${proposalHostScriptsDirectoryPath}/before-test-run.sh`;
+
+        fileExists(beforeHookScriptPath) &&
+          execSync(beforeHookScriptPath, { stdio: 'inherit' });
 
         runTestImage(proposal);
 
-        if (fileExists(`${proposalPath}/post_test.sh`))
-          execSync(`/bin/bash ${proposalPath}/post_test.sh`, {
-            stdio: 'inherit',
-          });
+        fileExists(afterHookScriptPath) &&
+          execSync(afterHookScriptPath, { stdio: 'inherit' });
 
         // delete the image to reclaim disk space. The next build
         // will use the build cache.

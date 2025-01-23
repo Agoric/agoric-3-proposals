@@ -28,10 +28,10 @@ source ./env_setup.sh
 
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 
-if test -f prepare-test.sh
+if test -f setup-test.sh
 then
-  echo "[$PROPOSAL] Running prepare-test.sh"
-  ./prepare-test.sh
+  echo "[$PROPOSAL] Running setup-test.sh"
+  ./setup-test.sh
 fi
 
 echo "[$PROPOSAL] Starting agd"
@@ -44,3 +44,9 @@ echo "[$PROPOSAL] Running test.sh."
 echo "[$PROPOSAL] Testing completed."
 
 killAgd
+
+if test -f teardown-test.sh
+then
+  echo "[$PROPOSAL] Running teardown-test.sh"
+  ./teardown-test.sh
+fi

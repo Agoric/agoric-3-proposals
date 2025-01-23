@@ -75,7 +75,7 @@ ENV \
     UPGRADE_INFO=${JSON.stringify(encodeUpgradeInfo(upgradeInfo))} \
     SKIP_PROPOSAL_VALIDATION=${skipProposalValidation}
 
-COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=host --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_prepare.sh ./upgrade-test-scripts/start_to_to.sh /usr/src/upgrade-test-scripts/
 WORKDIR /usr/src/upgrade-test-scripts
 SHELL ["/bin/bash", "-c"]
@@ -100,7 +100,7 @@ FROM ghcr.io/agoric/agoric-sdk:${sdkImageTag} as execute-${proposalName}
 WORKDIR /usr/src/upgrade-test-scripts
 
 # base is a fresh sdk image so set up the proposal and its dependencies
-COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=host --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 COPY --link --chmod=755 ./upgrade-test-scripts/env_setup.sh ./upgrade-test-scripts/run_execute.sh  ./upgrade-test-scripts/start_to_to.sh ./upgrade-test-scripts/install_deps.sh /usr/src/upgrade-test-scripts/
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
@@ -122,7 +122,7 @@ RUN ./run_execute.sh ${planName}
 # EVAL ${proposalName}
 FROM use-${lastProposal.proposalName} as eval-${proposalName}
 
-COPY --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=host --exclude=test --exclude=test.sh --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 
 WORKDIR /usr/src/upgrade-test-scripts
 
@@ -171,7 +171,7 @@ FROM use-${proposalName} as test-${proposalName}
 # Previous stages copied excluding test files (see COPY above). It would be good
 # to copy only missing files, but there may be none. Fortunately, copying extra
 # does not invalidate other images because nothing depends on this layer.
-COPY --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
+COPY --exclude=host --link --chmod=755 ./proposals/${path} /usr/src/proposals/${path}
 
 WORKDIR /usr/src/upgrade-test-scripts
 
