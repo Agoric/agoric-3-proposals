@@ -1,9 +1,23 @@
 import { spawnSync } from 'node:child_process';
-import { realpathSync } from 'node:fs';
+import { existsSync, realpathSync } from 'node:fs';
+import {resolve as resolvePath} from 'node:path';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
-const propagateMessageFilePath = (env: typeof process.env) => {
-  const fileName = 'message-file-path.tmp';
+const executeHostScriptIfPresent = (
+  proposal: ProposalInfo,
+  scriptName: string,
+) => {
+  const scriptPath = `${resolvePath('.')}/proposals/${proposal.path}/host/${scriptName}`;
+  if (fileExists(scriptPath)) {
+    console.log(`Running script ${scriptName} for proposal ${proposal.proposalName}`);
+    spawnSync(scriptPath, { stdio: 'inherit' });
+  }
+};
+
+const fileExists = (name: string) => existsSync(name);
+
+const propagateMessageFilePath = (env: typeof process.env, proposal: ProposalInfo) => {
+  const fileName = `${proposal.proposalName}-message-file.tmp`;
   const { HOME } = env;
 
   const containerFilePath = `/root/${fileName}`;
@@ -42,6 +56,7 @@ const propagateSlogfile = env => {
 };
 
 export const runTestImage = (proposal: ProposalInfo) => {
+  executeHostScriptIfPresent(proposal, 'before-test-run.sh');
   console.log(`Running test image for proposal ${proposal.proposalName}`);
   const { name } = imageNameForProposal(proposal, 'test');
   spawnSync(
@@ -52,14 +67,16 @@ export const runTestImage = (proposal: ProposalInfo) => {
       'host',
       '--rm',
       ...propagateSlogfile(process.env),
-      ...propagateMessageFilePath(process.env),
+      ...propagateMessageFilePath(process.env, proposal),
       name,
     ],
     { stdio: 'inherit' },
   );
+  executeHostScriptIfPresent(proposal, 'after-test-run.sh');
 };
 
 export const debugTestImage = (proposal: ProposalInfo) => {
+  executeHostScriptIfPresent(proposal, 'before-test-run.sh');
   const { name } = imageNameForProposal(proposal, 'test');
   console.log(
     `
@@ -87,15 +104,16 @@ export const debugTestImage = (proposal: ProposalInfo) => {
       '/usr/src/upgrade-test-scripts/start_agd.sh',
       '--interactive',
       '--publish',
-      '26657:26657',
-      '--publish',
       '1317:1317',
       '--publish',
       '9090:9090',
+      '--publish',
+      '26657:26657',
       '--tty',
       ...propagateSlogfile(process.env),
       name,
     ],
     { stdio: 'inherit' },
   );
+  executeHostScriptIfPresent(proposal, 'after-test-run.sh');
 };

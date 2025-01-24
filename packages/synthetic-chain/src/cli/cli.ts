@@ -5,7 +5,6 @@
 import chalk from 'chalk';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import {
@@ -64,8 +63,6 @@ Until https://github.com/docker/roadmap/issues/371, attempting it will error as 
 Instead use a builder that supports multiplatform such as depot.dev.
 `;
 
-const fileExists = (name: string) => existsSync(name);
-
 /**
  * Put into places files that building depends upon.
  */
@@ -120,20 +117,7 @@ switch (cmd) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
-
-        const proposalHostScriptsDirectoryPath = `${root}/proposals/${proposal.path}/host`;
-
-        const afterHookScriptPath = `${proposalHostScriptsDirectoryPath}/after-test-run.sh`;
-        const beforeHookScriptPath = `${proposalHostScriptsDirectoryPath}/before-test-run.sh`;
-
-        fileExists(beforeHookScriptPath) &&
-          execSync(beforeHookScriptPath, { stdio: 'inherit' });
-
         runTestImage(proposal);
-
-        fileExists(afterHookScriptPath) &&
-          execSync(afterHookScriptPath, { stdio: 'inherit' });
-
         // delete the image to reclaim disk space. The next build
         // will use the build cache.
         execSync('docker system df', { stdio: 'inherit' });
