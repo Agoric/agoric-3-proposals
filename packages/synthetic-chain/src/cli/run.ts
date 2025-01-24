@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
-import {resolve as resolvePath} from 'node:path';
+import { resolve as resolvePath } from 'node:path';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
 const executeHostScriptIfPresent = (
@@ -9,14 +9,19 @@ const executeHostScriptIfPresent = (
 ) => {
   const scriptPath = `${resolvePath('.')}/proposals/${proposal.path}/host/${scriptName}`;
   if (fileExists(scriptPath)) {
-    console.log(`Running script ${scriptName} for proposal ${proposal.proposalName}`);
+    console.log(
+      `Running script ${scriptName} for proposal ${proposal.proposalName}`,
+    );
     spawnSync(scriptPath, { stdio: 'inherit' });
   }
 };
 
 const fileExists = (name: string) => existsSync(name);
 
-const propagateMessageFilePath = (env: typeof process.env, proposal: ProposalInfo) => {
+const propagateMessageFilePath = (
+  env: typeof process.env,
+  proposal: ProposalInfo,
+) => {
   const fileName = `${proposal.proposalName}-message-file.tmp`;
   const { HOME } = env;
 
