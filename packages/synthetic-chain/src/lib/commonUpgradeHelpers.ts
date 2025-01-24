@@ -1,4 +1,4 @@
-import { $, TemplateExpression } from 'execa';
+import { $, type TemplateExpression } from 'execa';
 import fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import { agd, agoric, agops } from './cliHelper.js';

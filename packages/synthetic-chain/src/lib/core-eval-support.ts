@@ -7,8 +7,7 @@ import { Far, makeMarshal, makeTranslationTable } from './unmarshal.js';
 // or at least allow caller to supply authority.
 import { agoric } from './cliHelper.js';
 import { getISTBalance, mintIST } from './econHelpers.js';
-import { ExecutionContext } from 'ava';
-import { StaticConfig } from './core-eval.js';
+import { type StaticConfig } from './core-eval.js';
 import path from 'node:path';
 
 // move to unmarshal.js?

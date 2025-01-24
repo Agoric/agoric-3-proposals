@@ -33,7 +33,7 @@
     "@types/glob": "^8.1.0",
     "@types/node": "^18.19.50",
     "ava": "^6.2.0",
-    "tsimp": "^2.0.12",
+    "ts-blank-space": "^0.5.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3"
   },
@@ -49,9 +49,8 @@
       "HOME": "/tmp/fake-home"
     },
     "nodeArguments": [
-      "--import=tsimp"
-    ],
-    "timeout": "30s"
+      "--import=ts-blank-space/register"
+    ]
   },
   "license": "Apache-2.0",
   "publishConfig": {

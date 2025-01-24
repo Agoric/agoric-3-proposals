@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
+import type { ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
 import { CHAINID, VALIDATORADDR } from './constants.js';
 import { agd } from './cliHelper.js';
 

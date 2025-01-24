@@ -11,9 +11,8 @@ import { makeAgd } from './agd-lib.js';
 import { agoric } from './cliHelper.js';
 import { voteLatestProposalAndWait } from './commonUpgradeHelpers.js';
 import { dbTool } from './vat-status.js';
-import { type WebCache } from './webAsset.js';
 import {
-  BundleInfo,
+  type BundleInfo,
   bundleDetail,
   ensureISTForInstall,
   flags,
