@@ -45,7 +45,7 @@ then
    --expression "s|\$EXPORT_DIRECTORY|/root/$PROPOSAL_NAME|" \
    --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
    "$OTEL_CONFIG"
-  otelcol-contrib --config "$OTEL_CONFIG" &
+  otelcol-contrib --config "$OTEL_CONFIG" > "/root/$PROPOSAL_NAME/otel.logs" 2>&1 &
 fi
 
 echo "[$PROPOSAL] Starting agd"
@@ -63,4 +63,13 @@ if test -f teardown-test.sh
 then
   echo "[$PROPOSAL] Running teardown-test.sh"
   ./teardown-test.sh
+fi
+
+if test -f "$OTEL_CONFIG"
+then
+  echo "[$PROPOSAL] Killing otel server"
+
+  # shellcheck disable=SC2009
+  PID="$(ps aux | grep -v grep | grep /root/otelcol-contrib | awk '{printf "%s", $2}')"
+  test -z "$PID" || kill -SIGTERM "$PID"
 fi
