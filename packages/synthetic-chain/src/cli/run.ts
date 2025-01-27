@@ -71,8 +71,9 @@ export const runTestImage = (proposal: ProposalInfo) => {
       '--network',
       'host',
       '--rm',
-      ...propagateSlogfile(process.env),
+      ...mountVolume(process.env, proposal),
       ...propagateMessageFilePath(process.env, proposal),
+      ...propagateSlogfile(process.env),
       name,
     ],
     { stdio: 'inherit' },
@@ -121,4 +122,20 @@ export const debugTestImage = (proposal: ProposalInfo) => {
     { stdio: 'inherit' },
   );
   executeHostScriptIfPresent(proposal, 'after-test-run.sh');
+};
+
+const mountVolume = (env: typeof process.env, proposal: ProposalInfo) => {
+  const { HOME } = env;
+
+  const containerMountPath = `/root/${proposal.proposalName}`;
+  const hostMountPath = `${HOME}/.agoric/${proposal.proposalName}`;
+
+  spawnSync('mkdir', ['--parents', hostMountPath]);
+
+  return [
+    '--env',
+    `PROPOSAL_NAME=${proposal.proposalName}`,
+    '--mount',
+    `source=${hostMountPath},target=${containerMountPath},type=bind`,
+  ];
 };

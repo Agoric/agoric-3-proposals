@@ -28,10 +28,24 @@ source ./env_setup.sh
 
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 
+OTEL_CONFIG="otel-config.yaml"
+
 if test -f setup-test.sh
 then
   echo "[$PROPOSAL] Running setup-test.sh"
   ./setup-test.sh
+fi
+
+if test -f "$OTEL_CONFIG"
+then
+  export OTEL_EXPORTER_PROMETHEUS_PORT="26661"
+  echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
+
+  sed \
+   --expression "s|\$EXPORT_DIRECTORY|/root/$PROPOSAL_NAME|" \
+   --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
+   "$OTEL_CONFIG"
+  otelcol-contrib --config "$OTEL_CONFIG" &
 fi
 
 echo "[$PROPOSAL] Starting agd"
