@@ -3,39 +3,24 @@ import { existsSync, realpathSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
+const createMessageFile = () => {
+  const messageFileName = `${new Date().getTime()}.tmp`;
+  const messageFilePath = `/tmp/${messageFileName}`;
+  spawnSync('touch', [`/tmp/${messageFileName}`]);
+  return [messageFileName, messageFilePath];
+};
+
 const executeHostScriptIfPresent = (
   proposal: ProposalInfo,
   scriptName: string,
 ) => {
   const scriptPath = `${resolvePath('.')}/proposals/${proposal.path}/host/${scriptName}`;
-  if (fileExists(scriptPath)) {
+  if (existsSync(scriptPath)) {
     console.log(
       `Running script ${scriptName} for proposal ${proposal.proposalName}`,
     );
-    spawnSync(scriptPath, { stdio: 'inherit' });
+    spawnSync(scriptPath, { env: process.env, stdio: 'inherit' });
   }
-};
-
-const fileExists = (name: string) => existsSync(name);
-
-const propagateMessageFilePath = (
-  env: typeof process.env,
-  proposal: ProposalInfo,
-) => {
-  const fileName = `${proposal.proposalName}-message-file.tmp`;
-  const { HOME } = env;
-
-  const containerFilePath = `/root/${fileName}`;
-  const filePath = `${HOME}/${fileName}`;
-
-  spawnSync('touch', [filePath]);
-
-  return [
-    '--env',
-    `MESSAGE_FILE_PATH=${containerFilePath}`,
-    '--mount',
-    `source=${filePath},target=${containerFilePath},type=bind`,
-  ];
 };
 
 /**
@@ -61,22 +46,34 @@ const propagateSlogfile = env => {
 };
 
 export const runTestImage = (proposal: ProposalInfo) => {
+  const [messageFileName, messageFilePath] = createMessageFile();
+
+  const containerFilePath = `/root/${messageFileName}`;
+  process.env.MESSAGE_FILE_PATH = messageFilePath;
+
   executeHostScriptIfPresent(proposal, 'before-test-run.sh');
+
   console.log(`Running test image for proposal ${proposal.proposalName}`);
   const { name } = imageNameForProposal(proposal, 'test');
   spawnSync(
     'docker',
     [
       'run',
+      '--env',
+      `MESSAGE_FILE_PATH=${containerFilePath}`,
+      '--mount',
+      `source=${messageFilePath},target=${containerFilePath},type=bind`,
       '--network',
       'host',
       '--rm',
       ...propagateSlogfile(process.env),
-      ...propagateMessageFilePath(process.env, proposal),
       name,
     ],
     { stdio: 'inherit' },
   );
+
+  spawnSync('rm', ['--force', messageFilePath]);
+
   executeHostScriptIfPresent(proposal, 'after-test-run.sh');
 };
 
