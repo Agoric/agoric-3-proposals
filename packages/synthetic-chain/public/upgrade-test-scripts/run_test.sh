@@ -44,7 +44,8 @@ then
   echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
 
   mkdir --parents "$DIRECTORY"
-  touch "$LOG_FILE"
+  test -d "$DIRECTORY" || echo "$DIRECTORY not created"
+  touch $LOG_FILE
 
   sed \
    --expression "s|\$EXPORT_DIRECTORY|/tmp/$PROPOSAL_NAME|" \
