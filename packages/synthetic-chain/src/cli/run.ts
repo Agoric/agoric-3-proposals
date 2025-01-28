@@ -6,7 +6,7 @@ import { ProposalInfo, imageNameForProposal } from './proposals.js';
 const createMessageFile = () => {
   const messageFileName = `${new Date().getTime()}.tmp`;
   const messageFilePath = `/tmp/${messageFileName}`;
-  spawnSync('touch', [`/tmp/${messageFileName}`]);
+  spawnSync('touch', [messageFilePath]);
   return [messageFileName, messageFilePath];
 };
 
