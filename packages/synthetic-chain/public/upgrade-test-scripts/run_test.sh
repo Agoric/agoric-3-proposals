@@ -39,9 +39,11 @@ fi
 if test -f "$OTEL_CONFIG"
 then
   export OTEL_EXPORTER_PROMETHEUS_PORT="26661"
-  LOG_FILE="/tmp/$PROPOSAL_NAME/otel.logs"
+  DIRECTORY="/tmp/$PROPOSAL_NAME"
+  LOG_FILE="$DIRECTORY/otel.logs"
   echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
 
+  mkdir --parents "$DIRECTORY"
   touch "$LOG_FILE"
 
   sed \
