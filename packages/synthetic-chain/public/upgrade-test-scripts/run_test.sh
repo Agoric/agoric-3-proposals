@@ -42,10 +42,10 @@ then
   echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
 
   sed \
-   --expression "s|\$EXPORT_DIRECTORY|/root/$PROPOSAL_NAME|" \
+   --expression "s|\$EXPORT_DIRECTORY|/tmp/$PROPOSAL_NAME|" \
    --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
    "$OTEL_CONFIG"
-  otelcol-contrib --config "$OTEL_CONFIG" > "/root/$PROPOSAL_NAME/otel.logs" 2>&1 &
+  otelcol-contrib --config "$OTEL_CONFIG" > "/tmp/$PROPOSAL_NAME/otel.logs" 2>&1 &
 fi
 
 echo "[$PROPOSAL] Starting agd"
