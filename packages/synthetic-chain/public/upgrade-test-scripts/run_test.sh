@@ -40,16 +40,17 @@ if test -f "$OTEL_CONFIG"
 then
   export OTEL_EXPORTER_PROMETHEUS_PORT="26661"
   DIRECTORY="/root/$PROPOSAL_NAME"
+  EXPORT_FILE="$DIRECTORY/otel-export.json"
   LOG_FILE="$DIRECTORY/otel.logs"
   echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
 
-  touch $LOG_FILE
+  touch $EXPORT_FILE $LOG_FILE
 
   sed \
-   --expression "s|\$EXPORT_DIRECTORY|$DIRECTORY|" \
+   --expression "s|\$EXPORT_FILE|$EXPORT_FILE|" \
    --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
    "$OTEL_CONFIG"
-  otelcol-contrib --config "$OTEL_CONFIG" > "$LOG_FILE" 2>&1 &
+  otelcol-contrib --config "$OTEL_CONFIG" >> "$LOG_FILE" 2>&1 &
 fi
 
 echo "[$PROPOSAL] Starting agd"
