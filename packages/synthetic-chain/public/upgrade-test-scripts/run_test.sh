@@ -46,9 +46,11 @@ start_otel_server() {
   sed \
    --expression "s|\$EXPORT_FILE|$EXPORT_FILE|" \
    --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
+   --in-place \
    "$OTEL_CONFIG"
 
-  echo "[$PROPOSAL] starting otel server"
+  echo "[$PROPOSAL] starting otel server with config file"
+  cat "$OTEL_CONFIG"
   otelcol-contrib --config "$OTEL_CONFIG" >> "$LOG_FILE" 2>&1
 }
 
