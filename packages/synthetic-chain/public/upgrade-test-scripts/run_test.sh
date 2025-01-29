@@ -24,6 +24,34 @@ echo '
  |_____| |_____|    |    |_____  |_____| |  |  | |______
 '
 
+start_otel_server() {
+  DIRECTORY="/root/$PROPOSAL_NAME"
+  EXPORT_FILE="$DIRECTORY/otel-export.json"
+  LOG_FILE="$DIRECTORY/otel.logs"
+
+  touch $EXPORT_FILE $LOG_FILE
+
+  echo "[$PROPOSAL] waiting for prometheus endpoint on port $OTEL_EXPORTER_PROMETHEUS_PORT to respond"
+  while true
+  do
+    if ! curl --fail --silent "http://0.0.0.0:$OTEL_EXPORTER_PROMETHEUS_PORT/metrics" > /dev/null 2>&1
+    then
+      sleep 5
+    else
+      echo "[$PROPOSAL] prometheus endpoint is up on port $OTEL_EXPORTER_PROMETHEUS_PORT"
+      break
+    fi
+  done
+
+  sed \
+   --expression "s|\$EXPORT_FILE|$EXPORT_FILE|" \
+   --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
+   "$OTEL_CONFIG"
+
+  echo "[$PROPOSAL] starting otel server"
+  otelcol-contrib --config "$OTEL_CONFIG" >> "$LOG_FILE" 2>&1
+}
+
 source ./env_setup.sh
 
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
@@ -39,18 +67,7 @@ fi
 if test -f "$OTEL_CONFIG"
 then
   export OTEL_EXPORTER_PROMETHEUS_PORT="26661"
-  DIRECTORY="/root/$PROPOSAL_NAME"
-  EXPORT_FILE="$DIRECTORY/otel-export.json"
-  LOG_FILE="$DIRECTORY/otel.logs"
-  echo "[$PROPOSAL] Starting otel server with prometheus server on $OTEL_EXPORTER_PROMETHEUS_PORT port"
-
-  touch $EXPORT_FILE $LOG_FILE
-
-  sed \
-   --expression "s|\$EXPORT_FILE|$EXPORT_FILE|" \
-   --expression "s|\$OTEL_EXPORTER_PROMETHEUS_PORT|$OTEL_EXPORTER_PROMETHEUS_PORT|" \
-   "$OTEL_CONFIG"
-  otelcol-contrib --config "$OTEL_CONFIG" >> "$LOG_FILE" 2>&1 &
+  start_otel_server &
 fi
 
 echo "[$PROPOSAL] Starting agd"
@@ -72,9 +89,14 @@ fi
 
 if test -f "$OTEL_CONFIG"
 then
-  echo "[$PROPOSAL] Killing otel server"
-
   # shellcheck disable=SC2009
   PID="$(ps aux | grep -v grep | grep /root/otelcol-contrib | awk '{printf "%s", $2}')"
-  test -z "$PID" || kill -SIGTERM "$PID"
+
+  if test -z "$PID"
+  then
+    echo "[$PROPOSAL] killing otel server process $PID"
+    kill -SIGTERM "$PID"
+  else
+    echo "[$PROPOSAL] no otel server process running"
+  fi
 fi
