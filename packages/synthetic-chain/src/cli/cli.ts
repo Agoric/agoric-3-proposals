@@ -117,7 +117,7 @@ switch (cmd) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
-        runTestImage(proposal);
+        runTestImage({ proposal });
         // delete the image to reclaim disk space. The next build
         // will use the build cache.
         execSync('docker system df', { stdio: 'inherit' });

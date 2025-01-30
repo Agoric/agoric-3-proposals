@@ -26,12 +26,14 @@ __metadata:
     "@types/better-sqlite3": "npm:^7.6.11"
     "@types/glob": "npm:^8.1.0"
     "@types/node": "npm:^18.19.50"
+    "@types/tmp": "npm:0.2.6"
     ava: "npm:^6.2.0"
     better-sqlite3: "npm:^11.8.0"
     chalk: "npm:^5.4.1"
     cosmjs-types: "npm:^0.9.0"
     execa: "npm:^9.5.2"
     glob: "npm:^11.0.0"
+    tmp: "npm:0.2.3"
     ts-blank-space: "npm:^0.5.0"
     tsup: "npm:^8.3.5"
     typescript: "npm:^5.7.3"
@@ -631,6 +633,13 @@ __metadata:
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10c0/36e6bc9eb47213ce94a868dad9504465ad89fba6af9f7954e22bb27fb17a32ac495f263d0cf4fdaee74becd7b2629609a446ec8c2b59b7a07bd587567c8a4782
+  languageName: node
+  linkType: hard
+
+"@types/tmp@npm:0.2.6":
+  version: 0.2.6
+  resolution: "@types/tmp@npm:0.2.6"
+  checksum: 10c0/a11bfa2cd8eaa6c5d62f62a3569192d7a2c28efdc5c17af0b0551db85816b2afc8156f3ca15ac76f0b142ae1403f04f44279871424233a1f3390b2e5fc828cd0
   languageName: node
   linkType: hard
 
@@ -3323,6 +3332,13 @@ __metadata:
     fdir: "npm:^6.4.2"
     picomatch: "npm:^4.0.2"
   checksum: 10c0/ce946135d39b8c0e394e488ad59f4092e8c4ecd675ef1bcd4585c47de1b325e61ec6adfbfbe20c3c2bfa6fd674c5b06de2a2e65c433f752ae170aff11793e5ef
+  languageName: node
+  linkType: hard
+
+"tmp@npm:0.2.3":
+  version: 0.2.3
+  resolution: "tmp@npm:0.2.3"
+  checksum: 10c0/3e809d9c2f46817475b452725c2aaa5d11985cf18d32a7a970ff25b568438e2c076c2e8609224feef3b7923fa9749b74428e3e634f6b8e520c534eef2fd24125
   languageName: node
   linkType: hard
 
