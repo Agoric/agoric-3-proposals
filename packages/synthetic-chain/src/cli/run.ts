@@ -55,7 +55,8 @@ export const runTestImage = ({
   proposal: ProposalInfo;
   removeContainerOnExit?: boolean;
 }) => {
-  const { name: messageFilePath, removeCallback: removeTempFileCallback } = createMessageFile(proposal);
+  const { name: messageFilePath, removeCallback: removeTempFileCallback } =
+    createMessageFile(proposal);
   const messageFileName = basename(messageFilePath);
 
   const containerFilePath = `/root/${messageFileName}`;
