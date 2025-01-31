@@ -82,7 +82,7 @@ export const runTestImage = ({
         `source=${messageFilePath},target=${containerFilePath},type=bind`,
         '--network',
         'host',
-        removeContainerOnExit && '--rm',
+        ...(removeContainerOnExit ? ['--rm'] : []),
         ...propagateSlogfile(process.env),
         ...extraDockerArgs,
         name,
@@ -99,9 +99,8 @@ export const runTestImage = ({
       proposal,
       'after-test-run.sh',
     );
-  } catch (err) {
+  } finally {
     removeTempFileCallback();
-    throw err;
   }
 };
 
