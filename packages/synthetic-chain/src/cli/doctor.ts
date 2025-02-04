@@ -49,7 +49,11 @@ const fixupProposal = (proposal: ProposalInfo) => {
 
       // refresh install
       execSync('rm -rf node_modules', { cwd: proposalPath });
-      execSync('yarn install', { cwd: proposalPath });
+      // skip builds to prevent local native artifacts from accidentally being
+      // copied into the Docker image. The local environment never runs the
+      // proposal so the only artifacts that are necessary are the files that
+      // the JS IDE expects (e.g. for module resolution, types).
+      execSync('yarn install --mode=skip-build', { cwd: proposalPath });
     }
   }
 };

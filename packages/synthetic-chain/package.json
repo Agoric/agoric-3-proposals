@@ -1,6 +1,6 @@
 {
   "name": "@agoric/synthetic-chain",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Utilities to build a chain and test proposals atop it",
   "bin": "dist/cli/cli.js",
   "main": "./dist/lib/index.js",
@@ -20,23 +20,23 @@
     "node": "^18.19 || ^20.9"
   },
   "dependencies": {
-    "@endo/zip": "^1.0.7",
-    "better-sqlite3": "^11.8.0",
+    "@endo/zip": "^1.0.9",
+    "better-sqlite3": "^11.8.1",
     "chalk": "^5.4.1",
     "cosmjs-types": "^0.9.0",
     "execa": "^9.5.2",
-    "glob": "^11.0.0",
+    "glob": "^11.0.1",
     "tmp": "0.2.3"
   },
   "devDependencies": {
     "@agoric/cosmic-proto": "0.5.0-u18.5",
-    "@types/better-sqlite3": "^7.6.11",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/glob": "^8.1.0",
     "@types/node": "^18.19.50",
     "@types/tmp": "0.2.6",
     "ava": "^6.2.0",
-    "ts-blank-space": "^0.5.0",
-    "tsup": "^8.3.5",
+    "ts-blank-space": "^0.5.1",
+    "tsup": "^8.3.6",
     "typescript": "^5.7.3"
   },
   "ava": {
