@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
-import { basename, resolve as resolvePath } from 'node:path';
+import { resolve as resolvePath } from 'node:path';
 import { fileSync as createTempFile } from 'tmp';
 import { ProposalInfo, imageNameForProposal } from './proposals.js';
 
@@ -57,9 +57,8 @@ export const runTestImage = ({
 }) => {
   const { name: messageFilePath, removeCallback: removeTempFileCallback } =
     createMessageFile(proposal);
-  const messageFileName = basename(messageFilePath);
 
-  const containerFilePath = `/root/${messageFileName}`;
+  const containerFilePath = '/root/message-file-path';
 
   try {
     executeHostScriptIfPresent(
@@ -80,15 +79,11 @@ export const runTestImage = ({
         `MESSAGE_FILE_PATH=${containerFilePath}`,
         '--mount',
         `source=${messageFilePath},target=${containerFilePath},type=bind`,
-        '--network',
-        'host',
         ...(removeContainerOnExit ? ['--rm'] : []),
         ...propagateSlogfile(process.env),
         ...extraDockerArgs,
         name,
-      ]
-        .filter(Boolean)
-        .map(String),
+      ],
       { stdio: 'inherit' },
     );
 
@@ -127,6 +122,12 @@ export const debugTestImage = (proposal: ProposalInfo) => {
       '--entrypoint',
       '/usr/src/upgrade-test-scripts/start_agd.sh',
       '--interactive',
+      '--publish',
+      '1317:1317',
+      '--publish',
+      '9090:9090',
+      '--publish',
+      '26657:26657',
       '--tty',
     ],
     proposal,
