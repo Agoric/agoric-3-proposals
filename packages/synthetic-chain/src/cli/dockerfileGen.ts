@@ -121,7 +121,7 @@ ${createCopyCommand(
   `/usr/src/proposals/${path}`,
 )}
 ${createCopyCommand(
-  ['test.sh'],
+  [],
   './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_execute.sh',
   './upgrade-test-scripts/start_to_to.sh',
