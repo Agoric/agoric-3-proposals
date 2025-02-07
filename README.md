@@ -70,10 +70,14 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 - `package.json` specifies what kind of proposal it is in a `agoricProposal` field. If it's a "Software Upgrade Proposal" it also includes additional parameters.
 - `use.sh` is the script that will be run in the USE stage of the build
 - `test.sh` is the script that will be _included_ in the TEST stage of the build, and run in CI
+- `test` folder contents will be copied only to the `test` image
 - `setup-test.sh` is an optional script which can be used to run setup steps _inside_ the container. It runs _before_ the chain starts.
 - `teardown-test.sh` is an optional script which can be used to run teardown steps _inside_ the container. It runs _after_ the chain stops.
-- `before-test-run.sh` is an optional script which can be used to run setup steps on the _host_ (like starting a follower). It runs _before_ the container launches. It needs to be placed in the **host** folder.
-- `after-test-run.sh` is an optional script which can be used to run teardown steps on the _host_ (like stopping a follower). It runs _after_ the container exits. It needs to be placed in the **host** folder.
+- `host` folder is the home of these scripts:
+    - `before-test-run.sh` is an optional script which can be used to run setup steps on the _host_ (like starting a follower). It runs _before_ the container launches.
+    - `after-test-run.sh` is an optional script which can be used to run teardown steps on the _host_ (like stopping a follower). It runs _after_ the container exits.
+
+  _`host` folder contents will never be copied to a Docker image_
 
 ## Development
 
