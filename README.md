@@ -74,8 +74,9 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 - `setup-test.sh` is an optional script which can be used to run setup steps _inside_ the container. It runs _before_ the chain starts.
 - `teardown-test.sh` is an optional script which can be used to run teardown steps _inside_ the container. It runs _after_ the chain stops.
 - `host` folder is the home of these scripts:
-    - `before-test-run.sh` is an optional script which can be used to run setup steps on the _host_ (like starting a follower). It runs _before_ the container launches.
-    - `after-test-run.sh` is an optional script which can be used to run teardown steps on the _host_ (like stopping a follower). It runs _after_ the container exits.
+
+  - `before-test-run.sh` is an optional script which can be used to run setup steps on the _host_ (like starting a follower). It runs _before_ the container launches.
+  - `after-test-run.sh` is an optional script which can be used to run teardown steps on the _host_ (like stopping a follower). It runs _after_ the container exits.
 
   _`host` folder contents will never be copied to a Docker image_
 
