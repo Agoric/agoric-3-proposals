@@ -1,31 +1,39 @@
-#!/bin/bash
+#! /bin/bash
 # Prepare an upgrade from ag0
 
 set -eo pipefail
+
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/env_setup.sh"
 
 # The name of the binary is an implementation detail.
 agd() {
   ag0 ${1+"$@"}
 }
 
-agd init localnet --chain-id agoriclocal
+agd init localnet --chain-id "$CHAIN_ID"
 
 allaccounts=("gov1" "gov2" "gov3" "user1" "validator")
 # WARNING: these mnemonics are purely for testing purposes, do not implement
 # features that depend on them in any way.
 # The mnemonics below corresponds to elements in `allaccounts` with matching indices
 allkeys=(
-  "such field health riot cost kitten silly tube flash wrap festival portion imitate this make question host bitter puppy wait area glide soldier knee"
-  "physical immune cargo feel crawl style fox require inhale law local glory cheese bring swear royal spy buyer diesel field when task spin alley"
-  "tackle hen gap lady bike explain erode midnight marriage wide upset culture model select dial trial swim wood step scan intact what card symptom"
+  "$GOV1_MNEMONIC"
+  "$GOV2_MNEMONIC"
+  "$GOV3_MNEMONIC"
   "spike siege world rather ordinary upper napkin voice brush oppose junior route trim crush expire angry seminar anchor panther piano image pepper chest alone"
   "soap hub stick bomb dish index wing shield cruel board siren force glory assault rotate busy area topple resource okay clown wedding hint unhappy"
 )
+
 for i in "${!allaccounts[@]}"; do
-  echo "${allkeys[$i]}" | agd keys add ${allaccounts[$i]} --recover --keyring-backend=test 2>&1
+  echo "${allkeys[$i]}" | \
+  agd keys add "${allaccounts[$i]}" --keyring-backend "test" --recover 2>&1
 done
 
-source /usr/src/upgrade-test-scripts/env_setup.sh
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
 
 sed -i.bak "s/^timeout_commit =.*/timeout_commit = \"1s\"/" "$HOME/.agoric/config/config.toml"
 sed -i.bak "s/^enabled-unsafe-cors =.*/enabled-unsafe-cors = true/" "$HOME/.agoric/config/app.toml"
@@ -41,7 +49,7 @@ contents="$(jq ".app_state.gov.deposit_params.min_deposit[0].denom = \"ubld\"" "
 contents="$(jq ".app_state.staking.params.bond_denom = \"ubld\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
 contents="$(jq ".app_state.slashing.params.signed_blocks_window = \"20000\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
 contents=$(jq '. * { app_state: { gov: { voting_params: { voting_period: "10s" } } } }' "$HOME/.agoric/config/genesis.json") && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-export GENACCT=$(agd keys show validator -a --keyring-backend="test")
+GENACCT=$(agd keys show validator -a --keyring-backend="test")
 echo "Genesis Account $GENACCT"
 
 denoms=(
@@ -65,7 +73,7 @@ done
 
 agd add-genesis-account "$GENACCT" "$coins"
 
-agd gentx validator 5000000000ubld --keyring-backend="test" --chain-id "$CHAINID"
+agd gentx validator 5000000000ubld --keyring-backend="test" --chain-id "$CHAIN_ID"
 agd collect-gentxs
 startAgd
 

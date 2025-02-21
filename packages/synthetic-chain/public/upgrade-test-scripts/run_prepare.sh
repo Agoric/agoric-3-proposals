@@ -3,6 +3,11 @@
 
 set -eo pipefail
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
+
 if [[ -z "${UPGRADE_TO}" ]]; then
   fail "Requires UPGRADE_TO to be set"
 fi
@@ -19,10 +24,11 @@ echo -e '
 '
 echo "Preparing an upgrade to $UPGRADE_TO"
 
-grep -qF 'env_setup.sh' /root/.bashrc || echo "source /usr/src/upgrade-test-scripts/env_setup.sh" >>/root/.bashrc
+grep -qF 'env_setup.sh' /root/.bashrc || echo "source $DIRECTORY_PATH/env_setup.sh" >>/root/.bashrc
 grep -qF 'printKeys' /root/.bashrc || echo "printKeys" >>/root/.bashrc
 
-source ./env_setup.sh
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
 
 PROPOSAL=$1
 if [ -z "$PROPOSAL" ]; then

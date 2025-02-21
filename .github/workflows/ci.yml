@@ -1,37 +1,10 @@
-name: Proposal tests
-
-# NB: This job works differently for PRs and non-PRs. If you make significant changes,
-# be sure to manually trigger the non-PR workflow before merging.
-
-# In PRS,
-# - build and run 'test' images
-# - no pushing of images
-#
-# In `main` pushes and manual triggers,
-# - build and run 'test' images
-# - build 'use' images for *all passed proposals* AND push to registry (e.g. use-upgrade-10)
-
-# In both cases it uses a remote builder with depot.dev (see depot.json) to get a persistent
-# build cache and automatic multiplatform builds and image management.
-
-# If `main` fails, you'll make a PR to fix it but its CI will only run the PR flow above.
-# To test the non-PR way, you need to manually trigger this workflow by going to,
-# https://github.com/Agoric/agoric-3-proposals/actions/workflows/ci.yml
-# and clicking "Run workflow", specifying this branch.
-on:
-  pull_request:
-  workflow_dispatch:
-  merge_group:
-  push:
-    branches: [main]
-
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 env:
-  REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  REGISTRY: ghcr.io
 
 jobs:
   test-package:
@@ -61,23 +34,15 @@ jobs:
         run: yarn test
         working-directory: packages/synthetic-chain
 
-  # see https://docs.docker.com/build/ci/github-actions/test-before-push/
   test-proposals:
     permissions:
-      # allow issuing OIDC tokens for this workflow run
-      id-token: write
-      # allow at least reading the repo contents, add other permissions if necessary
       contents: read
-      # to push the resulting images
+      id-token: write
       packages: write
     runs-on: 'depot-ubuntu-22.04-16'
     steps:
       - name: free up disk space
         run: |
-          # Workaround to provide additional free space for testing.
-          #   https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-          # If this turns out not to be enough, maybe look instead at
-          #   https://github.com/actions/runner-images/issues/2840#issuecomment-1540506686
           df -h
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
@@ -91,35 +56,31 @@ jobs:
 
       - uses: depot/setup-action@v1
         with:
-          oidc: true # to set DEPOT_TOKEN for later steps
+          oidc: true
 
-      # make Docker's CLI use depot to build
       - run: depot configure-docker
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
-        # see https://docs.github.com/en/actions/publishing-packages/publishing-docker-images
         with:
-          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
+      - id: meta
+        name: Extract metadata (tags, labels) for Docker
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/a3p-emerynet
 
       - name: Install deps
         run: |
-          # Enable corepack for packageManager config
           corepack enable || sudo corepack enable
           yarn install
 
       - name: Prepare Docker config
         run: |
           yarn build-cli
-          # prepare files for bake-action
           yarn synthetic-chain prepare-build
 
       # Verify that all "use" images build across platforms.
@@ -132,34 +93,10 @@ jobs:
             ${{ steps.meta.outputs.bake-file }}
           targets: use
 
-      # Verify that proposals' tests pass.
-      # Note this builds each proposal testing image sequentially. It does that so it can delete the image
-      # after it passees, freeing up disk space.
       - name: Build and run proposal tests
         run: yarn test
 
-      # Push the images if the tests pass and this is not a PR
-      - name: Push proposal "use" images
-        # If we pushed from PRs, each one would overwrite main's (e.g. use-upgrade-8)
-        # To push PR "use" images we'll need to qualify the tag (e.g. use-upgrade-8-pr-2).
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: depot/bake-action@v1
-        with:
-          files: |
-            ./docker-bake.json
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: use
-          push: true
-
-      # Just like the "use" image above but has to begin after that ends
-      # because the "build" here is merely to retag the latest "use" image.
-      # We could do this with imagetools but this lets use keep the tagging logic
-      # in Bake instead of mixed into CI. This step should do hardly any building
-      # because its FROM image was just built above.
       - name: Push "latest" image
-        # Same reason as for "use" images
-        if: ${{ github.event_name != 'pull_request' }}
         uses: depot/bake-action@v1
         with:
           files: |
@@ -169,11 +106,8 @@ jobs:
           targets: latest
           push: true
 
-      - name: notify on failure
-        if: failure() && github.event_name != 'pull_request'
-        uses: ./.github/actions/notify-status
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          from: ${{ secrets.NOTIFY_EMAIL_FROM }}
-          to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          password: ${{ secrets.NOTIFY_EMAIL_PASSWORD }}
+name: Proposal tests
+
+on:
+  push:
+    branches: [usman/reset-emerynet]

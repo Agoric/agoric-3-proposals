@@ -4,6 +4,14 @@
 
 set -eo pipefail
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
+
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
+
 PROPOSAL=$1
 if [ -z "$PROPOSAL" ]; then
   fail "Must specify what proposal to use"
@@ -23,8 +31,6 @@ echo '
  |     | |     |    |    |       |     | |  |  | |______
  |_____| |_____|    |    |_____  |_____| |  |  | |______
 '
-
-source ./env_setup.sh
 
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 

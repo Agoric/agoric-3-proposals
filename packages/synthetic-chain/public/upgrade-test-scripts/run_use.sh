@@ -4,6 +4,14 @@
 
 set -eo pipefail
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
+
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
+
 PROPOSAL=$1
 if [ -z "$PROPOSAL" ]; then
     fail "Must specify what proposal to use"
@@ -29,8 +37,6 @@ echo '
  |_____] |_____/ |     | |_____] |     | |______ |_____| |
  |       |    \_ |_____| |       |_____| ______| |     | |_____
 '
-
-source ./env_setup.sh
 
 echo "[$PROPOSAL] Starting agd in the background."
 startAgd

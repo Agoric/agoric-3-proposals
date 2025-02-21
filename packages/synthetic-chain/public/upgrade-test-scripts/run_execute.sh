@@ -2,6 +2,14 @@
 
 set -eo pipefail
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
+
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
+
 # figlet -f cyberlarge Execute upgrade
 echo -e '
  _______ _     _ _______ _______ _     _ _______ _______
@@ -13,8 +21,6 @@ echo -e '
  |_____| |       |_____| |    \_ |     | |_____/ |______
 '
 echo "Execute the upgrade in consensus"
-
-source ./env_setup.sh
 
 PLAN_NAME=$1
 if [ -z "$PLAN_NAME" ]; then

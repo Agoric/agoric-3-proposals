@@ -2,12 +2,18 @@
 # Prepare or execute an upgrade
 # XXX retained for backwards compatibility
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
+
 echo "DEPRECATED start_to_to; migrate start to @agoric/synthetic-chain 0.0.5 or later"
 
-grep -qF 'env_setup.sh' /root/.bashrc || echo "source /usr/src/upgrade-test-scripts/env_setup.sh" >>/root/.bashrc
+grep -qF 'env_setup.sh' /root/.bashrc || echo "source $DIRECTORY_PATH/env_setup.sh" >>/root/.bashrc
 grep -qF 'printKeys' /root/.bashrc || echo "printKeys" >>/root/.bashrc
 
-source ./env_setup.sh
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
 
 startAgd
 

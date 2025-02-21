@@ -1,11 +1,12 @@
-#!/bin/bash
+#! /bin/bash
+
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
 
 echo ENV_SETUP starting
 
-# FIXME not used anywhere; restore these debug flags
-export DEBUG="SwingSet:ls,SwingSet:vat"
-
-export CHAINID=agoriclocal
 shopt -s expand_aliases
 
 alias agops="/usr/src/agoric-sdk/node_modules/.bin/agops"
@@ -24,9 +25,6 @@ export GOV2ADDR=$($binary keys show gov2 -a --keyring-backend="test")
 export GOV3ADDR=$($binary keys show gov3 -a --keyring-backend="test")
 export VALIDATORADDR=$($binary keys show validator -a --keyring-backend="test")
 export USER1ADDR=$($binary keys show user1 -a --keyring-backend="test")
-
-export PID_FILE="$HOME/.agoric/agd.pid"
-export STATUS_FILE="$HOME/.agoric/last_observed_status"
 
 if [[ "$binary" == "agd" ]]; then
   configdir=/usr/src/agoric-sdk/packages/vm-config
@@ -208,13 +206,6 @@ test_not_val() {
   fi
 }
 
-# gas=200000 is the default but gas used may be higher or lower. Setting it
-# to "auto" makes the proposal executions less brittle.
-GAS_ADJUSTMENT=1.2
-export SIGN_BROADCAST_OPTS="--keyring-backend=test --chain-id=$CHAINID \
-		--gas=auto --gas-adjustment=$GAS_ADJUSTMENT \
-		--yes --broadcast-mode block --from validator"
-
 voteLatestProposalAndWait() {
   waitForBlock
   proposal=$($binary q gov proposals -o json | jq -r '.proposals | last | if .proposal_id == null then .id else .proposal_id end')
@@ -260,9 +251,5 @@ printKeys() {
   done
   echo "========== GOVERNANCE KEYS =========="
 }
-
-export USDC_DENOM="ibc/295548A78785A1007F232DE286149A6FF512F180AF5657780FC89C009E2C348F"
-export ATOM_DENOM="ibc/BA313C4A19DFBF943586C0387E6B11286F9E416B4DD27574E6909CABE0E342FA"
-export PSM_PAIR="IST.USDC_axl"
 
 echo ENV_SETUP finished
