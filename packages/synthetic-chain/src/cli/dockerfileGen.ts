@@ -36,6 +36,7 @@ ${createCopyCommand(
   [],
   './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_prepare_zero.sh',
+  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 SHELL ["/bin/bash", "-c"]
@@ -89,6 +90,7 @@ ${createCopyCommand(
   [],
   './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_prepare.sh',
+  './upgrade-test-scripts/source.sh',
   './upgrade-test-scripts/start_to_to.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
@@ -123,9 +125,10 @@ ${createCopyCommand(
 ${createCopyCommand(
   [],
   './upgrade-test-scripts/env_setup.sh',
-  './upgrade-test-scripts/run_execute.sh',
-  './upgrade-test-scripts/start_to_to.sh',
   './upgrade-test-scripts/install_deps.sh',
+  './upgrade-test-scripts/run_execute.sh',
+  './upgrade-test-scripts/source.sh',
+  './upgrade-test-scripts/start_to_to.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
@@ -159,14 +162,18 @@ WORKDIR /usr/src/upgrade-test-scripts
 # First stage of this proposal so install its deps.
 ${createCopyCommand(
   [],
+  './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/install_deps.sh',
+  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
 ${createCopyCommand(
   [],
+  './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/*eval*',
+  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 SHELL ["/bin/bash", "-c"]
@@ -189,7 +196,9 @@ WORKDIR /usr/src/upgrade-test-scripts
 
 ${createCopyCommand(
   [],
+  './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_use.sh',
+  './upgrade-test-scripts/source.sh',
   './upgrade-test-scripts/start_agd.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
@@ -224,7 +233,9 @@ WORKDIR /usr/src/upgrade-test-scripts
 
 ${createCopyCommand(
   [],
+  './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_test.sh',
+  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 SHELL ["/bin/bash", "-c"]
