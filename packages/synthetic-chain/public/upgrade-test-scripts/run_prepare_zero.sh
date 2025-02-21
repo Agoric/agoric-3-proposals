@@ -6,7 +6,7 @@ set -eo pipefail
 DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # shellcheck source=./source.sh
-source "$DIRECTORY_PATH/env_setup.sh"
+source "$DIRECTORY_PATH/source.sh"
 
 # The name of the binary is an implementation detail.
 agd() {
