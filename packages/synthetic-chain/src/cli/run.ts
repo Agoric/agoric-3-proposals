@@ -61,6 +61,7 @@ export const runTestImage = ({
   const containerFilePath = '/root/message-file-path';
 
   let runResult: SpawnSyncReturns<Buffer>;
+  const { name } = imageNameForProposal(proposal, 'test');
 
   try {
     executeHostScriptIfPresent(
@@ -72,7 +73,6 @@ export const runTestImage = ({
     );
 
     console.log(`Running test image for proposal ${proposal.proposalName}`);
-    const { name } = imageNameForProposal(proposal, 'test');
     runResult = spawnSync(
       'docker',
       [

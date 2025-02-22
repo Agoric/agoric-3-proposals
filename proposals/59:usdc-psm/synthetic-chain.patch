@@ -1,0 +1,13 @@
+diff --git a/index.js b/index.js
+index 74d1654c7f..416878e210 100644
+--- a/index.js
++++ b/index.js
+@@ -1097,7 +1097,7 @@ var staticConfig = {
+ };
+ var makeTestContext = async (staticConfig2, coreEvalConfig) => {
+   const config = {
+-    chainId: "agoriclocal",
++    chainId: CHAINID,
+     ...staticConfig2,
+     ...coreEvalConfig
+   };

@@ -24,6 +24,7 @@ import {
   txAbbr,
   voteLatestProposalAndWait,
   wellKnownIdentities,
+  CHAINID,
 } from '@agoric/synthetic-chain';
 
 /** @typedef {Awaited<ReturnType<typeof makeTestContext>>} TestContext */
@@ -131,7 +132,7 @@ const makeTestContext = async (t, io = {}) => {
   const config = {
     assets,
     bundleAssets,
-    chainId: 'agoriclocal',
+    chainId: CHAINID,
     ...staticConfig,
   };
 

@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import * as fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import * as process from 'node:process';
-
+import { CHAINID } from './constants.js';
 import { ZipReader } from '@endo/zip';
 import dbOpen from 'better-sqlite3';
 
@@ -48,7 +48,7 @@ const makeTestContext = async (
   coreEvalConfig: CoreEvalConfig,
 ) => {
   const config = {
-    chainId: 'agoriclocal',
+    chainId: CHAINID,
     ...staticConfig,
     ...coreEvalConfig,
   };

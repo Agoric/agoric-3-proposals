@@ -13,7 +13,7 @@ agd() {
   ag0 ${1+"$@"}
 }
 
-agd init localnet --chain-id "$CHAIN_ID"
+agd init "$MONIKER" --chain-id "$CHAIN_ID"
 
 allaccounts=("gov1" "gov2" "gov3" "user1" "validator")
 # WARNING: these mnemonics are purely for testing purposes, do not implement

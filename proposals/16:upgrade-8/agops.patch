@@ -1,0 +1,13 @@
+diff --git a/rpc.js b/rpc.js
+index 87261a66eb..18f87049c7 100644
+--- a/rpc.js
++++ b/rpc.js
+@@ -33,7 +33,7 @@ const fromAgoricNet = str => {
+ export const networkConfig =
+   'AGORIC_NET' in process.env && process.env.AGORIC_NET !== 'local'
+     ? await fromAgoricNet(NonNullish(process.env.AGORIC_NET))
+-    : { rpcAddrs: ['http://0.0.0.0:26657'], chainName: 'agoriclocal' };
++    : { rpcAddrs: ['http://0.0.0.0:26657'], chainName: 'agoric-emerynet-9' };
+ // console.warn('networkConfig', networkConfig);
+ 
+ /**

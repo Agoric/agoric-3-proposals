@@ -3,7 +3,12 @@
 # Exit when any command fails
 set -e
 
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+PATCH_PATH="$DIRECTORY_PATH/agops.patch"
+
 source /usr/src/upgrade-test-scripts/env_setup.sh
+
+patch_files "/usr/src/agoric-sdk/packages/agoric-cli/src/lib" "$PATCH_PATH"
 
 # XXX fix bug in this SDK's verison of agops
 sed -i "s/--econCommAcceptOfferId /--previousOfferId /g" "/usr/src/agoric-sdk/packages/agoric-cli/src/commands/psm.js"

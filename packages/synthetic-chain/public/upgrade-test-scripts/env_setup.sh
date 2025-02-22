@@ -252,4 +252,12 @@ printKeys() {
   echo "========== GOVERNANCE KEYS =========="
 }
 
+patch_files() {
+  local patch_file_path="$2"
+  local patch_target_directory="$1"
+
+  echo "Patching file '$patch_file_path'"
+  patch --directory "$patch_target_directory" --input "$patch_file_path" --strip "1"
+}
+
 echo ENV_SETUP finished

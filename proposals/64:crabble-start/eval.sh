@@ -1,11 +1,18 @@
-#!/bin/bash
+#! /bin/bash
 
-# Exit when any command fails
-set -e
+set -o errexit
 
-source /usr/src/upgrade-test-scripts/env_setup.sh
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-ls -al
+source "/usr/src/upgrade-test-scripts/source.sh"
+
+sed "$DIRECTORY_PATH/node_modules/@agoric/synthetic-chain/dist/lib/index.js" \
+ --expression "s|agoriclocal|$CHAIN_ID|" \
+ --in-place
+
+sed "$SDK_SRC/packages/agoric-cli/src/lib/rpc.js" \
+ --expression "s|agoriclocal|$CHAIN_ID|" \
+ --in-place
 
 # XXX using Ava serial to script the core-eval
 yarn ava test-crabble-start.js

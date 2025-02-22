@@ -2,6 +2,7 @@ import '@endo/init/debug.js';
 import { execFileSync } from 'node:child_process';
 import { makeAgd } from './synthetic-chain-excerpt.js';
 import { GOV4ADDR } from './agoric-tools.js';
+import { CHAINID } from '@agoric/synthetic-chain';
 
 const agd = makeAgd({ execFileSync }).withOpts({ keyringBackend: 'test' });
 
@@ -13,7 +14,7 @@ agd.keys.add(
 agd.tx(
   ['swingset', 'provision-one', 'faucet_provision', GOV4ADDR, 'SMART_WALLET'],
   {
-    chainId: 'agoriclocal',
+    chainId: CHAINID,
     from: 'validator',
     yes: true,
   },

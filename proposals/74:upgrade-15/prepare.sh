@@ -1,12 +1,14 @@
-#!/bin/bash
+#! /bin/bash
 
-# Exit when any command fails
-set -euxo pipefail
+set -o errexit -o nounset -o pipefail
 
-# Place here any actions that should happen before the upgrade is proposed. The
-# actions are executed in the previous chain software, and the effects are
-# persisted so they can be used in the steps after the upgrade is complete,
-# such as in the "use" or "test" steps, or further proposal layers.
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+source "/usr/src/upgrade-test-scripts/source.sh"
+
+sed "$SDK_SRC/packages/agoric-cli/src/lib/rpc.js" \
+ --expression "s|agoriclocal|$CHAIN_ID|" \
+ --in-place
 
 printISTBalance() {
   addr=$(agd keys show -a "$1" --keyring-backend=test)
