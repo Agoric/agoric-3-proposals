@@ -5,10 +5,8 @@ concurrency:
 env:
   BUCKET_NAME: 'agoric-snapshots-public'
   IMAGE_NAME: ${{ github.repository }}
-  REGISTRY: ghcr.io
-  LOCATION: us-central1
+  REGISTRY: 'ghcr.io'
   PROJECT_ID: 60745596728
-  PROJECT_NAME: simulationlab
 
 jobs:
   test-package:
@@ -45,19 +43,18 @@ jobs:
       packages: write
     runs-on: 'ubuntu-latest'
     steps:
-      # - name: free up disk space
-      #   run: |
-      #     df -h
-      #     sudo rm -rf /usr/share/dotnet
-      #     sudo rm -rf /opt/ghc
-      #     sudo rm -rf "/usr/local/share/boost"
-      #     sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-      #     echo "=== After cleanup:"
-      #     df -h
+      - name: free up disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "=== After cleanup:"
+          df -h
 
       - name: Generate Timestamp
-        run: |
-          echo "TIMESTAMP=$(date '+%s')" >> $GITHUB_ENV
+        run: echo "TIMESTAMP=$(date '+%s')" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -71,44 +68,28 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      # - name: Log in to the Container registry
-      #   uses: docker/login-action@v3
-      #   with:
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      #     registry: ${{ env.REGISTRY }}
-      #     username: ${{ github.actor }}
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
 
-      # - name: Install deps
-      #   run: |
-      #     corepack enable || sudo corepack enable
-      #     yarn install
+      - name: Install deps
+        run: |
+          corepack enable || sudo corepack enable
+          yarn install
 
-      # - name: Build image
-      #   run: yarn build
+      - name: Build image
+        run: yarn build
 
-      # - name: Build and run proposal tests
-      #   run: yarn test
+      - name: Build and run proposal tests
+        run: yarn test
 
       - name: Upload state to storage
         run: |
           #! /bin/bash
           set -o errexit -o errtrace
-
-          #################################################################
-          # Access provided from below command
-          #
-          # BUCKET_NAME="agoric-snapshots-public" && \
-          # IDENTITY_POOL=github && \
-          # PROJECT_NAME=simulationlab && \
-          # PROJECT_ID="$(gcloud projects list --filter="projectId=$PROJECT_NAME" --format="value(projectNumber)")" && \
-          # REPO="Agoric/agoric-3-proposals" && \
-          # gcloud storage buckets add-iam-policy-binding "gs://$BUCKET_NAME" \
-          #  --member="principalSet://iam.googleapis.com/projects/$PROJECT_ID/locations/global/workloadIdentityPools/$IDENTITY_POOL/attribute.repository/$REPO" \
-          #  --role="roles/storage.objectCreator"
-          #################################################################
-          echo "Testing upload" > /tmp/foo.txt
-          gsutil cp /tmp/foo.txt gs://${{ env.BUCKET_NAME }}/bar-${{ env.TIMESTAMP }}.txt
-          exit 0
 
           IMAGE_ID="${{ env.REGISTRY }}/${{ github.repository }}"
           TAG="use-fast-usdc-beta"
@@ -131,6 +112,8 @@ jobs:
           docker container cp --quiet "$CONTAINER_ID:/tmp/state-$TIMESTAMP" "/tmp/state-$TIMESTAMP"
           docker container stop "$CONTAINER_ID" > /dev/null
           docker container rm "$CONTAINER_ID" > /dev/null
+
+          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p-emerynet/state-$TIMESTAMP.tar.gz
 
 name: Proposal tests
 
