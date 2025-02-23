@@ -3,8 +3,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 env:
+  BUCKET_NAME: 'agoric-snapshots-public'
   IMAGE_NAME: ${{ github.repository }}
   REGISTRY: ghcr.io
+  LOCATION: us-central1
+  PROJECT_ID: 60745596728
+  PROJECT_NAME: simulationlab
 
 jobs:
   test-package:
@@ -39,17 +43,18 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    runs-on: 'depot-ubuntu-22.04-16'
+    runs-on: 'ubuntu-latest'
     steps:
-      - name: free up disk space
-        run: |
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "=== After cleanup:"
-          df -h
+      # - name: free up disk space
+      #   run: |
+      #     df -h
+      #     sudo rm -rf /usr/share/dotnet
+      #     sudo rm -rf /opt/ghc
+      #     sudo rm -rf "/usr/local/share/boost"
+      #     sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      #     echo "=== After cleanup:"
+      #     df -h
+
       - name: Generate Timestamp
         run: |
           echo "TIMESTAMP=$(date '+%s')" >> $GITHUB_ENV
@@ -57,30 +62,75 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
+      - name: Set up Cloud SDK auth
+        uses: google-github-actions/auth@v2
         with:
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: projects/${{ env.PROJECT_ID }}/locations/global/workloadIdentityPools/github/providers/${{ github.event.repository.name }}
 
-      - name: Install deps
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      # - name: Log in to the Container registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+
+      # - name: Install deps
+      #   run: |
+      #     corepack enable || sudo corepack enable
+      #     yarn install
+
+      # - name: Build image
+      #   run: yarn build
+
+      # - name: Build and run proposal tests
+      #   run: yarn test
+
+      - name: Upload state to storage
         run: |
-          corepack enable || sudo corepack enable
-          yarn install
+          #! /bin/bash
+          set -o errexit -o errtrace
 
-      - name: Build image
-        run: yarn build
+          #################################################################
+          # Access provided from below command
+          #
+          # BUCKET_NAME="agoric-snapshots-public" && \
+          # IDENTITY_POOL=github && \
+          # PROJECT_NAME=simulationlab && \
+          # PROJECT_ID="$(gcloud projects list --filter="projectId=$PROJECT_NAME" --format="value(projectNumber)")" && \
+          # REPO="Agoric/agoric-3-proposals" && \
+          # gcloud storage buckets add-iam-policy-binding "gs://$BUCKET_NAME" \
+          #  --member="principalSet://iam.googleapis.com/projects/$PROJECT_ID/locations/global/workloadIdentityPools/$IDENTITY_POOL/attribute.repository/$REPO" \
+          #  --role="roles/storage.objectCreator"
+          #################################################################
+          echo "Testing upload" > /tmp/foo.txt
+          gsutil cp /tmp/foo.txt gs://${{ env.BUCKET_NAME }}/bar-${{ env.TIMESTAMP }}.txt
+          exit 0
 
-      - name: Build and run proposal tests
-        run: yarn test
+          IMAGE_ID="${{ env.REGISTRY }}/${{ github.repository }}"
+          TAG="use-fast-usdc-beta"
+          TIMESTAMP="$(date '+%s')"
 
-      - name: Build and Push image
-        run: |
-          docker tag "${{ env.REGISTRY }}/agoric/agoric-3-proposals:use-fast-usdc-beta" \
-           "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
-          docker images --all
-          docker push "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
+          if test -z "$(docker image ls --filter "reference=$IMAGE_ID:$TAG" --format json)"
+          then
+            echo "Pulling image $IMAGE_ID:$TAG"
+            docker pull --quiet "$IMAGE_ID:$TAG"
+          fi
+
+          CONTAINER_ID="$(docker container run --detach --entrypoint /bin/sleep "$IMAGE_ID:$TAG" infinity)"
+          docker exec "$CONTAINER_ID" /bin/bash -c "
+            ls --almost-all \$HOME/.agoric | \
+            grep --extended-regexp --invert-match '^(config|data|keyring-test)$' | \
+            xargs -I {} rm --force --recursive \$HOME/.agoric/{} && \
+            echo \"Zipping state of size \$(du --human-readable --null --summarize \$HOME/.agoric | awk '{printf \"%s\", \$1}')\" && \
+            tar --create --file \"/tmp/state-$TIMESTAMP\" --directory \$HOME/.agoric --gzip .
+          "
+          docker container cp --quiet "$CONTAINER_ID:/tmp/state-$TIMESTAMP" "/tmp/state-$TIMESTAMP"
+          docker container stop "$CONTAINER_ID" > /dev/null
+          docker container rm "$CONTAINER_ID" > /dev/null
 
 name: Proposal tests
 
