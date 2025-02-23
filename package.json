@@ -14,11 +14,7 @@
     "@agoric/synthetic-chain": "workspace:*"
   },
   "agoricSyntheticChain": {
-    "fromTag": null,
-    "platforms": [
-      "linux/amd64",
-      "linux/arm64"
-    ]
+    "fromTag": null
   },
   "license": "Apache-2.0",
   "packageManager": "yarn@4.6.0",
