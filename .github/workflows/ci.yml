@@ -69,7 +69,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-  
+
       - id: meta
         name: Extract metadata (tags, labels) for Docker
         uses: docker/metadata-action@v5
@@ -86,7 +86,6 @@ jobs:
           yarn build-cli
           yarn synthetic-chain prepare-build
 
-      # Verify that all "use" images build across platforms.
       - name: Build proposal "use" images
         uses: depot/bake-action@v1
         with:
@@ -101,7 +100,7 @@ jobs:
 
       - name: Build and Push image
         run: |
-          docker tag "${{ env.REGISTRY }}/${{ github.repository }}:latest" \
+          docker tag "${{ env.REGISTRY }}/agoric/agoric-3-proposals:latest" \
            "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
           docker push "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
 
