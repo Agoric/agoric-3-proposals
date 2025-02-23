@@ -70,18 +70,16 @@ jobs:
           yarn install
 
       - name: Build image
-        run: |
-          yarn build
-          docker images --all
+        run: yarn build
 
       - name: Build and run proposal tests
         run: yarn test
 
       - name: Build and Push image
         run: |
-          docker images --all
-          docker tag "${{ env.REGISTRY }}/agoric/agoric-3-proposals:latest" \
+          docker tag "${{ env.REGISTRY }}/agoric/agoric-3-proposals:use-fast-usdc-beta" \
            "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
+          docker images --all
           docker push "${{ env.REGISTRY }}/agoric/a3p-emerynet:${{ env.TIMESTAMP }}"
 
 name: Proposal tests
