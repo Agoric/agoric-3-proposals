@@ -114,6 +114,7 @@ jobs:
           docker container rm "$CONTAINER_ID" > /dev/null
 
           gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p-emerynet/state-$TIMESTAMP.tar.gz
+    timeout-minutes: 60
 
 name: Proposal tests
 
