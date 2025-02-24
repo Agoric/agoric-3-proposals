@@ -81,19 +81,25 @@ jobs:
           yarn install
 
       - name: Build image
-        run: yarn build
+        run: |
+          yarn build
+          docker images --all
 
-      - name: Build and run proposal tests
-        run: yarn test
+      - name: Run proposal tests
+        run: |
+          yarn test
+          docker images --all
 
       - name: Upload state to storage
         run: |
           #! /bin/bash
-          set -o errexit -o errtrace
+          set -o errexit -o errtrace -o xtrace
 
           IMAGE_ID="${{ env.REGISTRY }}/${{ github.repository }}"
           TAG="use-fast-usdc-beta"
           TIMESTAMP="$(date '+%s')"
+
+          docker images --all
 
           if test -z "$(docker image ls --filter "reference=$IMAGE_ID:$TAG" --format json)"
           then
