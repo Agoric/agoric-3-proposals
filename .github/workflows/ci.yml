@@ -41,7 +41,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    runs-on: 'ubuntu-latest'
+    runs-on: 'depot-ubuntu-22.04-16'
     steps:
       - name: free up disk space
         run: |
