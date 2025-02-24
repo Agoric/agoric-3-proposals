@@ -80,26 +80,20 @@ jobs:
           corepack enable || sudo corepack enable
           yarn install
 
-      - name: Build image
-        run: |
-          yarn build
-          docker images --all
+      - name: Build
+        run: yarn build
 
-      - name: Run proposal tests
-        run: |
-          yarn test
-          docker images --all
+      - name: Tests
+        run: yarn test
 
       - name: Upload state to storage
         run: |
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace
 
-          IMAGE_ID="${{ env.REGISTRY }}/${{ github.repository }}"
+          IMAGE_ID="$(echo "${{ env.REGISTRY }}/${{ github.repository }}" | awk '{print tolower($0)}')"
           TAG="use-fast-usdc-beta"
           TIMESTAMP="$(date '+%s')"
-
-          docker images --all
 
           if test -z "$(docker image ls --filter "reference=$IMAGE_ID:$TAG" --format json)"
           then
