@@ -3,12 +3,20 @@
 set -o errexit
 
 DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-PATCH_DIRECTORY_PATH="$DIRECTORY_PATH/node_modules/@agoric/synthetic-chain/dist/lib"
-PATCH_PATH="$DIRECTORY_PATH/synthetic-chain.patch"
 
+# shellcheck source=../../packages/synthetic-chain/public/upgrade-test-scripts/source.sh
+source "/usr/src/upgrade-test-scripts/source.sh"
+
+sed "$DIRECTORY_PATH/node_modules/@agoric/synthetic-chain/dist/lib/index.js" \
+ --expression "s|agoriclocal|$CHAIN_ID|" \
+ --in-place
+
+sed "$SDK_SRC/packages/agoric-cli/src/lib/rpc.js" \
+ --expression "s|agoriclocal|$CHAIN_ID|" \
+ --in-place
+
+# shellcheck source=../../packages/synthetic-chain/public/upgrade-test-scripts/env_setup.sh
 source /usr/src/upgrade-test-scripts/env_setup.sh
-
-patch_files "$PATCH_DIRECTORY_PATH" "$PATCH_PATH"
 
 cp /usr/src/upgrade-test-scripts/eval_submission.js .
 ./eval_submission.js

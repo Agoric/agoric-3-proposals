@@ -103,17 +103,36 @@ jobs:
 
           CONTAINER_ID="$(docker container run --detach --entrypoint /bin/sleep "$IMAGE_ID:$TAG" infinity)"
           docker exec "$CONTAINER_ID" /bin/bash -c "
+            set -o errexit
+
+            source \"/usr/src/upgrade-test-scripts/source.sh\"
+
+            set -o nounset
+
             ls --almost-all \$HOME/.agoric | \
             grep --extended-regexp --invert-match '^(config|data|keyring-test)$' | \
-            xargs -I {} rm --force --recursive \$HOME/.agoric/{} && \
-            echo \"Zipping state of size \$(du --human-readable --null --summarize \$HOME/.agoric | awk '{printf \"%s\", \$1}')\" && \
-            tar --create --file \"/tmp/state-$TIMESTAMP\" --directory \$HOME/.agoric --gzip .
+            xargs -I {} rm --force --recursive \$HOME/.agoric/{}
+
+            echo \"Zipping data of size \$(du --human-readable --null --summarize \$HOME/.agoric/data | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/data-$TIMESTAMP\" --directory \$HOME/.agoric --gzip data
+
+            echo \"Zipping config of size \$(du --human-readable --null --summarize \$HOME/.agoric/config | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/config-$TIMESTAMP\" --directory \$HOME/.agoric --gzip config
+
+            echo \"Zipping keyring-test of size \$(du --human-readable --null --summarize \$HOME/.agoric/keyring-test | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/keyring-test-$TIMESTAMP\" --directory \$HOME/.agoric --gzip keyring-test
           "
-          docker container cp --quiet "$CONTAINER_ID:/tmp/state-$TIMESTAMP" "/tmp/state-$TIMESTAMP"
+
+          docker container cp --quiet "$CONTAINER_ID:/tmp/data-$TIMESTAMP" "/tmp/data-$TIMESTAMP"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/config-$TIMESTAMP" "/tmp/config-$TIMESTAMP"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/keyring-test-$TIMESTAMP" "/tmp/keyring-test-$TIMESTAMP"
+
           docker container stop "$CONTAINER_ID" > /dev/null
           docker container rm "$CONTAINER_ID" > /dev/null
 
-          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p-emerynet/state-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/data-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/config-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/keyring-test-$TIMESTAMP.tar.gz
     timeout-minutes: 60
 
 name: Proposal tests
