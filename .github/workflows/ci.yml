@@ -101,39 +101,55 @@ jobs:
             docker pull --quiet "$IMAGE_ID:$TAG"
           fi
 
-          CONTAINER_ID="$(docker container run --detach --entrypoint /bin/sleep "$IMAGE_ID:$TAG" infinity)"
+          CHAIN_ID="$(
+            docker container run \
+              --entrypoint "/bin/bash" \
+              --rm \
+              "$IMAGE_ID:$TAG" \
+              -c \
+              "
+                set -o errexit -o nounset
+                source \"/usr/src/upgrade-test-scripts/source.sh\"
+                echo \$CHAIN_ID
+              "
+          )"
+          CONTAINER_ID="$(docker container run --detach --entrypoint "/bin/sleep" --name "$TAG" "$IMAGE_ID:$TAG" "infinity")"
+
           docker exec "$CONTAINER_ID" /bin/bash -c "
-            set -o errexit
+            set -o errexit -o nounset
+            AGORIC_HOME=\"\$HOME/.agoric\"
 
-            source \"/usr/src/upgrade-test-scripts/source.sh\"
-
-            set -o nounset
-
-            ls --almost-all \$HOME/.agoric | \
+            ls --almost-all \$AGORIC_HOME | \
             grep --extended-regexp --invert-match '^(config|data|keyring-test)$' | \
-            xargs -I {} rm --force --recursive \$HOME/.agoric/{}
+            xargs -I {} rm --force --recursive \$AGORIC_HOME/{}
 
-            echo \"Zipping data of size \$(du --human-readable --null --summarize \$HOME/.agoric/data | awk '{printf \"%s\", \$1}')\"
-            tar --create --file \"/tmp/data-$TIMESTAMP\" --directory \$HOME/.agoric --gzip data
+            echo \"Zipping data of size \$(du --human-readable --null --summarize \$AGORIC_HOME/data | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/data-$TIMESTAMP.tar.gz\" --directory \$AGORIC_HOME --gzip data
 
-            echo \"Zipping config of size \$(du --human-readable --null --summarize \$HOME/.agoric/config | awk '{printf \"%s\", \$1}')\"
-            tar --create --file \"/tmp/config-$TIMESTAMP\" --directory \$HOME/.agoric --gzip config
+            mv \$AGORIC_HOME/config/priv_validator_key.json /tmp/priv-validator-key-$TIMESTAMP.json
+            mv \$AGORIC_HOME/config/node_key.json /tmp/node-key-$TIMESTAMP.json
 
-            echo \"Zipping keyring-test of size \$(du --human-readable --null --summarize \$HOME/.agoric/keyring-test | awk '{printf \"%s\", \$1}')\"
-            tar --create --file \"/tmp/keyring-test-$TIMESTAMP\" --directory \$HOME/.agoric --gzip keyring-test
+            echo \"Zipping config of size \$(du --human-readable --null --summarize \$AGORIC_HOME/config | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/config-$TIMESTAMP.tar.gz\" --directory \$AGORIC_HOME --gzip config
+
+            echo \"Zipping keyring-test of size \$(du --human-readable --null --summarize \$AGORIC_HOME/keyring-test | awk '{printf \"%s\", \$1}')\"
+            tar --create --file \"/tmp/keyring-test-$TIMESTAMP.tar.gz\" --directory \$AGORIC_HOME --gzip keyring-test
           "
 
-          docker container cp --quiet "$CONTAINER_ID:/tmp/data-$TIMESTAMP" "/tmp/data-$TIMESTAMP"
-          docker container cp --quiet "$CONTAINER_ID:/tmp/config-$TIMESTAMP" "/tmp/config-$TIMESTAMP"
-          docker container cp --quiet "$CONTAINER_ID:/tmp/keyring-test-$TIMESTAMP" "/tmp/keyring-test-$TIMESTAMP"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/data-$TIMESTAMP.tar.gz" "/tmp/data-$TIMESTAMP.tar.gz"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/config-$TIMESTAMP.tar.gz" "/tmp/config-$TIMESTAMP.tar.gz"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/keyring-test-$TIMESTAMP.tar.gz" "/tmp/keyring-test-$TIMESTAMP.tar.gz"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/priv-validator-key-$TIMESTAMP.json" "/tmp/priv-validator-key-$TIMESTAMP.json"
+          docker container cp --quiet "$CONTAINER_ID:/tmp/node-key-$TIMESTAMP.json" "/tmp/node-key-$TIMESTAMP.json"
 
           docker container stop "$CONTAINER_ID" > /dev/null
           docker container rm "$CONTAINER_ID" > /dev/null
 
-          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/data-$TIMESTAMP.tar.gz
-          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/config-$TIMESTAMP.tar.gz
-          gsutil cp "/tmp/state-$TIMESTAMP" gs://${{ env.BUCKET_NAME }}/a3p/\$CHAIN_ID/keyring-test-$TIMESTAMP.tar.gz
-    timeout-minutes: 60
+          gsutil cp "/tmp/data-$TIMESTAMP.tar.gz" gs://${{ env.BUCKET_NAME }}/a3p/$CHAIN_ID/data-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/config-$TIMESTAMP.tar.gz" gs://${{ env.BUCKET_NAME }}/a3p/$CHAIN_ID/config-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/keyring-test-$TIMESTAMP.tar.gz" gs://${{ env.BUCKET_NAME }}/a3p/$CHAIN_ID/keyring-test-$TIMESTAMP.tar.gz
+          gsutil cp "/tmp/priv-validator-key-$TIMESTAMP.json" gs://${{ env.BUCKET_NAME }}/a3p/$CHAIN_ID/priv-validator-key-$TIMESTAMP.json
+          gsutil cp "/tmp/node-key-$TIMESTAMP.json" gs://${{ env.BUCKET_NAME }}/a3p/$CHAIN_ID/node-key-$TIMESTAMP.json
 
 name: Proposal tests
 
