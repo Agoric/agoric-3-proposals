@@ -37,6 +37,7 @@ const makeSwingstoreTool = db => {
   /** @param {string} key */
   // @ts-expect-error sqlite typedefs
   const kvGet = key => sql.get`select * from kvStore where key = ${key}`.value;
+  const kvGetSafe = key => sql.get`select * from kvStore where key = ${key}`;
   /** @param {string} key */
   const kvGetJSON = key => JSON.parse(kvGet(key));
 
@@ -48,6 +49,10 @@ const makeSwingstoreTool = db => {
       currentSpan: () =>
         sql.get`select * from transcriptSpans where isCurrent = 1 and vatID = ${vatID}`,
       terminated: () => {
+        const t = kvGetSafe('vat.terminated');
+        if (!t) {
+          return false;
+        }
         const terminatedIDs = kvGetJSON('vat.terminated');
         return terminatedIDs.some(terminatedID => vatID === terminatedID);
       },
