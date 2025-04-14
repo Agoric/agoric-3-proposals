@@ -1,0 +1,13 @@
+diff --git a/packages/SwingSet/src/kernel/vat-warehouse.js b/packages/SwingSet/src/kernel/vat-warehouse.js
+index 327b74fd4..c6d6668bb 100644
+--- a/packages/SwingSet/src/kernel/vat-warehouse.js
++++ b/packages/SwingSet/src/kernel/vat-warehouse.js
+@@ -243,7 +243,7 @@ export function makeVatWarehouse({
+   panic,
+   warehousePolicy,
+ }) {
+-  const { maxVatsOnline = 50, restartWorkerOnSnapshot = true } =
++  const { maxVatsOnline = 5, restartWorkerOnSnapshot = true } =
+     warehousePolicy || {};
+   // Often a large contract evaluation is among the first few deliveries,
+   // so let's do a snapshot after just a few deliveries.
