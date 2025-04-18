@@ -17,11 +17,14 @@ source /usr/src/upgrade-test-scripts/env_setup.sh
 # test_val "$(agd q vstorage data published.wallet.$GOV1ADDR -o json | jq -r .value)" "" "ensure gov1 not provisioned"
 # test_val "$(agd q vstorage data published.wallet.$GOV2ADDR -o json | jq -r .value)" "" "ensure gov2 not provisioned"
 # test_val "$(agd q vstorage data published.wallet.$GOV3ADDR -o json | jq -r .value)" "" "ensure gov3 not provisioned"
+echo "$(agd q vstorage data published.wallet.$GOV1ADDR -o json | jq -r .value)"
+echo "$(agd q vstorage data published.wallet.$GOV2ADDR -o json | jq -r .value)"
+echo "$(agd q vstorage data published.wallet.$GOV3ADDR -o json | jq -r .value)"
 
 # waitForBlock 2
 #endregion
 
-# waitForBlock 3
+waitForBlock 3
 # fund provision pool
 stakeamount="20000000${USDC_DENOM}"
 # shellcheck disable=SC2086
@@ -35,9 +38,9 @@ govamount="200000000ubld,100000000${USDC_DENOM},100000000${ATOM_DENOM}"
 #   provisionSmartWallet "$i" "$govamount"
 # done
 
-provisionSmartWallet "$USER1ADDR" "20000000ubld"
+# provisionSmartWallet "$USER1ADDR" "20000000ubld"
 
-waitForBlock 5
+# waitForBlock 5
 
 # echo DEBUG Accept invitation to economic committee
 # # Accept invitation to economic committee
