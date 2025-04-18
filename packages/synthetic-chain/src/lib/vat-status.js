@@ -54,29 +54,58 @@ const makeSwingstoreTool = db => {
           return false;
         }
         const terminatedIDs = kvGetJSON('vat.terminated');
-        return terminatedIDs.some(terminatedID => vatID === terminatedID);
+        return terminatedIDs.includes(vatID);
       },
     });
   };
 
   return Object.freeze({
-    /** @param {string} vatName */
+    /**
+     * Return the vatID for a vat whose name includes the provided string, or an
+     * error if there is no such vat. If multiple vats match, the return value
+     * prefers static vats over dynamic vats but makes no other guarantees.
+     *
+     * @param {string} vatName
+     */
     findVat: vatName => {
       /** @type {string[]} */
-      const dynamicIDs = kvGetJSON('vat.dynamicIDs');
-      const targetVat = dynamicIDs.find(vatID =>
-        lookupVat(vatID).options().name.includes(vatName),
-      );
-      if (!targetVat) throw Error(`vat not found: ${vatName}`);
-      return targetVat;
-    },
-    /** @param {string} string a substring to search for within the vat name. */
-    findVats: string => {
+      const staticNames = kvGetJSON('vat.names');
+      for (const staticName of staticNames) {
+        if (staticName.includes(vatName)) {
+          return kvGet(`vat.name.${staticName}`);
+        }
+      }
       /** @type {string[]} */
       const dynamicIDs = kvGetJSON('vat.dynamicIDs');
-      return dynamicIDs.filter(vatID =>
-        lookupVat(vatID).options().name.includes(string),
-      );
+      for (const vatID of dynamicIDs) {
+        if (lookupVat(vatID).options().name.includes(vatName)) {
+          return vatID;
+        }
+      }
+      throw Error(`vat not found: ${vatName}`);
+    },
+    /**
+     * Return an array of vatIDs for which the vat name includes the provided string.
+     *
+     * @param {string} vatName
+     */
+    findVats: vatName => {
+      const vatIDs = [];
+      /** @type {string[]} */
+      const staticNames = kvGetJSON('vat.names');
+      for (const staticName of staticNames) {
+        if (staticName.includes(vatName)) {
+          vatIDs.push(kvGet(`vat.name.${staticName}`));
+        }
+      }
+      /** @type {string[]} */
+      const dynamicIDs = kvGetJSON('vat.dynamicIDs');
+      for (const vatID of dynamicIDs) {
+        if (lookupVat(vatID).options().name.includes(vatName)) {
+          vatIDs.push(vatID);
+        }
+      }
+      return vatIDs;
     },
     lookupVat,
   });
@@ -97,13 +126,11 @@ const buildSwingstoreTool = () => {
 const getVatDetailsFromID = (kStore, vatID) => {
   const vatInfo = kStore.lookupVat(vatID);
   const vatName = vatInfo.options().name;
-
   const source = vatInfo.source();
   const { incarnation } = /** @type {{incarnation: number}} */ (
     vatInfo.currentSpan()
   );
   const terminated = vatInfo.terminated();
-
   return { vatName, vatID, incarnation, ...source, terminated };
 };
 
