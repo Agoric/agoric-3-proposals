@@ -1,9 +1,14 @@
 env:
   BUCKET_NAME: 'agoric-snapshots-public'
   PROJECT_ID: 60745596728
+  PROJECT_NAME: 'simulationlab'
+  VM_NAME: 'jump-3'
+  VM_REGION: 'us-central1-a'
 
 jobs:
   create-snapshot:
+    if: ${{ github.event.pull_request.merged }} == 'true'
+    name: Create Mainfork Snapshot
     permissions:
       contents: read
       id-token: write
@@ -12,6 +17,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Cloud SDK auth
         uses: google-github-actions/auth@v2
@@ -22,21 +29,55 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
+      - id: get-proposal-count-difference
+        name: Get Proposals Count Difference
+        run: |
+          #! /bin/bash
+          set -o errexit -o errtrace -o xtrace
+
+          PRE_MERGE_COMMIT="${{ github.event.pull_request.base.sha }}"
+
+          get_number_of_proposals() {
+            find 'proposals' -maxdepth 1 -mindepth 1 -type d | \
+            while read directory
+            do
+                if find "$directory" -type f | grep --silent .
+                then
+                    echo "$directory"
+                fi
+            done |
+            wc --lines
+          }
+
+          current_count="$(get_number_of_proposals)"
+          git checkout "$PRE_MERGE_COMMIT"
+          previous_count="$(get_number_of_proposals)"
+          echo "DIFFERENCE=$((AFTER - BEFORE))" >> $GITHUB_OUTPUT
+
       - name: Script
         run: |
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace
 
-          PROJECT_NAME="simulationlab"
-          REGION="us-central1-a"
-          VM_NAME="jump-3"
+          IMAGE_TAG="$(
+            curl --silent "https://followmain.agoric.net" | \
+            sed --regexp-extended --silent 's|.*ghcr.io/agoric/agoric-sdk:([0-9]+).*|\1|p'
+          )"
+
+          if test "${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}" -gt "0"
+          then
+            echo "difference: ${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}"
+          fi
 
           # gsutil rm -a -f "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/keyring-test.tar.gz"
-          gcloud compute ssh "$VM_NAME" \
-            --command "echo hello world" --project "$PROJECT_NAME" --zone "$REGION"
+          gcloud compute ssh "${{ env.VM_NAME }}" \
+            --command "echo hello world" --project "${{ env.PROJECT_NAME }}" --zone "${{ env.VM_REGION }}"
 
 name: Create Mainfork Snapshot
 
 on:
-  push:
-    branches: [usman/mainfork-snapshot]
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
