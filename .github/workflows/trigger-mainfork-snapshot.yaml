@@ -1,0 +1,42 @@
+env:
+  BUCKET_NAME: 'agoric-snapshots-public'
+  PROJECT_ID: 60745596728
+
+jobs:
+  create-snapshot:
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Cloud SDK auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: projects/${{ env.PROJECT_ID }}/locations/global/workloadIdentityPools/github/providers/${{ github.event.repository.name }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Script
+        run: |
+          #! /bin/bash
+          set -o errexit -o errtrace -o xtrace
+
+          PROJECT_NAME="simulationlab"
+          REGION="us-central1-a"
+          VM_NAME="jump-3"
+
+          gsutil rm -a "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/keyring-test.tar.gz"
+          gcloud compute ssh "$VM_NAME" \
+            --command "echo hello world" --project "$PROJECT_NAME" --zone "$REGION"
+
+name: Create Mainfork Snapshot
+
+on:
+  push:
+    branches: [usman/mainfork-snapshot]
