@@ -1,9 +1,6 @@
 env:
   BUCKET_NAME: 'agoric-snapshots-public'
   PROJECT_ID: 60745596728
-  PROJECT_NAME: 'simulationlab'
-  VM_NAME: 'jump-3'
-  VM_REGION: 'us-central1-a'
 
 jobs:
   create-snapshot:
@@ -38,7 +35,7 @@ jobs:
           PRE_MERGE_COMMIT="${{ github.event.pull_request.base.sha }}"
 
           get_number_of_proposals() {
-            find 'proposals' -maxdepth 1 -mindepth 1 -type d | \
+            find '.' -maxdepth 1 -mindepth 1 -type d | \
             while read directory
             do
                 if find "$directory" -type f | grep --silent .
@@ -52,9 +49,10 @@ jobs:
           current_count="$(get_number_of_proposals)"
           git checkout "$PRE_MERGE_COMMIT"
           previous_count="$(get_number_of_proposals)"
-          echo "DIFFERENCE=$((AFTER - BEFORE))" >> $GITHUB_OUTPUT
+          echo "DIFFERENCE=$((current_count - previous_count))" >> $GITHUB_OUTPUT
+        working-directory: proposals
 
-      - name: Script
+      - name: Trigger snapshot creation
         run: |
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace
@@ -66,12 +64,14 @@ jobs:
 
           if test "${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}" -gt "0"
           then
-            echo "difference: ${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}"
+            gsutil rm \
+              -a \
+              -f \
+              "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/keyring-test.tar.gz" \
+              "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/priv_validator_state.json"
+            IMAGE_TAG="$IMAGE_TAG" ./mainfork-snapshot.sh
           fi
-
-          # gsutil rm -a -f "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/keyring-test.tar.gz"
-          gcloud compute ssh "${{ env.VM_NAME }}" \
-            --command "echo hello world" --project "${{ env.PROJECT_NAME }}" --zone "${{ env.VM_REGION }}"
+        working-directory: scripts
 
 name: Create Mainfork Snapshot
 
