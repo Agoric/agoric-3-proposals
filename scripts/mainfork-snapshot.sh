@@ -166,6 +166,7 @@ execute_command_inside_vm "
         echo \"\$token\"
     }
     main() {
+        trap stop_vm EXIT
         cd $PARENT_FOLDER
         clone_repository
         cd $REPOSITORY_FOLDER_NAME
@@ -187,7 +188,6 @@ execute_command_inside_vm "
         upload_file_to_storage $BUCKET_NAME mainfork-snapshots/$VALIDATOR_STATE_FILE_NAME state/$VALIDATOR_STATE_FILE_NAME
         upload_file_to_storage $BUCKET_NAME mainfork-snapshots/keyring-test.tar.gz state/keyring-test.tar.gz
         remove_repository
-        stop_vm
     }
     remove_all_running_containers() {
         docker container ls --all --format '{{.ID}}' | \

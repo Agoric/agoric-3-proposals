@@ -57,10 +57,18 @@ jobs:
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace
 
+          FOLLOWER_HOMEPAGE="https://followmain.agoric.net"
+
           IMAGE_TAG="$(
-            curl --silent "https://followmain.agoric.net" | \
+            curl --silent "$FOLLOWER_HOMEPAGE" | \
             sed --regexp-extended --silent 's|.*ghcr.io/agoric/agoric-sdk:([0-9]+).*|\1|p'
           )"
+
+          if test -z "$IMAGE_TAG"
+          then
+            echo "Couldn't extract image tag from '$FOLLOWER_HOMEPAGE'"
+            exit 1
+          fi
 
           if test "${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}" -gt "0"
           then
