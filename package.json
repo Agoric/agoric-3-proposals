@@ -11,7 +11,8 @@
     "lint": "prettier --check ."
   },
   "dependencies": {
-    "@agoric/synthetic-chain": "workspace:*"
+    "@agoric/synthetic-chain": "workspace:*",
+    "@changesets/cli": "^2.29.4"
   },
   "agoricSyntheticChain": {
     "fromTag": null,
