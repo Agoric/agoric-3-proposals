@@ -7,6 +7,7 @@
     "build-cli": "cd packages/synthetic-chain && yarn build --silent",
     "build": "yarn build-cli && synthetic-chain build",
     "doctor": "yarn synthetic-chain doctor",
+    "release": "yarn build-cli && yarn changeset publish",
     "test": "yarn build-cli && synthetic-chain test",
     "lint": "prettier --check ."
   },
