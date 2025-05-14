@@ -46,8 +46,8 @@ export const flags = (record: Record<string, string>): string[] => {
 };
 
 export const txAbbr = (tx: any) => {
-  const { txhash, code, height, gas_used } = tx;
-  return { txhash, code, height, gas_used };
+  const { txhash, codespace, code, height, gas_used } = tx;
+  return { txhash, codespace, code, height, gas_used };
 };
 
 export const loadedBundleIds = (swingstore: any) => {
