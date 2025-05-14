@@ -26,26 +26,49 @@ The `-p` is short for [publish](https://docs.docker.com/network/#published-ports
 
 ## Design
 
-## Stages
+The build is [multi-stage](https://docs.docker.com/build/building/multi-stage/) with several kinds of stages as implemented by [dockerfileGen.ts](./packages/synthetic-chain/src/cli/dockerfileGen.ts).
 
-The build is [multi-stage](https://docs.docker.com/build/building/multi-stage/) with several kinds of stages:
+<details><summary>Build stage sequence</summary>
 
-- `START` The very first stage, which run `ag0` instead of `agd` as the other layers do. (This was the version of `agd` before JS VM.)
-- `PREPARE` For upgrade proposals: submits the proposal, votes on it, runs to halt for the next stage
-- `EXECUTE` For upgrade proposals: starts `agd` with the new SDK, letting its upgrade handler upgrade the chain
-- `EVAL` For core-eval proposals: submits the proposal, votes on it, and begin executing. Does not guarantee the eval will finish but does wait several blocks to give it a chance.
+```mermaid
+---
+title: Build Stages
+---
+flowchart TD
+    M{Mode?}
+    M -- FromAg0 --> S[START]
+    M -- Append --> R[RESUME]
+    S --> NP{Proposal type}
+    R --> NP
+    NP -- &quot;Software Upgrade Proposal&quot; ----> Pr[PREPARE]
+    Pr ----> Exec[EXECUTE]
+    Exec ----> Use[USE]
+    Use ----> Test[TEST]
+    NP -- other proposal (core-eval or param-change) ----> Eval[EVAL]
+    Eval ----> Use
+    Test ----> AP{Another proposal?}
+    AP -- Yes ----> NP
+    AP -- No ----> END["DEFAULT (last USE)"]
+    END -.-> Use
+```
 
-All proposals then have two additional stages:
+</details>
 
-- `USE` Perform actions to update the chain state, to persist through the chain history. E.g. adding a vault that will be tested again in the future.
-- `TEST` Test the chain state and perform new actions that should not be part of history. E.g. adding a contract that never was on Mainnet.
+| Stage Type | Scope                            | Description                                                                                                                                                                                       |
+| ---------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| START      | base                             | The very first stage, which run `ag0` instead of `agd` as the other layers do. (This was the version of `agd` before JS VM.)                                                                      |
+| PREPARE    | chain software upgrade proposals | submits the proposal, votes on it, runs to halt for the next stage                                                                                                                                |
+| EXECUTE    | chain software upgrade proposals | starts `agd` with the new SDK, letting its upgrade handler upgrade the chain                                                                                                                      |
+| EVAL       | other proposals                  | submits the proposal, votes on it, and begin executing. Does not guarantee the eval will finish but does wait several blocks to give it a chance.                                                 |
+| USE        | all proposals                    | Perform actions to update the chain state, to persist through the chain history. E.g. adding a vault that will be tested again in the future.                                                     |
+| TEST       | all proposals                    | Test the chain state and perform new actions that should not be part of history. E.g. adding a contract that never was on Mainnet.                                                                |
+| DEFAULT    | tip                              | Run the last USE image with entrypoint `./start_agd.sh`, invoking the chain node with all passed proposals and no termination condition. This is a convenient base for further derivative images. |
 
-The `TEST` stage does not RUN as part of the build. It only copies test files into the image and defines the ENTRYPOINT. CI runs those entrypoints to execute the tests.
+`TEST` stages do not RUN as part of the build; they only copy test files into the image and define [ENTRYPOINT](https://docs.docker.com/reference/dockerfile/#entrypoint).
+CI runs those entrypoints to execute the tests.
 (Note that some other phases use tests too, for example to pre-test, so files like `pre.test.js` are always copied. Only `test.sh` and a `test` dir are excluded from stages before TEST.)
 
 The `USE` stage is built into images that are pushed to the image repository. These can be used by release branches to source a particular state of the synthetic chain.
-
-Finally there is a `DEFAULT` target which take the last `USE` image and sets its entrypoint to `./start_agd.sh` which runs the chain indefinitely. This makes it easy to source that image as a way to _run_ the synthetic chain with all passed proposals.
 
 ## Proposals
 
@@ -67,18 +90,22 @@ If the proposal is _pending_ and does not yet have a number, use a letter. The p
 
 ### Files
 
-- `package.json` specifies what kind of proposal it is in a `agoricProposal` field. If it's a "Software Upgrade Proposal" it also includes additional parameters.
-- `use.sh` is the script that will be run in the USE stage of the build
-- `test.sh` is the script that will be _included_ in the TEST stage of the build, and run in CI
-- `test` folder contents will be copied only to the `test` image
-- `setup-test.sh` is an optional script which can be used to run setup steps _inside_ the container. It runs _before_ the chain starts.
-- `teardown-test.sh` is an optional script which can be used to run teardown steps _inside_ the container. It runs _after_ the chain stops.
-- `host` folder is the home of these scripts:
+All files are optional other than `package.json` and `test.sh`.
 
-  - `before-test-run.sh` is an optional script which can be used to run setup steps on the _host_ (like starting a follower). It runs _before_ the container launches.
-  - `after-test-run.sh` is an optional script which can be used to run teardown steps on the _host_ (like stopping a follower). It runs _after_ the container exits.
-
-  _`host` folder contents will never be copied to a Docker image_
+- `package.json` must include an object-valued `agoricProposal` field with a `type` property specifying the type of proposal (one of "/cosmos.params.v1beta1.ParameterChangeProposal", "/agoric.swingset.CoreEvalProposal", or "Software Upgrade Proposal"). `agoricProposal` may also include other properties (e.g., `upgradeInfo` as used by [agoric-sdk/a3p-integration](https://github.com/Agoric/agoric-sdk/tree/7ed74d76185ae163c4df6254e8ff6b76cfac56ce/a3p-integration)), and if the type is "Software Upgrade Proposal" then it MUST include
+  - `planName`: the cosmos-sdk "upgrade name" to target
+  - `releaseNotes`: a URL to e.g. `https://github.com/Agoric/agoric-sdk/releases/tag/$releaseName`, or `false` for an unreleased upgrade
+  - `sdkImageTag`: the tag to use for the output Docker image
+- `prepare.sh` is executed while the chain node is running but before the proposal is submitted.
+- `eval.sh` is executed in the EVAL stage while the chain node is running, as a replacement of default behavior based on `submission/`.
+- `submission/` is scanned for $name.js core-eval proposal scripts, corresponding $name-permit.json permits, and referenced b1-$hash.json bundles. [Default EVAL stage behavior](https://github.com/Agoric/agoric-3-proposals/blob/main/packages/synthetic-chain/public/upgrade-test-scripts/eval_submission.js) installs the bundles and submits a core-eval proposal referencing all of the ($name-permit.json, $name.js) pairs.
+- `use.sh` is executed in the USE stage while the chain node is running.
+- `setup-test.sh` is executed in the TEST stage _before_ the chain node is started.
+- `test.sh` is executed in the TEST stage while the chain node is running.
+- `teardown-test.sh` is executed in the TEST stage _after_ the chain node is stopped.
+- `test/` is copied into the TEST stage image for use by other files.
+- `host/before-test-run.sh` is executed on the Docker _host_ before launching a container for the TEST stage (useful for e.g. starting a follower).
+- `host/after-test-run.sh` is executed on the Docker _host_ after a container for the TEST stage exits (useful for e.g. stopping a follower).
 
 ## Development
 
