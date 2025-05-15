@@ -22,28 +22,7 @@ doctor          - diagnostics and quick fixes
 
 ## Design
 
-It builds images starting from ag0 or an already build synthetic-chain. The build stages sequence is produced by `dockerfileGen.ts` approximately as so:
-
-```mermaid
----
-title: Build Stages
----
-flowchart TD
-    M{Mode?}
-    M -- FromAg0 --> S[START]
-    M -- Append --> R[RESUME]
-    S --> NP{Proposal type}
-    R --> NP
-    NP -- Software Upgrade Proposal ----> Pr[PREPARE]
-    Pr ----> Exec[EXECUTE]
-    Exec ----> Use[USE]
-    Use ----> Test[TEST]
-    NP -- CoreEvalProposal ----> Eval[EVAL]
-    Eval ----> Use
-    Test ----> AP{Another proposal?}
-    AP -- Yes ----> NP
-    AP -- No ----> END[DEFAULT last use]
-```
+[dockerfileGen.ts](./src/cli/dockerfileGen.ts) generates a Dockerfile for the multi-stage build described in the [repository README](../../README.md).
 
 ## Development
 
