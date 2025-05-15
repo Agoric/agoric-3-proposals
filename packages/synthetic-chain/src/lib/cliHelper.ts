@@ -1,16 +1,23 @@
 import { $, execaCommand } from 'execa';
 import { BINARY, SDK_ROOT } from './constants.js';
+import type { Options as ExecaOptions } from 'execa';
 
 export const executeCommand = async (
   command: string,
   params: string[],
-  options = {},
+  options: Omit<
+    ExecaOptions,
+    'buffer' | 'encoding' | 'lines' | 'stdio' | 'stdout'
+  > = {},
 ) => {
-  const { stdout } = await execaCommand(
-    `${command} ${params.join(' ')}`,
-    options,
-  );
-  return stdout;
+  const invocation = `${command} ${params.join(' ')}`;
+  console.warn('# invoking:', invocation);
+  const result = await execaCommand(invocation, options);
+  if (!options.stderr) {
+    const { stderr } = result;
+    if (stderr) console.warn(stderr);
+  }
+  return result.stdout;
 };
 
 export const agd = {
