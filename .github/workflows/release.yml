@@ -1,9 +1,5 @@
 name: Release
 
-permissions:
-  contents: write
-  pull-requests: write # the action creates a pull request for the pending release
-
 on:
   push:
     branches:
