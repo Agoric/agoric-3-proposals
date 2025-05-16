@@ -35,7 +35,17 @@ export const makeAgd = ({
     const exec = (
       args: string[],
       opts?: ExecFileSyncOptionsWithStringEncoding,
-    ) => execFileSync(agdBinary, args, opts).toString();
+    ) => {
+      console.warn(
+        '# invoking agd:',
+        ...[agdBinary, ...args].map(arg =>
+          arg.match(/[^a-zA-Z0-9,._+:@%/-]/)
+            ? `'${arg.replaceAll(`'`, `'\\''`)}'`
+            : arg,
+        ),
+      );
+      return execFileSync(agdBinary, args, opts).toString();
+    };
 
     const outJson = ['--output', 'json'];
 

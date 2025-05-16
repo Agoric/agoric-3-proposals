@@ -170,7 +170,7 @@ export const passCoreEvalProposal = async (
           ['swingset', 'install-bundle', `@${bundleRd}`],
           { from, chainId, yes: true },
         );
-        console.log(txAbbr(result));
+        console.log(result.code === 0 ? txAbbr(result) : result);
         assert.equal(result.code, 0);
 
         const info = await getContractInfo('bundles', { agoric, prefix: '' });
