@@ -1,0 +1,90 @@
+env:
+  BUCKET_NAME: 'agoric-snapshots-public'
+  PROJECT_ID: 60745596728
+
+jobs:
+  create-snapshot:
+    if: ${{ github.event.pull_request.merged }} == 'true'
+    name: Create Mainfork Snapshot
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Cloud SDK auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: projects/${{ env.PROJECT_ID }}/locations/global/workloadIdentityPools/github/providers/${{ github.event.repository.name }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - id: get-proposal-count-difference
+        name: Get Proposals Count Difference
+        run: |
+          #! /bin/bash
+          set -o errexit -o errtrace -o xtrace
+
+          PRE_MERGE_COMMIT="${{ github.event.pull_request.base.sha }}"
+
+          get_number_of_proposals() {
+            find '.' -maxdepth 1 -mindepth 1 -type d | \
+            while read directory
+            do
+                if find "$directory" -type f | grep --silent .
+                then
+                    echo "$directory"
+                fi
+            done |
+            wc --lines
+          }
+
+          current_count="$(get_number_of_proposals)"
+          git checkout "$PRE_MERGE_COMMIT"
+          previous_count="$(get_number_of_proposals)"
+          echo "DIFFERENCE=$((current_count - previous_count))" >> $GITHUB_OUTPUT
+        working-directory: proposals
+
+      - name: Trigger snapshot creation
+        run: |
+          #! /bin/bash
+          set -o errexit -o errtrace -o xtrace
+
+          FOLLOWER_HOMEPAGE="https://followmain.agoric.net"
+
+          if test "${{ steps.get-proposal-count-difference.outputs.DIFFERENCE }}" -gt "0"
+          then
+            IMAGE_TAG="$(
+              curl --silent "$FOLLOWER_HOMEPAGE" | \
+              sed --regexp-extended --silent 's|.*ghcr.io/agoric/agoric-sdk:([0-9]+).*|\1|p'
+            )"
+
+            if test -z "$IMAGE_TAG"
+            then
+              echo "Couldn't extract image tag from '$FOLLOWER_HOMEPAGE'"
+              exit 1
+            fi
+
+            gsutil rm \
+              -a \
+              -f \
+              "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/keyring-test.tar.gz" \
+              "gs://${{ env.BUCKET_NAME }}/mainfork-snapshots/priv_validator_state.json"
+            IMAGE_TAG="$IMAGE_TAG" ./mainfork-snapshot.sh
+          fi
+        working-directory: scripts
+
+name: Create Mainfork Snapshot
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
