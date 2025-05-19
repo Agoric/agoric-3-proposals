@@ -1,6 +1,7 @@
 import dbOpenAmbient from 'better-sqlite3';
-import { HOME } from './constants.js';
 import { NonNullish } from './assert.js';
+
+export const HOME = NonNullish(process.env.HOME);
 
 /**
  * @file look up vat incarnation from kernel DB
