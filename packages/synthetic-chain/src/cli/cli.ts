@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --import ts-blank-space/register
 /**
  * @file CLI entrypoint, transpiled during build so Node is the env to run it in
  */

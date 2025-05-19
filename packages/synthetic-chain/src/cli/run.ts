@@ -2,7 +2,7 @@ import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { existsSync, realpathSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { fileSync as createTempFile } from 'tmp';
-import { ProposalInfo, imageNameForProposal } from './proposals.js';
+import { type ProposalInfo, imageNameForProposal } from './proposals.js';
 
 const createMessageFile = (proposal: ProposalInfo) =>
   createTempFile({ prefix: proposal.proposalName });
