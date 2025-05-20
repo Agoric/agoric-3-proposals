@@ -31,7 +31,8 @@ jobs:
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace
 
-          PRE_MERGE_COMMIT="${{ github.event.pull_request.base.sha }}"
+          PRE_MERGE_COMMIT=${{ github.event.before }}
+          POST_MERGE_COMMIT=${{ github.event.after }}
 
           get_number_of_proposals() {
             find '.' -maxdepth 1 -mindepth 1 -type d | \
@@ -45,9 +46,12 @@ jobs:
             wc --lines
           }
 
-          current_count="$(get_number_of_proposals)"
-          git checkout "$PRE_MERGE_COMMIT"
+          git checkout "$PRE_MERGE_COMMIT" --detach
           previous_count="$(get_number_of_proposals)"
+
+          git checkout "$POST_MERGE_COMMIT" --detach
+          current_count="$(get_number_of_proposals)"
+
           echo "DIFFERENCE=$((current_count - previous_count))" >> $GITHUB_OUTPUT
         working-directory: proposals
 
@@ -83,8 +87,6 @@ jobs:
 name: Create Mainfork Snapshot
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
