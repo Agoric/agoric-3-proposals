@@ -134,3 +134,7 @@ dist
 Dockerfile
 docker-bake.*
 /upgrade-test-scripts
+
+.aider*
+!.aiderignore
+
