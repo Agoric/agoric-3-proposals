@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { glob } from 'glob';
-import { ProposalInfo } from './proposals.js';
+import { type ProposalInfo } from './proposals.js';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
 

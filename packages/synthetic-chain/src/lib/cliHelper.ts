@@ -1,6 +1,9 @@
-import { $, execaCommand } from 'execa';
-import { BINARY, SDK_ROOT } from './constants.js';
 import type { Options as ExecaOptions } from 'execa';
+import { $, execaCommand } from 'execa';
+import { NonNullish } from './assert.js';
+import { SDK_ROOT } from './constants.js';
+
+export const BINARY = NonNullish(process.env.binary);
 
 export const executeCommand = async (
   command: string,
