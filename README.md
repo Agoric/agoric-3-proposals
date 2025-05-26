@@ -82,7 +82,7 @@ The `USE` stage is built into images that are pushed to the image repository. Th
 
 Each proposal is defined as a subdirectory of `proposals`. E.g. `16:upgrade-8`.
 
-The leading number is its number as submitted to the agoric-3 chain. These are viewable at https://bigdipper.live/agoric/proposals
+The leading number is its number as submitted to the agoric-3 chain. These are viewable at https://docs.agoric.com/guides/zoe/proposal.html#proposals
 
 The string after `:` is the local label for the proposal. It should be distinct, concise, and lowercase. (The string is used in the Dockerfile in a token that must be lowercase.)
 
