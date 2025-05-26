@@ -1,0 +1,17 @@
+{
+  "name": "eval-fast-usdc-evm-dests",
+  "script": "eval-fast-usdc-evm-dests.js",
+  "permit": "eval-fast-usdc-evm-dests-permit.json",
+  "bundles": [
+    {
+      "entrypoint": "@aglocal/fast-usdc-deploy/dist/fast-usdc.contract.bundle.js",
+      "bundleID": "b1-57337cfe14b7313808db4f60b65ac24849aaee9b3267d197dbb13e34b2bbb98851a49d2e9ae815dbbb6797af645231752b8db7e9c9587d1c20c790e4c808456c",
+      "fileName": "/Users/mujahid/.agoric/cache/b1-57337cfe14b7313808db4f60b65ac24849aaee9b3267d197dbb13e34b2bbb98851a49d2e9ae815dbbb6797af645231752b8db7e9c9587d1c20c790e4c808456c.json"
+    },
+    {
+      "entrypoint": "./upgrade-evm-dests.core.js",
+      "bundleID": "b1-9d3c89aa07f23338ca990bc2dba3f05d6de7a1bbbce6b2228070df6220b53627ba0a630b7fc16edbf36ff514f9801540f799a4ea68158a8b708ed6b4eb0ccd36",
+      "fileName": "/Users/mujahid/.agoric/cache/b1-9d3c89aa07f23338ca990bc2dba3f05d6de7a1bbbce6b2228070df6220b53627ba0a630b7fc16edbf36ff514f9801540f799a4ea68158a8b708ed6b4eb0ccd36.json"
+    }
+  ]
+}
