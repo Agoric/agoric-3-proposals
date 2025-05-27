@@ -1,9 +1,9 @@
 import { $, type TemplateExpression } from 'execa';
+import assert from 'node:assert';
 import fsp from 'node:fs/promises';
 import * as path from 'node:path';
-import { agd, agoric, agops } from './cliHelper.js';
-import { CHAINID, HOME, VALIDATORADDR } from './constants.js';
-import assert from 'node:assert';
+import { agd, agops, agoric } from './cliHelper.js';
+import { CHAINID, VALIDATORADDR } from './constants.js';
 
 const waitForBootstrap = async (): Promise<number> => {
   const endpoint = 'localhost';

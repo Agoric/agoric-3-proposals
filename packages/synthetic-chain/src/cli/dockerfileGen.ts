@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { Platform } from './build.js';
+import { type Platform } from './build.js';
 import {
   encodeUpgradeInfo,
   imageNameForProposal,

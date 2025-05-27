@@ -1,7 +1,7 @@
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ProposalInfo } from './proposals.js';
+import { type ProposalInfo } from './proposals.js';
 
 export type Platform = 'linux/amd64' | 'linux/arm64';
 

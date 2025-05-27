@@ -1,7 +1,5 @@
 import assert from 'node:assert';
 import type { ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
-import { CHAINID, VALIDATORADDR } from './constants.js';
-import { agd } from './cliHelper.js';
 
 const { freeze } = Object;
 
@@ -54,6 +52,7 @@ export const makeAgd = ({
       query: async (
         qArgs:
           | [kind: 'gov', domain: string, ...rest: any]
+          | [kind: 'txs', filter: string]
           | [kind: 'tx', txhash: string]
           | [mod: 'vstorage', kind: 'data' | 'children', path: string],
       ) => {
@@ -141,13 +140,4 @@ export const makeAgd = ({
     return rw;
   };
   return make();
-};
-
-export const bankSend = (addr: string, wanted: string) => {
-  const chain = ['--chain-id', CHAINID];
-  const from = ['--from', VALIDATORADDR];
-  const testKeyring = ['--keyring-backend', 'test'];
-  const noise = [...from, ...chain, ...testKeyring, '--yes'];
-
-  return agd.tx('bank', 'send', VALIDATORADDR, addr, wanted, ...noise);
 };
