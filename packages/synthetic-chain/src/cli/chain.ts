@@ -1,6 +1,4 @@
 import assert from 'node:assert';
-import fsp from 'node:fs/promises';
-import path from 'node:path';
 
 import { makeTendermint34Client } from '@agoric/client-utils';
 import { CoreEvalProposal } from '@agoric/cosmic-proto/agoric/swingset/swingset.js';
@@ -8,10 +6,11 @@ import { fromBase64 } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { QueryClient, setupGovExtension } from '@cosmjs/stargate';
 import { ProposalStatus } from 'cosmjs-types/cosmos/gov/v1beta1/gov.js';
-import { copyFromCache } from '../lib/bundles.js';
+import { makeBundleCache } from '../lib/bundles.js';
+import type { DirRW, TextRd } from '../lib/webAsset.js';
 import { isPassed, type ProposalInfo } from './proposals.js';
 
-const DEFAULT_ARCHIVE_NODE = 'https://main-a.rpc.agoric.net:443';
+export const DEFAULT_ARCHIVE_NODE = 'https://main-a.rpc.agoric.net:443';
 
 // TODO use cosmic-proto to query, decoding into SearchTxsResultSDKType
 type TxSearchResult = {
@@ -23,7 +22,7 @@ type TxSearchResult = {
   total_count: string;
 };
 
-export async function fetchMsgInstallBundleTxs() {
+export async function fetchMsgInstallBundleTxs(endpoint: TextRd) {
   const ACTION_TYPE = '/agoric.swingset.MsgInstallBundle';
   // TODO: more configurable
   let page = 1;
@@ -36,15 +35,8 @@ export async function fetchMsgInstallBundleTxs() {
 
   while (true) {
     const query = `"message.action='${ACTION_TYPE}'"`;
-    const url = `${DEFAULT_ARCHIVE_NODE}/tx_search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&order_by="desc"`;
-    const res = await fetch(url);
-
-    if (!res.ok) {
-      console.error(`Failed to fetch page ${page}: ${res.statusText}`);
-      break;
-    }
-
-    const data = await res.json();
+    const ref = `/tx_search?query=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}&order_by="desc"`;
+    const data = await endpoint.join(ref).readJSON();
     const result: TxSearchResult = data.result;
 
     if (result.total_count === '0' || !result.txs?.length) {
@@ -73,7 +65,12 @@ export async function fetchMsgInstallBundleTxs() {
   return allMsgs;
 }
 
-export async function saveProposalContents(proposal: ProposalInfo) {
+export async function saveProposalContents(
+  proposal: ProposalInfo,
+  proposalsDir: DirRW,
+  bundleCache: ReturnType<typeof makeBundleCache>,
+  { fetch }: { fetch: typeof globalThis.fetch },
+) {
   assert(isPassed(proposal), 'unpassed propoosals are not on the chain');
 
   const tm = await makeTendermint34Client(DEFAULT_ARCHIVE_NODE, { fetch });
@@ -91,28 +88,27 @@ export async function saveProposalContents(proposal: ProposalInfo) {
       const something = CoreEvalProposal.fromProtoMsg(data.content as any);
       console.log('Decoded proposal:', something);
       const { evals } = something;
-      const submissionDir = path.join(
-        'proposals',
+      const submissionDir = proposalsDir.join(
         `${proposal.proposalIdentifier}:${proposal.proposalName}`,
         'submission',
       );
-      await fsp.mkdir(submissionDir, { recursive: true });
+      await submissionDir.mkdir();
 
       // Save original core eval files
       for (const [i, evalItem] of evals.entries()) {
         const { jsonPermits, jsCode } = evalItem;
         // Use index for unique filenames if proposalName is reused across multiple evals
         const baseFilename = `${proposal.proposalName}${evals.length > 1 ? `-${i}` : ''}`;
-        await fsp.writeFile(
-          path.join(submissionDir, `${baseFilename}-permit.json`),
-          jsonPermits,
-        );
-        await fsp.writeFile(
-          path.join(submissionDir, `${baseFilename}.js`),
-          jsCode,
-        );
+        await submissionDir
+          .asFileRW()
+          .join(`${baseFilename}-permit.json`)
+          .writeText(jsonPermits);
+        await submissionDir
+          .asFileRW()
+          .join(`${baseFilename}.js`)
+          .writeText(jsCode);
       }
-      console.log('Proposal eval files saved to', submissionDir);
+      console.log('Proposal eval files saved to', `${submissionDir}`);
 
       // Find and save referenced bundles
       const allBundleIds = new Set<string>();
@@ -126,7 +122,7 @@ export async function saveProposalContents(proposal: ProposalInfo) {
       if (allBundleIds.size > 0) {
         console.log('Found referenced bundle IDs:', Array.from(allBundleIds));
         for (const bundleId of allBundleIds) {
-          await copyFromCache(bundleId, submissionDir, console);
+          await bundleCache.copyTo(bundleId, submissionDir.asFileRW(), console);
         }
       } else {
         console.log('No bundle IDs found in proposal eval code.');

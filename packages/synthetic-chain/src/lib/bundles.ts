@@ -1,16 +1,9 @@
 import assert from 'node:assert/strict';
-import { copyFile, writeFile } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 
 import { agoric } from '@agoric/cosmic-proto/agoric/bundle.js';
 import type { MsgInstallBundle } from '@agoric/cosmic-proto/agoric/swingset/msgs.js';
-import path from 'node:path';
-
-const CACHE_DIR = path.join(
-  process.env.HOME || process.env.USERPROFILE || '',
-  '.agoric',
-  'cache',
-);
+import type { FileRW } from './webAsset.js';
 
 export async function base64ToBlob(
   base64: string,
@@ -33,41 +26,39 @@ export async function bundleInMessage(msg: MsgInstallBundle) {
 }
 
 export async function writeInstalledBundle(
-  basePath: string,
+  basePath: FileRW,
   msgInstall: MsgInstallBundle,
   { log } = { log: (...msgs) => {} },
 ) {
   const bundle = await bundleInMessage(msgInstall);
   const bundleObj = JSON.parse(bundle.bundleText);
-  const filename = path.join(
-    basePath,
-    `b1-${bundleObj.endoZipBase64Sha512}.json`,
-  );
-  await writeFile(filename, bundle.bundleText, 'utf8');
-  log(`Wrote bundleText to ${filename}`);
+  const file = basePath.join(`b1-${bundleObj.endoZipBase64Sha512}.json`);
+  await file.writeText(bundle.bundleText);
+  log(`Wrote bundleText to ${file}`);
 }
 
-export async function refreshBundlesCache(
-  txs: Array<{
-    hash: string;
-    height: string;
-    msg: any;
-  }>,
-) {
-  for (const tx of txs) {
-    console.log(`\nBlock: ${tx.height}, TxHash: ${tx.hash}`);
-    const msgInstall = agoric.swingset.MsgInstallBundle.fromProtoMsg(tx.msg);
-    await writeInstalledBundle(CACHE_DIR, msgInstall, console);
-  }
-}
+const { freeze } = Object;
 
-export async function copyFromCache(
-  bundleId: string,
-  targetDir: string,
-  { log } = { log: (...msgs) => {} },
-) {
-  const bundlePath = path.join(CACHE_DIR, `${bundleId}.json`);
-  const targetPath = path.join(targetDir, `${bundleId}.json`);
-  await copyFile(bundlePath, targetPath);
-  log(`Copied bundle from ${bundlePath} to ${targetPath}`);
-}
+export const makeBundleCache = (cacheDir: FileRW) => {
+  return freeze({
+    async refresh(txs: Array<{ hash: string; height: string; msg: any }>) {
+      for (const tx of txs) {
+        console.log(`\nBlock: ${tx.height}, TxHash: ${tx.hash}`);
+        const msgInstall = agoric.swingset.MsgInstallBundle.fromProtoMsg(
+          tx.msg,
+        );
+        await writeInstalledBundle(cacheDir, msgInstall, console);
+      }
+    },
+    async copyTo(
+      bundleId: string,
+      targetDir: FileRW,
+      { log } = { log: (...msgs) => {} },
+    ) {
+      const bundlePath = cacheDir.readOnly().join(`${bundleId}.json`);
+      const targetPath = targetDir.join(`${bundleId}.json`);
+      await bundlePath.readText().then(t => targetPath.writeText(t));
+      log(`Copied bundle from ${bundlePath} to ${targetPath}`);
+    },
+  });
+};
