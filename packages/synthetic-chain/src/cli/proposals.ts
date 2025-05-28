@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
 import * as path from 'node:path';
+import type { DirRd, FileRd } from '../lib/webAsset.js';
 
 export const repository = 'ghcr.io/agoric/agoric-3-proposals';
 
@@ -41,6 +42,7 @@ export type ProposalInfo =
   | CoreEvalPackage
   | ParameterChangePackage;
 
+/** @deprecated use readInfoOf */
 function readInfo(proposalPath: string): ProposalInfo {
   assert(
     proposalPath === proposalPath.toLowerCase(),
@@ -49,6 +51,29 @@ function readInfo(proposalPath: string): ProposalInfo {
   );
   const packageJsonPath = path.join('proposals', proposalPath, 'package.json');
   const packageJson = fs.readFileSync(packageJsonPath, 'utf-8');
+  const { agoricProposal } = JSON.parse(packageJson);
+  // UNTIL https://github.com/Agoric/agoric-3-proposals/issues/77
+  assert(agoricProposal, 'missing agoricProposal in package.json');
+  const [proposalIdentifier, proposalName] = proposalPath.split(':');
+  return {
+    ...agoricProposal,
+    path: proposalPath,
+    proposalIdentifier,
+    proposalName,
+  };
+}
+
+async function readInfoOf(
+  proposals: FileRd,
+  proposalPath: string,
+): Promise<ProposalInfo> {
+  assert(
+    proposalPath === proposalPath.toLowerCase(),
+    // because they go in Dockerfile target names
+    'proposal directories must be lowercase',
+  );
+  const packageJsonPath = proposals.join(proposalPath, 'package.json');
+  const packageJson = await packageJsonPath.readText();
   const { agoricProposal } = JSON.parse(packageJson);
   // UNTIL https://github.com/Agoric/agoric-3-proposals/issues/77
   assert(agoricProposal, 'missing agoricProposal in package.json');
@@ -87,6 +112,7 @@ export function compareProposalDirNames(a: string, b: string): -1 | 0 | 1 {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/** @deprecated use readProposalsOf */
 export function readProposals(proposalsParent: string): ProposalInfo[] {
   const proposalsDir = path.join(proposalsParent, 'proposals');
   const proposalPaths = fs
@@ -107,6 +133,28 @@ export function readProposals(proposalsParent: string): ProposalInfo[] {
     .map(dirent => dirent.name)
     .sort(compareProposalDirNames);
   return proposalPaths.map(readInfo);
+}
+
+export async function readProposalsOf(
+  proposalsParent: DirRd,
+): Promise<ProposalInfo[]> {
+  const proposalsDir = proposalsParent.join('proposals');
+  const candidates = await proposalsDir.readdir();
+  const proposalPaths = candidates
+    .filter(dirent => {
+      const hasPackageJson = dirent.join('package.json').existsSync();
+      if (!hasPackageJson) {
+        console.warn(
+          'WARN ignoring non-package in proposal directory:',
+          `${dirent}`,
+        );
+      }
+      return hasPackageJson;
+    })
+    .sort((a, b) => compareProposalDirNames(a.basename(), b.basename()));
+  return Promise.all(
+    proposalPaths.map(p => readInfoOf(proposalsDir.asFileRd(), p.basename())),
+  );
 }
 
 export function imageNameForProposal(

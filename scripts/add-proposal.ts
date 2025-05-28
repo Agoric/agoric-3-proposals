@@ -3,14 +3,21 @@ import '@endo/init/legacy.js';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { saveProposalContents } from '../packages/synthetic-chain/src/cli/chain.ts';
 import {
-  readProposals,
+  readProposalsOf,
   type CoreEvalPackage,
 } from '../packages/synthetic-chain/src/cli/proposals.ts';
+import { makeBundleCache } from '../packages/synthetic-chain/src/lib/bundles.js';
+import {
+  makeDirRW,
+  makeFileRW,
+  type DirRW,
+} from '../packages/synthetic-chain/src/lib/webAsset.js';
 
 // XXX stagnant version numbers
 const minProposalPackage = {
@@ -32,36 +39,38 @@ const [id, name] = positionals;
 assert(id, 'must specify proposal id to fetch');
 assert(name, 'must specify local name for proposal');
 
-const root = path.resolve('.');
+const { env } = process;
+const home = makeFileRW(env.HOME || env.USERPROFILE || '.', { fsp, path });
+const cwd = makeDirRW('.', { fsp, fs, path });
 
-const present = readProposals(root).some(p => p.proposalIdentifier === id);
+const present = (await readProposalsOf(cwd.readOnly())).some(
+  p => p.proposalIdentifier === id,
+);
 assert(!present, `proposal ${id} already exists`);
 
 // Define a stubProposal function or import it from the appropriate module
-function stubProposal(proposal: CoreEvalPackage, root: string) {
-  const proposalDir = path.join(
-    root,
+async function stubProposal(proposal: CoreEvalPackage, root: DirRW) {
+  const proposalDir = root.join(
     'proposals',
     `${proposal.proposalIdentifier}:${proposal.proposalName}`,
   );
   assert(
-    !fs.existsSync(proposalDir),
+    !proposalDir.readOnly().existsSync(),
     `Proposal directory ${proposalDir} already exists`,
   );
-  fs.mkdirSync(proposalDir, { recursive: true });
+  await proposalDir.mkdir();
   // Create a package.json file with the proposal details
-  const packageJsonPath = path.join(proposalDir, 'package.json');
-  fs.writeFileSync(
-    packageJsonPath,
-    JSON.stringify(minProposalPackage, null, 2),
-  );
+  const packageJsonPath = proposalDir.join('package.json');
+  await packageJsonPath
+    .asFileRW()
+    .writeText(JSON.stringify(minProposalPackage, null, 2));
 
   // set up package manager and lock
-  const yarnrcPath = path.join(proposalDir, '.yarnrc.yml');
-  fs.writeFileSync(yarnrcPath, 'nodeLinker: node-modules\n');
-  const yarnLockPath = path.join(proposalDir, 'yarn.lock');
-  fs.closeSync(fs.openSync(yarnLockPath, 'w'));
-  execSync('yarn install', { cwd: proposalDir, stdio: 'inherit' });
+  const yarnrcPath = proposalDir.asFileRW().join('.yarnrc.yml');
+  await yarnrcPath.writeText('nodeLinker: node-modules\n');
+  const yarnLockPath = proposalDir.join('yarn.lock');
+  await yarnLockPath.touch();
+  execSync('yarn install', { cwd: `${proposalDir}`, stdio: 'inherit' });
 }
 const proposal: CoreEvalPackage = {
   type: '/agoric.swingset.CoreEvalProposal',
@@ -77,8 +86,11 @@ console.log(
   proposal.proposalName,
 );
 try {
-  stubProposal(proposal, root);
-  await saveProposalContents(proposal);
+  await stubProposal(proposal, cwd);
+
+  const proposals = cwd.join('proposals');
+  const cache = makeBundleCache(home.join('.agoric', 'cache'));
+  await saveProposalContents(proposal, proposals, cache, { fetch });
   console.log(
     `Proposal ${proposal.proposalIdentifier} created in ${proposal.path}`,
   );
