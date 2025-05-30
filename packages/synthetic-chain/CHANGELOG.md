@@ -1,5 +1,11 @@
 # @agoric/synthetic-chain
 
+## 0.5.8
+
+### Patch Changes
+
+- c88fe01: remove bankSend agd wrapper
+
 ## 0.5.7
 
 ### Patch Changes
