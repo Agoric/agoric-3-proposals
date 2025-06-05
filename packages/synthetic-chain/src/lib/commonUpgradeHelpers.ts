@@ -1,4 +1,8 @@
-import { $, type TemplateExpression } from 'execa';
+import {
+  $,
+  type TemplateExpression,
+  type Options as ExecaOptions,
+} from 'execa';
 import assert from 'node:assert';
 import fsp from 'node:fs/promises';
 import * as path from 'node:path';
@@ -121,19 +125,31 @@ export const calculateWalletState = async (
 export const executeOffer = async (
   address: string,
   offerPromise: string | Promise<string>,
+  options: Omit<
+    ExecaOptions,
+    'buffer' | 'encoding' | 'lines' | 'stdio' | 'stdout'
+  > = {},
 ) => {
   const offerPath = await mkTemp('agops.XXX');
   const offer = await offerPromise;
   await fsp.writeFile(offerPath, offer);
 
-  await agops.perf(
+  if (options.verbose) {
+    console.warn(
+      `# ${offerPath}:`,
+      await fsp.readFile(offerPath, { encoding: 'utf8' }),
+    );
+  }
+  const stdout = await agops.perf(
     'satisfaction',
     '--from',
     address,
     '--executeOffer',
     offerPath,
     '--keyring-backend=test',
+    ...(options.verbose ? ['--verbose'] : []),
   );
+  console.warn(stdout);
 };
 
 export const getUser = async (user: string): Promise<string> => {
