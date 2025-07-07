@@ -1,14 +1,21 @@
-#!/bin/bash
+#! /bin/bash
+# shellcheck disable=SC2155
+
 # Prepare an upgrade from ag0
 
-set -eo pipefail
+set -o errexit -o pipefail
+
+DIRECTORY_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+# shellcheck source=./source.sh
+source "$DIRECTORY_PATH/source.sh"
 
 # The name of the binary is an implementation detail.
 agd() {
   ag0 ${1+"$@"}
 }
 
-agd init localnet --chain-id agoriclocal
+agd init "$MONIKER" --chain-id "$CHAIN_ID"
 
 allaccounts=("gov1" "gov2" "gov3" "user1" "validator")
 # WARNING: these mnemonics are purely for testing purposes, do not implement
@@ -22,26 +29,53 @@ allkeys=(
   "soap hub stick bomb dish index wing shield cruel board siren force glory assault rotate busy area topple resource okay clown wedding hint unhappy"
 )
 for i in "${!allaccounts[@]}"; do
-  echo "${allkeys[$i]}" | agd keys add ${allaccounts[$i]} --recover --keyring-backend=test 2>&1
+  echo "${allkeys[$i]}" | \
+  agd keys add "${allaccounts[$i]}" --keyring-backend "test" --recover 2>&1
 done
 
-source /usr/src/upgrade-test-scripts/env_setup.sh
+# shellcheck source=./env_setup.sh
+source "$DIRECTORY_PATH/env_setup.sh"
 
-sed -i.bak "s/^timeout_commit =.*/timeout_commit = \"1s\"/" "$HOME/.agoric/config/config.toml"
-sed -i.bak "s/^enabled-unsafe-cors =.*/enabled-unsafe-cors = true/" "$HOME/.agoric/config/app.toml"
-sed -i.bak "s/^enable-unsafe-cors =.*/enable-unsafe-cors = true/" "$HOME/.agoric/config/app.toml"
-sed -i.bak "s/127.0.0.1:26657/0.0.0.0:26657/" "$HOME/.agoric/config/config.toml"
-sed -i.bak "s/cors_allowed_origins = \[\]/cors_allowed_origins = \[\"*\"\]/" "$HOME/.agoric/config/config.toml"
-sed -i.bak '/^\[api]/,/^\[/{s/^enable[[:space:]]*=.*/enable = true/}' "$HOME/.agoric/config/app.toml"
-sed -i.bak "s/^pruning =.*/pruning = \"nothing\"/" "$HOME/.agoric/config/app.toml"
+sed "$APP_CONFIG_FILE_PATH" \
+    --expression 's|^enable-unsafe-cors =.*|^enable-unsafe-cors = true|' \
+    --expression 's|^enabled-unsafe-cors =.*|enabled-unsafe-cors = true|' \
+    --expression 's|^pruning =.*|pruning = "nothing"|' \
+    --expression '/^\[api]/,/^\[/{s|^enable =.*|enable = true|}' \
+    --expression '/^[swingset]/a max-vats-online = 5' \
+    --in-place
+sed "$CONFIG_FILE_PATH" \
+    --expression 's|127.0.0.1:26657|0.0.0.0:26657|' \
+    --expression 's|^cors_allowed_origins =.*|cors_allowed_origins = ["*"]|' \
+    --expression 's|^timeout_commit =.*|timeout_commit = "1s"|' \
+    --in-place
 
-contents="$(jq ".app_state.crisis.constant_fee.denom = \"ubld\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-contents="$(jq ".app_state.mint.params.mint_denom = \"ubld\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-contents="$(jq ".app_state.gov.deposit_params.min_deposit[0].denom = \"ubld\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-contents="$(jq ".app_state.staking.params.bond_denom = \"ubld\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-contents="$(jq ".app_state.slashing.params.signed_blocks_window = \"20000\"" "$HOME/.agoric/config/genesis.json")" && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-contents=$(jq '. * { app_state: { gov: { voting_params: { voting_period: "10s" } } } }' "$HOME/.agoric/config/genesis.json") && echo -E "${contents}" >"$HOME/.agoric/config/genesis.json"
-export GENACCT=$(agd keys show validator -a --keyring-backend="test")
+if grep --silent "max-vats-online" < "$APP_CONFIG_FILE_PATH"
+then
+  sed "$APP_CONFIG_FILE_PATH" \
+    --expression "s|max-vats-online =.*|max-vats-online = $MAX_RUNNING_VATS|" \
+    --in-place
+else
+  sed "$APP_CONFIG_FILE_PATH" \
+    --expression "/^[swingset]/a max-vats-online = $MAX_RUNNING_VATS" \
+    --in-place
+fi
+
+contents="$(
+    jq --arg denom "$BLD_DENOM" \
+        --arg voting_period "$VOTING_PERIOD" \
+        '
+        .app_state.crisis.constant_fee.denom = $denom |
+        .app_state.mint.params.mint_denom = $denom |
+        .app_state.gov.deposit_params.min_deposit[0].denom = $denom |
+        .app_state.staking.params.bond_denom = $denom |
+        .app_state.slashing.params.signed_blocks_window = "20000" |
+        .app_state.gov.voting_params.voting_period = $voting_period
+    ' <"$GENESIS_FILE_PATH"
+)"
+
+echo -E "$contents" >"$GENESIS_FILE_PATH"
+
+export GENACCT="$(agd keys show validator --address --keyring-backend "test")"
 echo "Genesis Account $GENACCT"
 
 denoms=(
@@ -66,13 +100,12 @@ done
 
 agd add-genesis-account "$GENACCT" "$coins"
 
-agd gentx validator 5000000000ubld --keyring-backend="test" --chain-id "$CHAINID"
+agd gentx validator 5000000000ubld --keyring-backend="test" --chain-id "$CHAIN_ID"
 agd collect-gentxs
 startAgd
 
-voting_period_s=10
 latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
-height=$((latest_height + voting_period_s + 20))
+height=$((latest_height + VOTING_PERIOD + 20))
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
   echo "upgrade-info: $info"
