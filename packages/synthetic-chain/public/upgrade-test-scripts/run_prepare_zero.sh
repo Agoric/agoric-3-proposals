@@ -55,7 +55,7 @@ then
     --in-place
 else
   sed "$APP_CONFIG_FILE_PATH" \
-    --expression "/^[swingset]/a max-vats-online = $MAX_RUNNING_VATS" \
+    --expression "/^\[swingset\]/a max-vats-online = $MAX_RUNNING_VATS" \
     --in-place
 fi
 
