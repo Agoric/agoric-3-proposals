@@ -36,6 +36,7 @@ ${createCopyCommand(
   [],
   './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_prepare_zero.sh',
+  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 SHELL ["/bin/bash", "-c"]
