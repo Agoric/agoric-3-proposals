@@ -41,7 +41,6 @@ sed "$APP_CONFIG_FILE_PATH" \
     --expression 's|^enabled-unsafe-cors =.*|enabled-unsafe-cors = true|' \
     --expression 's|^pruning =.*|pruning = "nothing"|' \
     --expression '/^\[api]/,/^\[/{s|^enable =.*|enable = true|}' \
-    --expression '/^[swingset]/a max-vats-online = 5' \
     --in-place
 sed "$CONFIG_FILE_PATH" \
     --expression 's|127.0.0.1:26657|0.0.0.0:26657|' \
@@ -62,7 +61,7 @@ fi
 
 contents="$(
     jq --arg denom "$BLD_DENOM" \
-        --arg voting_period "$VOTING_PERIOD" \
+        --arg voting_period "${VOTING_PERIOD}s" \
         '
         .app_state.crisis.constant_fee.denom = $denom |
         .app_state.mint.params.mint_denom = $denom |
@@ -104,8 +103,8 @@ agd gentx validator 5000000000ubld --keyring-backend="test" --chain-id "$CHAIN_I
 agd collect-gentxs
 startAgd
 
-latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
-height=$((latest_height + VOTING_PERIOD + 20))
+latest_height="$(agd status | jq --raw-output .SyncInfo.latest_block_height)"
+height="$(("$latest_height" + "$VOTING_PERIOD" + 20))"
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
   echo "upgrade-info: $info"

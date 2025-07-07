@@ -5,7 +5,7 @@ export BLD_DENOM="ubld"
 export CHAIN_ID="agoriclocal"
 export MAX_RUNNING_VATS="5"
 export MONIKER="localnet"
-export VOTING_PERIOD="10s"
+export VOTING_PERIOD="10"
 
 export APP_CONFIG_FILE_PATH="$AGORIC_HOME/config/app.toml"
 # Backward compatibility
