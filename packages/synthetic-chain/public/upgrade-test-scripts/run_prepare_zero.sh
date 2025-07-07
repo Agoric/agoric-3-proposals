@@ -37,7 +37,7 @@ done
 source "$DIRECTORY_PATH/env_setup.sh"
 
 sed "$APP_CONFIG_FILE_PATH" \
-    --expression 's|^enable-unsafe-cors =.*|^enable-unsafe-cors = true|' \
+    --expression 's|^enable-unsafe-cors =.*|enable-unsafe-cors = true|' \
     --expression 's|^enabled-unsafe-cors =.*|enabled-unsafe-cors = true|' \
     --expression 's|^pruning =.*|pruning = "nothing"|' \
     --expression '/^\[api]/,/^\[/{s|^enable =.*|enable = true|}' \
