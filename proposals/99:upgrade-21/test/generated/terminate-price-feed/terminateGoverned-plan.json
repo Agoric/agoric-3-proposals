@@ -1,0 +1,12 @@
+{
+  "name": "terminateGoverned",
+  "script": "terminateGoverned.js",
+  "permit": "terminateGoverned-permit.json",
+  "bundles": [
+    {
+      "entrypoint": "@agoric/vats/src/proposals/terminate-governed-instance.js",
+      "bundleID": "b1-e651de30e1f0a06583d8aa516a81813192e1ab4d4b315b7353cba841e3bd0b62dac5e682a14870f163d7e20db82fd019e58cc0251c124338654e8351a3441278",
+      "fileName": "/Users/mujahid/.agoric/cache/b1-e651de30e1f0a06583d8aa516a81813192e1ab4d4b315b7353cba841e3bd0b62dac5e682a14870f163d7e20db82fd019e58cc0251c124338654e8351a3441278.json"
+    }
+  ]
+}
