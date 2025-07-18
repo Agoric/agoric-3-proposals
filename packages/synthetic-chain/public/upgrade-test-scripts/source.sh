@@ -3,7 +3,7 @@
 export AGORIC_HOME="$HOME/.agoric"
 export BLD_DENOM="ubld"
 export CHAIN_ID="agoriclocal"
-export MAX_RUNNING_VATS="5"
+export MAX_RUNNING_VATS="10"
 export MONIKER="localnet"
 export VOTING_PERIOD="10"
 
