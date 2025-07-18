@@ -8,9 +8,9 @@ const io = {
   delay: ms => new Promise(resolve => setTimeout(() => resolve(undefined), ms)),
   fetch: global.fetch,
 };
-test('fastUsdc is in agoricNames.instance', async t => {
+test('ymax0 is in agoricNames.instance', async t => {
   const { agoricNames } = await makeSmartWalletKit(io, LOCAL_CONFIG);
 
   t.log('agoricNames.instance keys', Object.keys(agoricNames.instance));
-  t.truthy(agoricNames.instance.fastUsdc);
+  t.truthy(agoricNames.instance.ymax0);
 });

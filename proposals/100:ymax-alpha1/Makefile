@@ -1,6 +1,6 @@
 # This Makefile is here to help you find out what went on the
 # chain for a CoreEval proposal such as #76 for vaults / auctions.
-PROPOSAL=87
+PROPOSAL=100
 
 ##
 # Find the proposal transaction
@@ -20,18 +20,30 @@ tx.json: proposer-tx-hist.json
 		$< >$@
 
 # A CoreEval proposal has a sequence of json_permits,js_code pairs.
-# We happen to know there were 2 in this case, and we have
+# We happen to know there were 3 in this case, and we have
 # been using certain filenames for them.
 
-EVALS=submission/start-fast-usdc-permit.json submission/start-fast-usdc.js
+EVALS=submission/eval-access-token-setup-permit.json submission/eval-access-token-setup.js \
+      submission/eval-chain-info-permit.json submission/eval-chain-info.js \
+      submission/eval-ymax0-permit.json submission/eval-ymax0.js
 
 core-evals: $(EVALS)
 
 # Now pick out their contents from the transaction.
-submission/start-fast-usdc-permit.json: tx.json
+submission/eval-access-token-setup-permit.json: tx.json
 	jq -r '.tx.body.messages[0].content.evals[0].json_permits' $< >$@
-submission/start-fast-usdc.js: tx.json
+submission/eval-access-token-setup.js: tx.json
 	jq -r '.tx.body.messages[0].content.evals[0].js_code' $< >$@
+
+submission/eval-chain-info-permit.json: tx.json
+	jq -r '.tx.body.messages[0].content.evals[1].json_permits' $< >$@
+submission/eval-chain-info.js: tx.json
+	jq -r '.tx.body.messages[0].content.evals[1].js_code' $< >$@
+
+submission/eval-ymax0-permit.json: tx.json
+	jq -r '.tx.body.messages[0].content.evals[2].json_permits' $< >$@
+submission/eval-ymax0.js: tx.json
+	jq -r '.tx.body.messages[0].content.evals[2].js_code' $< >$@
 
 # clean up locally computed files
 clean:
