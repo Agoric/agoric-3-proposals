@@ -1,41 +1,38 @@
 {
   "produce": {
-    "fastUsdcKit": true
+    "ymax0Kit": true
   },
   "consume": {
-    "bankManager": true,
-    "chainStorage": true,
-    "chainTimerService": true,
     "localchain": true,
     "cosmosInterchainService": true,
+    "chainStorage": true,
+    "chainTimerService": true,
+    "agoricNames": true,
+    "board": true,
     "startUpgradable": true,
     "zoe": "makeCoreProposalBehavior",
-    "agoricNames": true,
-    "namesByAddress": true,
-    "board": true,
+    "chainInfoPublished": true,
     "agoricNamesAdmin": "makeCoreProposalBehavior",
     "vatAdminSvc": "makeCoreProposalBehavior"
   },
-  "issuer": {
-    "produce": {
-      "FastLP": true
-    }
-  },
-  "brand": {
-    "produce": {
-      "FastLP": true
-    }
-  },
   "instance": {
     "produce": {
-      "fastUsdc": true
+      "ymax0": true
     }
   },
   "installation": {
     "consume": {
-      "fastUsdc": true
+      "ymax0": true
     },
     "produce": "makeCoreProposalBehavior"
+  },
+  "brand": {},
+  "issuer": {
+    "consume": {
+      "BLD": true,
+      "USDC": true,
+      "PoC26": true
+    }
   },
   "evaluateBundleCap": "makeCoreProposalBehavior",
   "modules": {

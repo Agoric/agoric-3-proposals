@@ -1,14 +1,14 @@
 {
   "agoricProposal": {
     "type": "/agoric.swingset.CoreEvalProposal",
-    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/fast-usdc-beta-1"
+    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/ymax-v0.1-alpha"
   },
   "type": "module",
   "license": "Apache-2.0",
   "dependencies": {
     "@agoric/client-utils": "dev",
     "@agoric/fast-usdc": "dev",
-    "@agoric/synthetic-chain": "~0.5.3",
+    "@agoric/synthetic-chain": "^0.5.8",
     "@endo/init": "^1.1.8",
     "agoric": "dev",
     "ava": "^5.3.1"
