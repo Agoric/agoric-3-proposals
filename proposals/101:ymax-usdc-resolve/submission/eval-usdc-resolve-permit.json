@@ -1,0 +1,27 @@
+{
+  "consume": {
+    "agoricNames": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "issuer": {
+    "produce": {
+      "USDC": true
+    }
+  },
+  "brand": {
+    "produce": {
+      "USDC": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}

@@ -1,11 +1,11 @@
 # This Makefile is here to help you find out what went on the
-# chain for a CoreEval proposal such as #76 for vaults / auctions.
+# chain for a CoreEval proposal such as #100 for Ymax-alpha-1.
 PROPOSAL=100
 
 ##
 # Find the proposal transaction
 
-# To find the transaction, let's start with: Who proposed 76?
+# To find the transaction, let's start with: Who proposed 100?
 proposer.json:
 	agd --node $(ARCHIVE_NODE) query gov proposer $(PROPOSAL) -o json >$@
 
@@ -36,14 +36,14 @@ submission/eval-access-token-setup.js: tx.json
 	jq -r '.tx.body.messages[0].content.evals[0].js_code' $< >$@
 
 submission/eval-chain-info-permit.json: tx.json
-	jq -r '.tx.body.messages[0].content.evals[1].json_permits' $< >$@
+	jq -r '.tx.body.messages[1].content.evals[1].json_permits' $< >$@
 submission/eval-chain-info.js: tx.json
-	jq -r '.tx.body.messages[0].content.evals[1].js_code' $< >$@
+	jq -r '.tx.body.messages[1].content.evals[1].js_code' $< >$@
 
 submission/eval-ymax0-permit.json: tx.json
-	jq -r '.tx.body.messages[0].content.evals[2].json_permits' $< >$@
+	jq -r '.tx.body.messages[2].content.evals[2].json_permits' $< >$@
 submission/eval-ymax0.js: tx.json
-	jq -r '.tx.body.messages[0].content.evals[2].js_code' $< >$@
+	jq -r '.tx.body.messages[2].content.evals[2].js_code' $< >$@
 
 # clean up locally computed files
 clean:

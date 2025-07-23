@@ -6,4 +6,7 @@ echo "[$PROPOSAL] Running proposal declared in package.json"
 cp /usr/src/upgrade-test-scripts/eval_submission.js .
 ./eval_submission.js
 
-# we will test deployment after 101 passes
+echo "[$PROPOSAL] Waiting for contract instance to start"
+source /usr/src/upgrade-test-scripts/env_setup.sh
+# XXX found experimentally; some waiting was necessary; would be better to poll with timeout
+waitForBlock 5
