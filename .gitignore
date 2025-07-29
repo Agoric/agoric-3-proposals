@@ -138,3 +138,4 @@ docker-bake.*
 .aider*
 !.aiderignore
 
+**/.DS_Store
