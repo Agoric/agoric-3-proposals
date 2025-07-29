@@ -167,6 +167,25 @@ export const addUser = async (user: string) => {
   return getUser(user);
 };
 
+interface V047ProposalMessage {
+  '@type': string;
+  content: {
+    title: string;
+  };
+}
+
+interface V050ProposalMessage {
+  type: string;
+  value: {
+    content: {
+      type: string;
+      value: {
+        title: string;
+      };
+    };
+  };
+}
+
 export const voteLatestProposalAndWait = async (
   title?: string,
 ): Promise<{
@@ -178,7 +197,8 @@ export const voteLatestProposalAndWait = async (
   let { proposals } = (await agd.query('gov', 'proposals')) as {
     proposals: Array<{
       content?: { title: string };
-      messages?: Array<{ '@type': string; content: { title: string } }>;
+      title?: string;
+      messages?: Array<V047ProposalMessage | V050ProposalMessage>;
       proposal_id?: string;
       id?: string;
       status: string;
@@ -187,13 +207,27 @@ export const voteLatestProposalAndWait = async (
   };
   if (title) {
     proposals = proposals.filter(proposal => {
-      if (proposal.content) {
-        return proposal.content.title === title;
-      } else if (proposal.messages) {
+      if (proposal.title === title) {
+        return true;
+      }
+      if (proposal.content?.title === title) {
+        return true;
+      }
+      if (proposal.messages) {
         return proposal.messages.some(message => {
-          message['@type'] === '/cosmos.gov.v1.MsgExecLegacyContent' ||
-            Fail`Unsupported proposal message type ${message['@type']}`;
-          return message.content.title === title;
+          let typeUrl: string;
+          let msgTitle: string;
+          if ('@type' in message) {
+            typeUrl = message['@type'];
+            msgTitle = message?.content?.title;
+          } else {
+            typeUrl = message.type;
+            msgTitle = message?.value?.content?.value?.title;
+          }
+
+          typeUrl === '/cosmos.gov.v1.MsgExecLegacyContent' ||
+            Fail`Unsupported proposal message type ${typeUrl}`;
+          return msgTitle === title;
         });
       } else {
         Fail`Unrecognized proposal shape ${Object.keys(proposal)}`;
