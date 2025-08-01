@@ -36,7 +36,6 @@ ${createCopyCommand(
   [],
   './upgrade-test-scripts/env_setup.sh',
   './upgrade-test-scripts/run_prepare_zero.sh',
-  './upgrade-test-scripts/source.sh',
   '/usr/src/upgrade-test-scripts/',
 )}
 SHELL ["/bin/bash", "-c"]
@@ -244,6 +243,15 @@ ENTRYPOINT ./run_test.sh ${path}
     return `
 # LAST
 FROM ${useImage} as latest
+
+${createCopyCommand(
+  [],
+  './upgrade-test-scripts/run_use_final.sh',
+  './upgrade-test-scripts/source.sh',
+  '/usr/src/upgrade-test-scripts/',
+)}
+SHELL ["/bin/bash", "-c"]
+RUN ./run_use_final.sh
 `;
   },
 };
