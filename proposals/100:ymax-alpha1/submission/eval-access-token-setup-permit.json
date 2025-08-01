@@ -1,0 +1,39 @@
+{
+  "consume": {
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "getDepositFacet": true,
+    "bankManager": true,
+    "board": true,
+    "chainStorage": true,
+    "startUpgradable": true,
+    "namesByAddress": true,
+    "namesByAddressAdmin": true,
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "brand": {
+    "produce": {
+      "PoC26": true
+    }
+  },
+  "issuer": {
+    "produce": {
+      "PoC26": true
+    }
+  },
+  "installation": {
+    "consume": {
+      "mintHolder": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "getDepositFacet": true
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
