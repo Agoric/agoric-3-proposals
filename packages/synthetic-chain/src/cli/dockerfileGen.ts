@@ -47,10 +47,10 @@ RUN /usr/src/upgrade-test-scripts/run_prepare_zero.sh
    * Resume from state of an existing image.
    * Creates a "use" stage upon which a PREPARE or EVAL can stack.
    */
-  RESUME(fromTag: string) {
+  RESUME(fromTag: string, prefix: string = 'use-') {
     return `
 ## RESUME
-FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as use-${fromTag}
+FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as ${prefix}${fromTag}
 `;
   },
 
@@ -70,11 +70,15 @@ FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as use-${fromTag}
     lastProposal: ProposalInfo,
   ) {
     const skipProposalValidation = !releaseNotes;
+    const fromImage =
+      lastProposal.proposalName === proposalName
+        ? `ghcr.io/agoric/agoric-3-proposals:prepare-${lastProposal.proposalName}`
+        : `use-${lastProposal.proposalName}`;
     return `
 # PREPARE ${proposalName}
 
 # upgrading to ${planName}
-FROM use-${lastProposal.proposalName} as prepare-${proposalName}
+FROM ${fromImage} as prepare-${proposalName}
 ENV \
     UPGRADE_TO=${planName} \
     UPGRADE_INFO=${JSON.stringify(encodeUpgradeInfo(upgradeInfo))} \
@@ -261,15 +265,27 @@ export const createCopyCommand = (
 
 export function writeBakefileProposals(
   allProposals: ProposalInfo[],
+  pullLastUpgrade: boolean,
   platforms?: Platform[],
 ) {
+  const stopWith = allProposals.findLastIndex(
+    p => p.proposalName === process.env.FIXME_STOP_WITH,
+  );
+  const stopEnd = stopWith < 0 ? allProposals.length : stopWith + 1;
+  const lastUpgrade = pullLastUpgrade
+    ? allProposals
+        .slice(1, stopEnd - 1)
+        .findLastIndex(p => p.type === 'Software Upgrade Proposal') + 1
+    : 0;
   const json = {
     variable: {
       PLATFORMS: {
         default: platforms || null,
       },
       PROPOSALS: {
-        default: allProposals.map(p => p.proposalName),
+        default: allProposals
+          .slice(lastUpgrade + 1, stopEnd)
+          .map(p => p.proposalName),
       },
     },
   };
@@ -278,6 +294,7 @@ export function writeBakefileProposals(
 
 export function writeDockerfile(
   allProposals: ProposalInfo[],
+  pullLastUpgrade: boolean,
   fromTag?: string | null,
 ) {
   // Each stage tests something about the left argument and prepare an upgrade to the right side (by passing the proposal and halting the chain.)
@@ -285,6 +302,22 @@ export function writeDockerfile(
   const blocks: string[] = [syntaxPragma];
 
   let previousProposal: ProposalInfo | null = null;
+
+  const stopWith = allProposals.findLastIndex(
+    p => p.proposalName === process.env.FIXME_STOP_WITH,
+  );
+  const stopEnd = stopWith < 0 ? allProposals.length : stopWith + 1;
+  const lastUpgrade = pullLastUpgrade
+    ? allProposals
+        .slice(1, stopEnd - 1)
+        .findLastIndex(p => p.type === 'Software Upgrade Proposal') + 1
+    : 0;
+  if (!fromTag && lastUpgrade > 0) {
+    // Name the last "prepared" proposal.
+    blocks.push(
+      stage.RESUME(`prepare-${allProposals[lastUpgrade].proposalName}`, ''),
+    );
+  }
 
   // appending to a previous image, so set up the 'use' stage
   if (fromTag) {
@@ -299,7 +332,9 @@ export function writeDockerfile(
       source: 'subdir',
     };
   }
-  for (const proposal of allProposals) {
+
+  const someProposals = allProposals.slice(lastUpgrade, stopEnd);
+  for (const proposal of someProposals) {
     // UNTIL region support https://github.com/microsoft/vscode-docker/issues/230
     blocks.push(
       `#----------------\n# ${proposal.proposalName}\n#----------------`,
@@ -311,10 +346,11 @@ export function writeDockerfile(
         blocks.push(stage.EVAL(proposal, previousProposal!));
         break;
       case 'Software Upgrade Proposal':
-        // handle the first proposal specially
+        // handle the first proposal specially, but no preparation needed if we
+        // have a prior upgrade.
         if (previousProposal) {
           blocks.push(stage.PREPARE(proposal, previousProposal));
-        } else {
+        } else if (!lastUpgrade) {
           blocks.push(
             stage.PREPARE_ZERO(proposal.proposalName, proposal.planName),
           );
@@ -334,8 +370,8 @@ export function writeDockerfile(
     previousProposal = proposal;
   }
   // If one of the proposals is a passed proposal, make the latest one the default entrypoint
-  const lastPassed = allProposals.findLast(isPassed);
-  if (lastPassed) {
+  const lastPassed = someProposals.findLast(isPassed);
+  if (stopWith < 0 && lastPassed) {
     blocks.push(stage.LAST(lastPassed));
   }
 

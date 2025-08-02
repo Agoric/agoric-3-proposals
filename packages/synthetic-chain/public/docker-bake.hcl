@@ -31,6 +31,23 @@ target "use" {
   target = "use-${proposal}"
 }
 
+// Image to prepare for a Software Upgrade with historical state.
+target "prepare" {
+  inherits = ["docker-metadata-action"]
+  name = "prepare-${proposal}"
+  platforms = PLATFORMS
+  matrix = {
+    proposal = PROPOSALS
+  }
+  // TODO proposal *number* would be immutable
+  tags = ["ghcr.io/agoric/agoric-3-proposals:prepare-${proposal}"]
+  labels = {
+    "org.opencontainers.image.title": "Prepare ${proposal}",
+    "org.opencontainers.image.description": "Prepare for the upgrade to ${proposal} proposal",
+  }
+  target = "prepare-${proposal}"
+}
+
 // Image to test the result of a proposal, always current platform
 target "test" {
   name = "test-${proposal}"

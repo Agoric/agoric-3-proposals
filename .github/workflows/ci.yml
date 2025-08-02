@@ -20,11 +20,21 @@ name: Proposal tests
 # and clicking "Run workflow", specifying this branch.
 on:
   pull_request:
-  workflow_dispatch:
   merge_group:
   push:
     branches: [main]
-
+  workflow_dispatch:
+    inputs:
+      stop-with:
+        description: 'Do not build, test, or publish beyond a specific proposal'
+        required: false
+        default: ''
+        type: string
+      slim:
+        description: 'Rely on the last published upgrade to do less work'
+        required: false
+        default: true
+        type: boolean
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -116,14 +126,37 @@ jobs:
           corepack enable || sudo corepack enable
           yarn install
 
-      - name: Prepare Docker config
+      - name: Prepare Docker config (slim=${{ github.event.inputs.slim }}, stop-with=${{ github.event.inputs.stop-with || '' }})
+        env:
+          SLIM: ${{ github.event.inputs.slim }}
+          FIXME_STOP_WITH: ${{ github.event.inputs.stop-with || '' }}
         run: |
+          set -ex
+
           yarn build-cli
           # prepare files for bake-action
-          yarn synthetic-chain prepare-build
 
-      # Verify that all "use" images build across platforms.
-      - name: Build proposal "use" images
+          if [ "$SLIM" = "true" ]; then
+            # First try the slim version.
+            yarn synthetic-chain prepare-build --slim
+
+            # Check if the required image and tag have already been pushed.
+            imageTag=$(sed -ne '/^FROM /{s/^FROM \([^ ]*\).*/\1/p;q;}' Dockerfile)
+            if docker manifest inspect "$imageTag" >/dev/null; then
+              echo "$imageTag exists, using slim synthetic-chain build."
+              echo "TEST_FLAGS=--slim" >> $GITHUB_ENV
+              exit 0
+            else
+              echo "$imageTag does not exist, using full synthetic-chain build (and hope for cache)."
+            fi
+          else
+            echo "Using full (not slim)synthetic-chain build."
+          fi
+          yarn synthetic-chain prepare-build
+          echo "TEST_FLAGS=" >> $GITHUB_ENV
+
+      # Verify that all "use" and "prepare" images build across platforms.
+      - name: Build proposal "use" and "prepare" images
         uses: depot/bake-action@v1
         with:
           files: |
@@ -136,7 +169,9 @@ jobs:
       # Note this builds each proposal testing image sequentially. It does that so it can delete the image
       # after it passees, freeing up disk space.
       - name: Build and run proposal tests
-        run: yarn test
+        env:
+          FIXME_STOP_WITH: ${{ github.event.inputs.stop-with || '' }}
+        run: yarn test ${TEST_FLAGS}
 
       # Push the images if the tests pass and this is not a PR
       - name: Push proposal "use" images
@@ -149,7 +184,9 @@ jobs:
             ./docker-bake.json
             ./docker-bake.hcl
             ${{ steps.meta.outputs.bake-file }}
-          targets: use
+          targets: |
+            use
+            prepare
           push: true
 
       # Just like the "use" image above but has to begin after that ends
@@ -159,7 +196,7 @@ jobs:
       # because its FROM image was just built above.
       - name: Push "latest" image
         # Same reason as for "use" images
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' && !github.event.inputs.stop-with }}
         uses: depot/bake-action@v1
         with:
           files: |
