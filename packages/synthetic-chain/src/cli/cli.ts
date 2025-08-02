@@ -31,10 +31,21 @@ const root = path.resolve('.');
 const buildConfig = readBuildConfig(root);
 const allProposals = readProposals(root);
 
-const { match } = values;
+const { match, slim } = values;
+const stopWith = allProposals.findLastIndex(
+  p => p.proposalName === process.env.FIXME_STOP_WITH,
+);
+const stopEnd = stopWith < 0 ? allProposals.length : stopWith + 1;
+const lastUpgrade = slim
+  ? allProposals
+      .slice(1, stopEnd - 1)
+      .findLastIndex(p => p.type === 'Software Upgrade Proposal') + 1
+  : 0;
+const someProposals = allProposals.slice(lastUpgrade, stopEnd);
+
 const proposals = match
-  ? allProposals.filter(p => p.path.includes(match))
-  : allProposals;
+  ? someProposals.filter(p => p.path.includes(match))
+  : someProposals;
 
 const [cmd] = positionals;
 
