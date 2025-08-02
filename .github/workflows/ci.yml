@@ -118,9 +118,24 @@ jobs:
 
       - name: Prepare Docker config
         run: |
+          set -ex
+
           yarn build-cli
           # prepare files for bake-action
-          yarn synthetic-chain prepare-build
+
+          # First try the slim version.
+          yarn synthetic-chain prepare-build --slim
+
+          # Check if the image and tag have already been pushed.
+          imageTag=$(sed -ne '/^FROM /{s/^FROM \([^ ]*\).*/\1/p;q;}' Dockerfile)
+          if docker manifest inspect "$imageTag" >/dev/null; then
+            echo "$imageTag exists, using slim synthetic-chain build."
+            echo "TEST_FLAGS=--slim" >> $GITHUB_ENV
+          else
+            echo "$imageTag does not exist, using full synthetic-chain build (and hope for cache)."
+            yarn synthetic-chain prepare-build
+            echo "TEST_FLAGS=" >> $GITHUB_ENV
+          fi
 
       # Verify that all "use" images build across platforms.
       - name: Build proposal "use" images
@@ -136,7 +151,7 @@ jobs:
       # Note this builds each proposal testing image sequentially. It does that so it can delete the image
       # after it passees, freeing up disk space.
       - name: Build and run proposal tests
-        run: yarn test
+        run: yarn test ${TEST_FLAGS}
 
       # Push the images if the tests pass and this is not a PR
       - name: Push proposal "use" images
@@ -149,7 +164,7 @@ jobs:
             ./docker-bake.json
             ./docker-bake.hcl
             ${{ steps.meta.outputs.bake-file }}
-          targets: use
+          targets: use prepare
           push: true
 
       # Just like the "use" image above but has to begin after that ends
