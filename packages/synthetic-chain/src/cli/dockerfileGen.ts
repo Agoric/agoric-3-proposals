@@ -303,10 +303,10 @@ export function writeDockerfile(range: ProposalRange) {
         blocks.push(stage.EVAL(proposal, previousProposal!));
         break;
       case 'Software Upgrade Proposal':
-        // handle the first proposal of the chain specially
         if (previousProposal) {
           blocks.push(stage.PREPARE(proposal, previousProposal));
         } else {
+          // handle the first proposal of the chain specially
           blocks.push(
             stage.PREPARE_ZERO(proposal.proposalName, proposal.planName),
           );
