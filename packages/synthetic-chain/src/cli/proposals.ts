@@ -25,7 +25,6 @@ export function getProposalRange(
 ): ProposalRange {
   let failures = '';
   let sep = '';
-  const startFrom0 = !start;
 
   const startIndex = allProposals.findIndex(p => p.proposalName === start);
   if (start && startIndex < 0) {
@@ -39,8 +38,13 @@ export function getProposalRange(
     sep = ', ';
   }
 
-  const sliceStart = startIndex < 0 ? 0 : startIndex;
-  const sliceEnd = stopIndex < 0 ? allProposals.length : stopIndex;
+  if (failures) {
+    console.error(`Getting proposal range:`, { start, stop });
+    throw new Error(`Invalid proposal range: ${failures}`);
+  }
+
+  const sliceStart = start ? startIndex : 0;
+  const sliceEnd = stop ? stopIndex : allProposals.length;
   const someProposals = allProposals.slice(sliceStart, sliceEnd);
   const proposals = match
     ? someProposals.filter(p => p.proposalName.includes(match))
