@@ -136,8 +136,8 @@ jobs:
           # prepare files for bake-action
           yarn synthetic-chain prepare-build$BUILD_FLAGS
 
-      # Verify that all "use" and "prepare" images build across platforms.
-      - name: Build proposal "use" and "prepare" images
+      # Verify that all "use" images build across platforms.
+      - name: Build proposal "use" images
         uses: depot/bake-action@v1
         with:
           files: |
