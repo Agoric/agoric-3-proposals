@@ -165,7 +165,7 @@ jobs:
       range: ${{ matrix.range }}
       image_name: ${{ github.repository }}
     secrets: inherit
-  
+
   test-proposals:
     needs: [test-proposals-ranges]
     runs-on: ubuntu-latest
