@@ -151,7 +151,7 @@ jobs:
           fi
           echo "ranges=$(yarn synthetic-chain make-ranges$opts)" >> "$GITHUB_OUTPUT"
 
-  test-proposals:
+  test-proposals-ranges:
     needs: make-ranges
     strategy:
       fail-fast: true
@@ -165,6 +165,19 @@ jobs:
       range: ${{ matrix.range }}
       image_name: ${{ github.repository }}
     secrets: inherit
+  
+  test-proposals:
+    needs: [test-proposals-ranges]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test-proposals-ranges result
+        run: |
+          echo "test-proposals-ranges result: ${{ needs.test-proposals-ranges.result }}"
+          if [ "${{ needs.test-proposals-ranges.result }}" != "success" ]; then
+            echo "Some proposals failed!"
+            exit 1
+          fi
 
   notify-on-failure:
     needs: [test-package, test-proposals]
