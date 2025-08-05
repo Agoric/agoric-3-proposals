@@ -230,7 +230,7 @@ voteLatestProposalAndWait() {
   echo "voteLatestProposalAndWait voted yes for proposal $proposal"
   while true; do
     json=$($binary q gov proposal "$proposal" -ojson)
-    status=$(echo "$json" | jq -r .status)
+    status=$(echo "$json" | jq -r 'if .proposal then .proposal.status else .status end')
     case $status in
     PROPOSAL_STATUS_PASSED)
       echo "voteLatestProposalAndWait proposal $proposal passed"
