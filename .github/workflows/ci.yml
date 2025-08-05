@@ -20,7 +20,14 @@ name: Proposal tests
 # and clicking "Run workflow", specifying this branch.
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch:
+    inputs:
+      from_scratch:
+        description: 'Rebuild all proposals from scratch'
+        required: false
+        default: false
+        type: boolean
   merge_group:
   push:
     branches: [main]
@@ -28,10 +35,6 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   test-package:
@@ -46,6 +49,7 @@ jobs:
 
       - name: Install deps
         run: |
+          set -e
           # Enable corepack for packageManager config
           corepack enable || sudo corepack enable
           yarn install
@@ -61,114 +65,124 @@ jobs:
         run: yarn test
         working-directory: packages/synthetic-chain
 
-  # see https://docs.docker.com/build/ci/github-actions/test-before-push/
-  test-proposals:
-    permissions:
-      # allow issuing OIDC tokens for this workflow run
-      id-token: write
-      # allow at least reading the repo contents, add other permissions if necessary
-      contents: read
-      # to push the resulting images
-      packages: write
-    runs-on: 'depot-ubuntu-22.04-16'
+  from-scratch:
+    runs-on: ubuntu-latest
+    outputs:
+      from-scratch: ${{ steps.from_scratch.outputs.from_scratch }}
     steps:
-      - name: free up disk space
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Get changed packages
+        id: git_diff
+        uses: technote-space/get-diff-action@v6.1.2
+        with:
+          PATTERNS: |
+            packages/**/*.json
+            packages/**/.hcl
+            packages/**/*.js
+            packages/**/*.mjs
+            packages/**/*.cjs
+            packages/**/*.ts
+            packages/**/*.mts
+            packages/**/*.cts
+      - name: Set user's choice with label
+        id: user_from_scratch
+        env:
+          INPUT: ${{ inputs.from_scratch }}
+          FORCE: ${{ contains(github.event.pull_request.labels.*.name, 'force:from-scratch') && 'true' || 'false' }}
+          BYPASS: ${{ contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
         run: |
-          # Workaround to provide additional free space for testing.
-          #   https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
-          # If this turns out not to be enough, maybe look instead at
-          #   https://github.com/actions/runner-images/issues/2840#issuecomment-1540506686
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          echo "=== After cleanup:"
-          df -h
+          set -ex
+          if [[ "$INPUT" == true ]]; then
+            echo "choice=true" >> $GITHUB_OUTPUT
+          elif [[ "$FORCE" == true ]]; then
+            echo "choice=true" >> $GITHUB_OUTPUT
+          elif [[ "$BYPASS" == true ]]; then
+            echo "choice=false" >> $GITHUB_OUTPUT
+          else
+            echo "choice=none" >> $GITHUB_OUTPUT
+          fi
+      - name: Set from_scratch flag
+        id: from_scratch
+        env:
+          USER_CHOICE: ${{ steps.user_from_scratch.outputs.choice }}
+          PACKAGES_CHANGED: ${{ steps.git_diff.outputs.diff && 'true' || 'false' }}
+        run: |
+          set -ex
+          if [ "$PACKAGES_CHANGED" == true ] && [ "$USER_CHOICE" == none ]; then
+            echo "packages source changed; you must choose between force:from-scratch or bypass:from-scratch"
+            exit 1
+          elif [ "$USER_CHOICE" == true ]; then
+            echo "from_scratch=true" >> $GITHUB_OUTPUT
+          else
+            echo "from_scratch=false" >> $GITHUB_OUTPUT
+          fi
 
+  make-ranges:
+    needs: from-scratch
+    runs-on: ubuntu-latest
+    outputs:
+      ranges: ${{ steps.make-ranges.outputs.ranges }}
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - uses: depot/setup-action@v1
-        with:
-          oidc: true # to set DEPOT_TOKEN for later steps
-
-      # make Docker's CLI use depot to build
-      - run: depot configure-docker
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v3
-        # see https://docs.github.com/en/actions/publishing-packages/publishing-docker-images
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ${{ env.REGISTRY }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Install deps
         run: |
+          set -e
           # Enable corepack for packageManager config
           corepack enable || sudo corepack enable
           yarn install
-
-      - name: Prepare Docker config
-        run: |
           yarn build-cli
-          # prepare files for bake-action
-          yarn synthetic-chain prepare-build
 
-      # Verify that all "use" images build across platforms.
-      - name: Build proposal "use" images
-        uses: depot/bake-action@v1
-        with:
-          files: |
-            ./docker-bake.json
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: use
+      - name: Decide how to batch the ranges
+        id: make-ranges
+        env:
+          IS_PR: ${{ github.event_name == 'pull_request'}}
+          FROM_SCRATCH: ${{ needs.from-scratch.outputs.from-scratch}}
+        run: |
+          set -ex
+          opts=
+          if [ "$FROM_SCRATCH" == true ]; then
+            opts="$opts --rebuild"
+          fi
+          if [ "$IS_PR" == true ]; then
+            opts="$opts --no-push"
+          fi
+          echo "ranges=$(yarn synthetic-chain make-ranges$opts)" >> "$GITHUB_OUTPUT"
 
-      # Verify that proposals' tests pass.
-      # Note this builds each proposal testing image sequentially. It does that so it can delete the image
-      # after it passees, freeing up disk space.
-      - name: Build and run proposal tests
-        run: yarn test
+  test-proposals-ranges:
+    needs: make-ranges
+    strategy:
+      fail-fast: true
+      # XXX We need to split the proposals and build each range sequentially
+      # to avoid overwhelming the Depot builder with too much parallelism.
+      max-parallel: 1
+      matrix:
+        range: ${{ fromJson(needs.make-ranges.outputs.ranges) }}
+    uses: ./.github/workflows/docker-proposals.yml
+    with:
+      range: ${{ matrix.range }}
+      image_name: ${{ github.repository }}
+    secrets: inherit
 
-      # Push the images if the tests pass and this is not a PR
-      - name: Push proposal "use" images
-        # If we pushed from PRs, each one would overwrite main's (e.g. use-upgrade-8)
-        # To push PR "use" images we'll need to qualify the tag (e.g. use-upgrade-8-pr-2).
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: depot/bake-action@v1
-        with:
-          files: |
-            ./docker-bake.json
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: use
-          push: true
+  test-proposals:
+    needs: [test-proposals-ranges]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check test-proposals-ranges result
+        run: |
+          echo "test-proposals-ranges result: ${{ needs.test-proposals-ranges.result }}"
+          if [ "${{ needs.test-proposals-ranges.result }}" != "success" ]; then
+            echo "Some proposals failed!"
+            exit 1
+          fi
 
-      # Just like the "use" image above but has to begin after that ends
-      # because the "build" here is merely to retag the latest "use" image.
-      # We could do this with imagetools but this lets use keep the tagging logic
-      # in Bake instead of mixed into CI. This step should do hardly any building
-      # because its FROM image was just built above.
-      - name: Push "latest" image
-        # Same reason as for "use" images
-        if: ${{ github.event_name != 'pull_request' }}
-        uses: depot/bake-action@v1
-        with:
-          files: |
-            ./docker-bake.json
-            ./docker-bake.hcl
-            ${{ steps.meta.outputs.bake-file }}
-          targets: latest
-          push: true
-
+  notify-on-failure:
+    needs: [test-package, test-proposals]
+    runs-on: ubuntu-latest
+    steps:
       - name: notify on failure
         if: failure() && github.event_name != 'pull_request'
         uses: ./.github/actions/notify-status
