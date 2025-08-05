@@ -4,6 +4,7 @@ import {
   encodeUpgradeInfo,
   imageNameForProposal,
   isPassed,
+  ProposalRange,
   type CoreEvalPackage,
   type ParameterChangePackage,
   type ProposalInfo,
@@ -47,10 +48,10 @@ RUN /usr/src/upgrade-test-scripts/run_prepare_zero.sh
    * Resume from state of an existing image.
    * Creates a "use" stage upon which a PREPARE or EVAL can stack.
    */
-  RESUME(fromTag: string) {
+  RESUME(proposalName: string) {
     return `
 ## RESUME
-FROM ghcr.io/agoric/agoric-3-proposals:${fromTag} as use-${fromTag}
+FROM ghcr.io/agoric/agoric-3-proposals:use-${proposalName} as use-${proposalName}
 `;
   },
 
@@ -241,7 +242,7 @@ ENTRYPOINT ./run_test.sh ${path}
     // Some background: https://github.com/moby/moby/issues/34715
     const useImage = imageNameForProposal(lastProposal, 'use').name;
     return `
-# LAST
+## LAST
 FROM ${useImage} as latest
 
 ${createCopyCommand(
@@ -269,7 +270,7 @@ export const createCopyCommand = (
   ].join(' ');
 
 export function writeBakefileProposals(
-  allProposals: ProposalInfo[],
+  range: ProposalRange,
   platforms?: Platform[],
 ) {
   const json = {
@@ -278,37 +279,28 @@ export function writeBakefileProposals(
         default: platforms || null,
       },
       PROPOSALS: {
-        default: allProposals.map(p => p.proposalName),
+        default: range.proposals.map(p => p.proposalName),
+      },
+      UPGRADE_PROPOSALS: {
+        default: range.proposals
+          .filter(p => p.type === 'Software Upgrade Proposal')
+          .map(p => p.proposalName),
       },
     },
   };
   fs.writeFileSync('docker-bake.json', JSON.stringify(json, null, 2));
 }
 
-export function writeDockerfile(
-  allProposals: ProposalInfo[],
-  fromTag?: string | null,
-) {
+export function writeDockerfile(range: ProposalRange) {
   // Each stage tests something about the left argument and prepare an upgrade to the right side (by passing the proposal and halting the chain.)
   // The upgrade doesn't happen until the next stage begins executing.
   const blocks: string[] = [syntaxPragma];
 
-  let previousProposal: ProposalInfo | null = null;
-
-  // appending to a previous image, so set up the 'use' stage
-  if (fromTag) {
-    blocks.push(stage.RESUME(fromTag));
-    // define a previous proposal that matches what later stages expect
-    previousProposal = {
-      proposalName: fromTag,
-      proposalIdentifier: fromTag,
-      // XXX these are bogus
-      path: '.',
-      type: '/agoric.swingset.CoreEvalProposal',
-      source: 'subdir',
-    };
+  let previousProposal = range.previousProposal;
+  if (previousProposal) {
+    blocks.push(stage.RESUME(previousProposal.proposalName));
   }
-  for (const proposal of allProposals) {
+  for (const proposal of range.proposals) {
     // UNTIL region support https://github.com/microsoft/vscode-docker/issues/230
     blocks.push(
       `#----------------\n# ${proposal.proposalName}\n#----------------`,
@@ -320,10 +312,10 @@ export function writeDockerfile(
         blocks.push(stage.EVAL(proposal, previousProposal!));
         break;
       case 'Software Upgrade Proposal':
-        // handle the first proposal specially
         if (previousProposal) {
           blocks.push(stage.PREPARE(proposal, previousProposal));
         } else {
+          // handle the first proposal of the chain specially
           blocks.push(
             stage.PREPARE_ZERO(proposal.proposalName, proposal.planName),
           );
@@ -342,10 +334,13 @@ export function writeDockerfile(
     blocks.push(stage.TEST(proposal));
     previousProposal = proposal;
   }
-  // If one of the proposals is a passed proposal, make the latest one the default entrypoint
-  const lastPassed = allProposals.findLast(isPassed);
-  if (lastPassed) {
-    blocks.push(stage.LAST(lastPassed));
+
+  if (range.lastProposalIsLatest) {
+    // If one of the proposals is a passed proposal, make the latest one the default entrypoint
+    const lastPassed = range.proposals.findLast(isPassed);
+    if (lastPassed) {
+      blocks.push(stage.LAST(lastPassed));
+    }
   }
 
   const contents = blocks.join('\n');

@@ -11,6 +11,71 @@ type ProposalCommon = {
   proposalIdentifier: string;
 };
 
+export type ProposalRange = {
+  allProposals: ProposalInfo[];
+  previousProposal?: ProposalInfo;
+  proposals: ProposalInfo[];
+  proposalsToTest: ProposalInfo[];
+  lastProposalIsLatest: boolean;
+};
+
+export function getProposalRange(
+  allProposals: ProposalInfo[],
+  { start, stop, match }: { start: string; stop: string; match?: string },
+): ProposalRange {
+  let failures = '';
+  let sep = '';
+
+  const startIndex = allProposals.findIndex(p => p.proposalName === start);
+  if (start && startIndex < 0) {
+    failures += `${sep}Start proposal "${start}" not found`;
+    sep = ', ';
+  }
+
+  const stopIndex = allProposals.findIndex(p => p.proposalName === stop);
+  if (stop && stopIndex < 0) {
+    failures += `${sep}Stop proposal "${stop}" not found`;
+    sep = ', ';
+  }
+
+  if (failures) {
+    console.error(`Getting proposal range:`, { start, stop });
+    throw new Error(`Invalid proposal range: ${failures}`);
+  }
+
+  const sliceStart = start ? startIndex : 0;
+  const sliceEnd = stop ? stopIndex : allProposals.length;
+  const someProposals = allProposals.slice(sliceStart, sliceEnd);
+  const proposals = match
+    ? someProposals.filter(p => p.proposalName.includes(match))
+    : someProposals;
+
+  const previousProposal = allProposals[sliceStart - 1];
+
+  if (proposals.length === 0) {
+    failures += `${sep}No proposals found`;
+    sep = ', ';
+  }
+
+  const proposalsToTest = previousProposal ? proposals.slice(1) : proposals;
+  const lastProposalIsLatest = sliceEnd === allProposals.length;
+
+  if (failures) {
+    console.error(
+      `Considering proposals: ${proposals.map(p => p.proposalName).join(', ')}`,
+    );
+    throw new Error(`Invalid proposal range: ${failures}`);
+  }
+
+  return {
+    allProposals,
+    previousProposal,
+    proposals,
+    proposalsToTest,
+    lastProposalIsLatest,
+  };
+}
+
 export type SoftwareUpgradePackage = ProposalCommon & {
   sdkImageTag: string;
   planName: string;
