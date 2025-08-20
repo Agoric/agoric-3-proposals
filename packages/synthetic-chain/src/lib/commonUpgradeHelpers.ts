@@ -239,10 +239,13 @@ export const voteLatestProposalAndWait = async (
   assert(lastProposal, `No last proposal found`);
 
   const lastProposalId = lastProposal.proposal_id || lastProposal.id;
+  const getProposalStatus = proposal => (proposal.proposal || proposal).status;
+
+  let lastProposalStatus = getProposalStatus(lastProposal);
 
   assert(lastProposalId, `Invalid proposal ${lastProposal}`);
 
-  if (lastProposal.status === 'PROPOSAL_STATUS_DEPOSIT_PERIOD') {
+  if (lastProposalStatus === 'PROPOSAL_STATUS_DEPOSIT_PERIOD') {
     await agd.tx(
       'gov',
       'deposit',
@@ -262,8 +265,9 @@ export const voteLatestProposalAndWait = async (
     assert(lastProposal, `Proposal ${lastProposalId} not found`);
   }
 
-  lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
-    Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposal.status})`;
+  lastProposalStatus = getProposalStatus(lastProposal);
+  lastProposalStatus === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
+    Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposalStatus})`;
 
   await agd.tx(
     'gov',
@@ -280,18 +284,23 @@ export const voteLatestProposalAndWait = async (
 
   for (
     ;
-    lastProposal.status !== 'PROPOSAL_STATUS_PASSED' &&
-    lastProposal.status !== 'PROPOSAL_STATUS_REJECTED' &&
-    lastProposal.status !== 'PROPOSAL_STATUS_FAILED';
+    lastProposalStatus !== 'PROPOSAL_STATUS_PASSED' &&
+    lastProposalStatus !== 'PROPOSAL_STATUS_REJECTED' &&
+    lastProposalStatus !== 'PROPOSAL_STATUS_FAILED';
     await waitForBlock()
   ) {
     lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+    lastProposalStatus = getProposalStatus(lastProposal);
     assert(lastProposal, `Proposal ${lastProposalId} not found`);
     console.log(
-      `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,
+      `Waiting for proposal ${lastProposalId} to pass (status=${lastProposalStatus})`,
     );
   }
-  return { proposal_id: lastProposalId, ...lastProposal };
+  return {
+    proposal_id: lastProposalId,
+    ...lastProposal,
+    status: lastProposalStatus,
+  };
 };
 
 const Fail = (
