@@ -17,9 +17,9 @@ core-evals: $(EVALS)
 
 # Now pick out their contents from the transaction.
 submission/add-usdc-permit.json: proposal.json
-	jq -r '.messages[0].content.evals[0].json_permits' $< >$@
+	jq -r '.proposal.messages // .messages | .[0] | .value.content.value // .content | .evals[0].json_permits' >$@ $< >$@
 submission/add-usdc.js: proposal.json
-	jq -r '.messages[0].content.evals[0].js_code' $< >$@
+	jq -r '.proposal.messages // .messages | .[0] | .value.content.value // .content | .evals[0].js_code' >$@ $< >$@
 
 # clean up locally computed files
 clean:
