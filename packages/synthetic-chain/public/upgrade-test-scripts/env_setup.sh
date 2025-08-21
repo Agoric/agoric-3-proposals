@@ -89,7 +89,7 @@ save_latest_node_info() {
   if ps --pid "$PID" > /dev/null
   then
     NODE_STATUS="$(agd status)"
-    BLOCK_HEIGHT="$(echo "$NODE_STATUS" | jq '.SyncInfo.latest_block_height' --raw-output)"
+    BLOCK_HEIGHT="$(echo "$NODE_STATUS" | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')"
     echo "Saving node status at block height $BLOCK_HEIGHT"
     echo "$NODE_STATUS" > "$STATUS_FILE"
   else

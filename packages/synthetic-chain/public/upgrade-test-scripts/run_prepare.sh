@@ -44,7 +44,7 @@ fi
 echo "[$PROPOSAL] Voting in the upgrade."
 
 voting_period_s=10
-latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
+latest_height=$(agd status | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')
 height=$((latest_height + voting_period_s + 20))
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
@@ -70,7 +70,7 @@ voteLatestProposalAndWait
 echo "Chain in to-be-upgraded state for $UPGRADE_TO"
 
 while true; do
-  latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
+  latest_height=$(agd status | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')
   if [ "$latest_height" -ge "$height" ]; then
     echo "Upgrade height for $UPGRADE_TO reached. Killing agd"
     echo "(CONSENSUS FAILURE above for height $height is expected)"
