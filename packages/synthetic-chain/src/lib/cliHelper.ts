@@ -24,10 +24,10 @@ export const executeCommand = async (
 };
 
 export const agd = {
-  query: async (...params: string[]) => {
+  query: async <T = any>(...params: string[]) => {
     const newParams = ['query', ...params, '-o json'];
     const data = await executeCommand(BINARY, newParams);
-    return JSON.parse(data);
+    return (JSON.parse(data) as T);
   },
   tx: async (...params: string[]) => {
     const newParams = [

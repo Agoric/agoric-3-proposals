@@ -186,6 +186,16 @@ interface V050ProposalMessage {
   };
 }
 
+type Proposal = {
+  content?: { title: string };
+  id: string;
+  messages?: Array<V047ProposalMessage | V050ProposalMessage>;
+  proposal_id?: string;
+  status: string;
+  title?: string;
+  voting_end_time: unknown;
+};
+
 export const voteLatestProposalAndWait = async (
   title?: string,
 ): Promise<{
@@ -193,17 +203,20 @@ export const voteLatestProposalAndWait = async (
   voting_end_time: unknown;
   status: string;
 }> => {
+  const getProposal = async (proposalId: Proposal['id']) => {
+    const proposal = await agd.query<Proposal | { proposal: Proposal }>(
+      'gov',
+      'proposal',
+      proposalId,
+    );
+    assert(proposal, `Proposal ${lastProposalId} not found`);
+    if ('proposal' in proposal) return proposal.proposal;
+    return proposal;
+  };
+
   await waitForBlock();
   let { proposals } = (await agd.query('gov', 'proposals')) as {
-    proposals: Array<{
-      content?: { title: string };
-      title?: string;
-      messages?: Array<V047ProposalMessage | V050ProposalMessage>;
-      proposal_id?: string;
-      id?: string;
-      status: string;
-      voting_end_time: unknown;
-    }>;
+    proposals: Array<Proposal>;
   };
   if (title) {
     proposals = proposals.filter(proposal => {
@@ -239,13 +252,10 @@ export const voteLatestProposalAndWait = async (
   assert(lastProposal, `No last proposal found`);
 
   const lastProposalId = lastProposal.proposal_id || lastProposal.id;
-  const getProposalStatus = proposal => (proposal.proposal || proposal).status;
-
-  let lastProposalStatus = getProposalStatus(lastProposal);
 
   assert(lastProposalId, `Invalid proposal ${lastProposal}`);
 
-  if (lastProposalStatus === 'PROPOSAL_STATUS_DEPOSIT_PERIOD') {
+  if (lastProposal.status === 'PROPOSAL_STATUS_DEPOSIT_PERIOD') {
     await agd.tx(
       'gov',
       'deposit',
@@ -261,13 +271,11 @@ export const voteLatestProposalAndWait = async (
 
     await waitForBlock();
 
-    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
-    assert(lastProposal, `Proposal ${lastProposalId} not found`);
+    lastProposal = await getProposal(lastProposalId);
   }
 
-  lastProposalStatus = getProposalStatus(lastProposal);
-  lastProposalStatus === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
-    Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposalStatus})`;
+  lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
+    Fail`Latest proposal ${lastProposalId} not in voting period (status=${lastProposal.status})`;
 
   await agd.tx(
     'gov',
@@ -284,23 +292,18 @@ export const voteLatestProposalAndWait = async (
 
   for (
     ;
-    lastProposalStatus !== 'PROPOSAL_STATUS_PASSED' &&
-    lastProposalStatus !== 'PROPOSAL_STATUS_REJECTED' &&
-    lastProposalStatus !== 'PROPOSAL_STATUS_FAILED';
+    lastProposal.status !== 'PROPOSAL_STATUS_PASSED' &&
+    lastProposal.status !== 'PROPOSAL_STATUS_REJECTED' &&
+    lastProposal.status !== 'PROPOSAL_STATUS_FAILED';
     await waitForBlock()
   ) {
-    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
-    lastProposalStatus = getProposalStatus(lastProposal);
+    lastProposal = await getProposal(lastProposalId);
     assert(lastProposal, `Proposal ${lastProposalId} not found`);
     console.log(
-      `Waiting for proposal ${lastProposalId} to pass (status=${lastProposalStatus})`,
+      `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,
     );
   }
-  return {
-    proposal_id: lastProposalId,
-    ...lastProposal,
-    status: lastProposalStatus,
-  };
+  return { proposal_id: lastProposalId, ...lastProposal };
 };
 
 const Fail = (
