@@ -141,7 +141,7 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request'}}
           FROM_SCRATCH: ${{ needs.from-scratch.outputs.from-scratch}}
         run: |
-          set -ex
+          set -ex -o pipefail
           opts=
           if [ "$FROM_SCRATCH" == true ]; then
             opts="$opts --rebuild"
@@ -149,7 +149,8 @@ jobs:
           if [ "$IS_PR" == true ]; then
             opts="$opts --no-push"
           fi
-          echo "ranges=$(yarn synthetic-chain make-ranges$opts)" >> "$GITHUB_OUTPUT"
+          ranges=$(yarn synthetic-chain make-ranges$opts)
+          echo "ranges=$ranges" >> "$GITHUB_OUTPUT"
 
   test-proposals-ranges:
     needs: make-ranges
@@ -167,17 +168,37 @@ jobs:
     secrets: inherit
 
   test-proposals:
-    needs: [test-proposals-ranges]
+    needs: [test-proposals-ranges, make-ranges]
     runs-on: ubuntu-latest
-    if: always()
+    if: >-
+      always() &&
+      !contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch')
     steps:
       - name: Check test-proposals-ranges result
+        env:
+          TEST_PROPOSALS_RESULT: ${{ needs.test-proposals-ranges.result }}
+          MAKE_RANGES_RESULT: ${{ needs.make-ranges.result }}
         run: |
-          echo "test-proposals-ranges result: ${{ needs.test-proposals-ranges.result }}"
-          if [ "${{ needs.test-proposals-ranges.result }}" != "success" ]; then
-            echo "Some proposals failed!"
-            exit 1
-          fi
+
+          echo "test-proposals-ranges result: $TEST_PROPOSALS_RESULT"
+          case "$TEST_PROPOSALS_RESULT" in
+            success | skipped)
+              ;;
+            *)
+              echo "Some proposals failed!"
+              exit 1
+              ;;
+          esac
+
+          echo "make-ranges result: $MAKE_RANGES_RESULT"
+          case "$MAKE_RANGES_RESULT" in
+            success | skipped)
+              ;;
+            *)
+              echo "Make ranges failed!"
+              exit 1
+              ;;
+          esac
 
   notify-on-failure:
     needs: [test-package, test-proposals]
