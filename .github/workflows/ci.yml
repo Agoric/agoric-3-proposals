@@ -141,7 +141,7 @@ jobs:
           IS_PR: ${{ github.event_name == 'pull_request'}}
           FROM_SCRATCH: ${{ needs.from-scratch.outputs.from-scratch}}
         run: |
-          set -ex
+          set -ex -o pipefail
           opts=
           if [ "$FROM_SCRATCH" == true ]; then
             opts="$opts --rebuild"
@@ -149,7 +149,8 @@ jobs:
           if [ "$IS_PR" == true ]; then
             opts="$opts --no-push"
           fi
-          echo "ranges=$(yarn synthetic-chain make-ranges$opts)" >> "$GITHUB_OUTPUT"
+          ranges=$(yarn synthetic-chain make-ranges$opts)
+          echo "ranges=$ranges" >> "$GITHUB_OUTPUT"
 
   test-proposals-ranges:
     needs: make-ranges
