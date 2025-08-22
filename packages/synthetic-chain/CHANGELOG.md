@@ -1,5 +1,11 @@
 # @agoric/synthetic-chain
 
+## 0.6.0
+
+### Minor Changes
+
+- 29fac37: Cosmos SDK v0.50 `query gov proposals` support
+
 ## 0.5.8
 
 ### Patch Changes
