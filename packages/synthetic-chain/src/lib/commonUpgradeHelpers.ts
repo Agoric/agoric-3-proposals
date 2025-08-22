@@ -167,6 +167,35 @@ export const addUser = async (user: string) => {
   return getUser(user);
 };
 
+interface V047ProposalMessage {
+  '@type': string;
+  content: {
+    title: string;
+  };
+}
+
+interface V050ProposalMessage {
+  type: string;
+  value: {
+    content: {
+      type: string;
+      value: {
+        title: string;
+      };
+    };
+  };
+}
+
+type Proposal = {
+  content?: { title: string };
+  id: string;
+  messages?: Array<V047ProposalMessage | V050ProposalMessage>;
+  proposal_id?: string;
+  status: string;
+  title?: string;
+  voting_end_time: unknown;
+};
+
 export const voteLatestProposalAndWait = async (
   title?: string,
 ): Promise<{
@@ -174,26 +203,44 @@ export const voteLatestProposalAndWait = async (
   voting_end_time: unknown;
   status: string;
 }> => {
+  const getProposal = async (proposalId: Proposal['id']) => {
+    const proposal = await agd.query<Proposal | { proposal: Proposal }>(
+      'gov',
+      'proposal',
+      proposalId,
+    );
+    assert(proposal, `Proposal ${lastProposalId} not found`);
+    if ('proposal' in proposal) return proposal.proposal;
+    return proposal;
+  };
+
   await waitForBlock();
   let { proposals } = (await agd.query('gov', 'proposals')) as {
-    proposals: Array<{
-      content?: { title: string };
-      messages?: Array<{ '@type': string; content: { title: string } }>;
-      proposal_id?: string;
-      id?: string;
-      status: string;
-      voting_end_time: unknown;
-    }>;
+    proposals: Array<Proposal>;
   };
   if (title) {
     proposals = proposals.filter(proposal => {
-      if (proposal.content) {
-        return proposal.content.title === title;
-      } else if (proposal.messages) {
+      if (proposal.title === title) {
+        return true;
+      }
+      if (proposal.content?.title === title) {
+        return true;
+      }
+      if (proposal.messages) {
         return proposal.messages.some(message => {
-          message['@type'] === '/cosmos.gov.v1.MsgExecLegacyContent' ||
-            Fail`Unsupported proposal message type ${message['@type']}`;
-          return message.content.title === title;
+          let typeUrl: string;
+          let msgTitle: string;
+          if ('@type' in message) {
+            typeUrl = message['@type'];
+            msgTitle = message?.content?.title;
+          } else {
+            typeUrl = message.type;
+            msgTitle = message?.value?.content?.value?.title;
+          }
+
+          typeUrl === '/cosmos.gov.v1.MsgExecLegacyContent' ||
+            Fail`Unsupported proposal message type ${typeUrl}`;
+          return msgTitle === title;
         });
       } else {
         Fail`Unrecognized proposal shape ${Object.keys(proposal)}`;
@@ -224,8 +271,7 @@ export const voteLatestProposalAndWait = async (
 
     await waitForBlock();
 
-    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
-    assert(lastProposal, `Proposal ${lastProposalId} not found`);
+    lastProposal = await getProposal(lastProposalId);
   }
 
   lastProposal.status === 'PROPOSAL_STATUS_VOTING_PERIOD' ||
@@ -251,7 +297,7 @@ export const voteLatestProposalAndWait = async (
     lastProposal.status !== 'PROPOSAL_STATUS_FAILED';
     await waitForBlock()
   ) {
-    lastProposal = await agd.query('gov', 'proposal', lastProposalId);
+    lastProposal = await getProposal(lastProposalId);
     assert(lastProposal, `Proposal ${lastProposalId} not found`);
     console.log(
       `Waiting for proposal ${lastProposalId} to pass (status=${lastProposal.status})`,

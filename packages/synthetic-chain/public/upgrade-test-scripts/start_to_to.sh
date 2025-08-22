@@ -18,7 +18,7 @@ if [[ -z "${UPGRADE_TO}" ]]; then
 fi
 
 voting_period_s=10
-latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
+latest_height=$(agd status | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')
 height=$((latest_height + voting_period_s + 10))
 info=${UPGRADE_INFO-"{}"}
 if echo "$info" | jq .; then
@@ -40,7 +40,7 @@ voteLatestProposalAndWait
 echo "Chain in to-be-upgraded state for $UPGRADE_TO"
 
 while true; do
-  latest_height=$(agd status | jq -r .SyncInfo.latest_block_height)
+  latest_height=$(agd status | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')
   if [ "$latest_height" != "$height" ]; then
     echo "Waiting for upgrade height for $UPGRADE_TO to be reached (need $height, have $latest_height)"
     sleep 1

@@ -89,7 +89,7 @@ save_latest_node_info() {
   if ps --pid "$PID" > /dev/null
   then
     NODE_STATUS="$(agd status)"
-    BLOCK_HEIGHT="$(echo "$NODE_STATUS" | jq '.SyncInfo.latest_block_height' --raw-output)"
+    BLOCK_HEIGHT="$(echo "$NODE_STATUS" | jq -e --raw-output '.sync_info // .SyncInfo | .latest_block_height')"
     echo "Saving node status at block height $BLOCK_HEIGHT"
     echo "$NODE_STATUS" > "$STATUS_FILE"
   else
@@ -230,7 +230,7 @@ voteLatestProposalAndWait() {
   echo "voteLatestProposalAndWait voted yes for proposal $proposal"
   while true; do
     json=$($binary q gov proposal "$proposal" -ojson)
-    status=$(echo "$json" | jq -r .status)
+    status=$(echo "$json" | jq -r 'if .proposal then .proposal.status else .status end')
     case $status in
     PROPOSAL_STATUS_PASSED)
       echo "voteLatestProposalAndWait proposal $proposal passed"
