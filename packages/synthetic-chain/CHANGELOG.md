@@ -1,5 +1,13 @@
 # @agoric/synthetic-chain
 
+## 0.6.1
+
+### Patch Changes
+
+- 8e7dcb1: fix handling of build config fromTag
+
+  `fromTag` is meant to indicate an image to start from that isn't available in the local set of proposals.
+
 ## 0.6.0
 
 ### Minor Changes
