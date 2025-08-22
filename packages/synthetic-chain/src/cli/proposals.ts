@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import * as path from 'node:path';
 import type { DirRd, FileRd } from '../lib/webAsset.js';
+import type { AgoricSyntheticChainConfig } from './build.js';
 
 export const repository = 'ghcr.io/agoric/agoric-3-proposals';
 
@@ -19,8 +20,22 @@ export type ProposalRange = {
   lastProposalIsLatest: boolean;
 };
 
+export function synthesizePreviousProposal(fromTag: string): ProposalInfo {
+  const proposalName = fromTag.replace(/^use-/, '');
+
+  return {
+    proposalName,
+    proposalIdentifier: proposalName,
+    // XXX these are bogus
+    path: '.',
+    type: '/agoric.swingset.CoreEvalProposal',
+    source: 'subdir',
+  };
+}
+
 export function getProposalRange(
   allProposals: ProposalInfo[],
+  { fromTag }: AgoricSyntheticChainConfig,
   { start, stop, match }: { start: string; stop: string; match?: string },
 ): ProposalRange {
   let failures = '';
@@ -50,14 +65,27 @@ export function getProposalRange(
     ? someProposals.filter(p => p.proposalName.includes(match))
     : someProposals;
 
-  const previousProposal = allProposals[sliceStart - 1];
+  const previousProposal = sliceStart
+    ? allProposals[sliceStart - 1]
+    : fromTag
+      ? synthesizePreviousProposal(fromTag)
+      : undefined;
 
   if (proposals.length === 0) {
     failures += `${sep}No proposals found`;
     sep = ', ';
   }
 
-  const proposalsToTest = previousProposal ? proposals.slice(1) : proposals;
+  if (
+    previousProposal &&
+    proposals.some(p => p.proposalName === previousProposal.proposalName)
+  ) {
+    throw Error(
+      `Unexpected previous proposal ${previousProposal.proposalName}`,
+    );
+  }
+
+  const proposalsToTest = proposals;
   const lastProposalIsLatest = sliceEnd === allProposals.length;
 
   if (failures) {
@@ -227,10 +255,7 @@ export function imageNameForProposal(
   stage: 'test' | 'use',
 ) {
   const target = `${stage}-${proposal.proposalName}`;
-  return {
-    name: `${repository}:${target}`,
-    target,
-  };
+  return { name: `${repository}:${target}`, target };
 }
 
 export function isPassed(proposal: ProposalInfo) {

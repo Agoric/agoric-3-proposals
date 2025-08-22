@@ -24,7 +24,6 @@ import { debugTestImage, runTestImage } from './run.js';
 
 const root = path.resolve('.');
 const buildConfig = readBuildConfig(root);
-const DEFAULT_START = (buildConfig.fromTag || '').replace(/^use-/, '');
 
 const { positionals, values } = parseArgs({
   options: {
@@ -34,13 +33,13 @@ const { positionals, values } = parseArgs({
     debug: { type: 'boolean' },
     rebuild: { type: 'boolean', default: false },
     'no-push': { type: 'boolean', default: false },
-    start: { type: 'string', default: DEFAULT_START },
+    start: { type: 'string', default: '' },
     stop: { type: 'string', default: '' },
   },
   allowPositionals: true,
 });
 
-const range = getProposalRange(readProposals(root), values);
+const range = getProposalRange(readProposals(root), buildConfig, values);
 
 const [cmd] = positionals;
 
