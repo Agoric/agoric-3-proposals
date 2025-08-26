@@ -6,5 +6,8 @@
   "dependencies": {
     "@agoric/synthetic-chain": "~0.6.1"
   },
-  "packageManager": "yarn@4.9.4"
+  "packageManager": "yarn@4.9.4",
+  "devDependencies": {
+    "ava": "^6.4.1"
+  }
 }
