@@ -22,6 +22,11 @@ This repo builds and tests synthetic reproductions of Agoric mainnet (agoric-3) 
 
 Example: `docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/agoric-3-proposals:latest` to run the latest chain image locally.
 
+## Adding a new proposal
+
+- `scripts/fetch-all-bundles.ts` to ensure the local filesystem has the bundles from Mainnet
+- `scripts/add-proposal.ts <MAINNET-PROPOSAL-NUMBER> <A3P-PROPOSAL-NAME>` to create the A3P proposal package
+
 ## Coding Style & Naming Conventions
 
 - Formatting: Prettier 3.x; prefer 2‑space indentation and ESM modules. Run `yarn lint` (or `prettier --write .` locally).
@@ -45,4 +50,3 @@ Example: `docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/ago
 - Node: `.node-version` is `20.17.0`; use a version manager (nodenv/nvm). Yarn v4 is configured.
 - Secrets: Do not commit private keys or credentials. Proposal artifacts should be public.
 - Docker: Builds are multi‑stage; local runs may be platform‑specific—use the published image tags shown in CI/README.
-
