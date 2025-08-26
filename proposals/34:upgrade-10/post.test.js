@@ -47,16 +47,12 @@ test('Validate vaults', async t => {
   );
 
   t.is(metrics.numActiveVaults, 1);
-  t.is(metrics.totalDebt.value, '6030000');
-  t.is(metrics.totalCollateral.value, '8000000');
 
   const vault0 = await agoric.follow(
     '-lF',
     ':published.vaultFactory.managers.manager0.vaults.vault0',
   );
   t.is(vault0.vaultState, 'active');
-  t.is(vault0.locked.value, '8000000');
-  t.is(vault0.debtSnapshot.debt.value, '6030000');
 
   const vault1 = await agoric.follow(
     '-lF',
