@@ -1,0 +1,10 @@
+{
+  "agoricProposal": {
+    "type": "/agoric.swingset.CoreEvalProposal"
+  },
+  "type": "module",
+  "dependencies": {
+    "@agoric/synthetic-chain": "~0.6.1"
+  },
+  "packageManager": "yarn@4.9.4"
+}
