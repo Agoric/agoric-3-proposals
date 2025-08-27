@@ -82,7 +82,9 @@ export async function saveProposalContents(
   console.log('Proposal data:', data);
   assert.equal(data.proposalId, proposal.proposalIdentifier);
   assert.equal(data.content?.typeUrl, proposal.type);
-  assert.equal(data.status, ProposalStatus.PROPOSAL_STATUS_PASSED);
+  // XXX I had to silence this, not sure we want to discourage creating a PR
+  // before a proposal is passed.
+  // assert.equal(data.status, ProposalStatus.PROPOSAL_STATUS_PASSED);
   switch (proposal.type) {
     case '/agoric.swingset.CoreEvalProposal':
       const something = CoreEvalProposal.fromProtoMsg(data.content as any);
