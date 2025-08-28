@@ -80,7 +80,7 @@ The `USE` stage is built into images that are pushed to the image repository. Th
 
 ### Naming
 
-Each proposal is defined as a subdirectory of `proposals`. E.g. `16:upgrade-8`.
+Each proposal is defined as a subdirectory of `proposals`. E.g. `91:upgrade-19`.
 
 The leading number is its number as submitted to the agoric-3 chain. These are viewable at https://agoric.explorers.guru/proposals
 
