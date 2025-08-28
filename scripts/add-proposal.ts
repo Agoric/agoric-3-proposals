@@ -26,9 +26,9 @@ const minProposalPackage = {
   },
   type: 'module',
   dependencies: {
-    '@agoric/synthetic-chain': '~0.5.5',
+    '@agoric/synthetic-chain': '~0.6.1',
   },
-  packageManager: 'yarn@4.9.1',
+  packageManager: 'yarn@4.9.4',
 };
 
 const { positionals } = parseArgs({

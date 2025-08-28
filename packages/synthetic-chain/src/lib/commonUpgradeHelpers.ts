@@ -6,8 +6,28 @@ import {
 import assert from 'node:assert';
 import fsp from 'node:fs/promises';
 import * as path from 'node:path';
+import { type Marshal, makeMarshal } from '@endo/marshal';
 import { agd, agops, agoric } from './cliHelper.js';
 import { CHAINID, VALIDATORADDR } from './constants.js';
+import type { OfferSpec } from '@agoric/smart-wallet/src/offers.js';
+import type { ExecuteOfferAction } from '@agoric/smart-wallet/src/smartWallet.js';
+
+const noSlottingMarshaller = makeMarshal<string>(undefined, undefined);
+
+/**
+ * Encodes an offer for transmission over the network.
+ */
+export const serializeOfferAction = (
+  offer: OfferSpec,
+  { toCapData }: Pick<Marshal<string>, 'toCapData'> = noSlottingMarshaller,
+): string => {
+  const action: ExecuteOfferAction = {
+    method: 'executeOffer',
+    offer,
+  };
+  const capData = toCapData(action);
+  return JSON.stringify(capData);
+};
 
 const waitForBootstrap = async (): Promise<number> => {
   const endpoint = 'localhost';
@@ -122,17 +142,22 @@ export const calculateWalletState = async (
   return state;
 };
 
+/**
+ * @throws if the smart wallet writes an error OfferStatus
+ */
 export const executeOffer = async (
   address: string,
-  offerPromise: string | Promise<string>,
+  offerPromise: string | Promise<string> | OfferSpec | Promise<OfferSpec>,
   options: Omit<
     ExecaOptions,
     'buffer' | 'encoding' | 'lines' | 'stdio' | 'stdout'
   > = {},
 ) => {
   const offerPath = await mkTemp('agops.XXX');
-  const offer = await offerPromise;
-  await fsp.writeFile(offerPath, offer);
+  const offerVal = await offerPromise;
+  const offerStr =
+    typeof offerVal === 'string' ? offerVal : serializeOfferAction(offerVal);
+  await fsp.writeFile(offerPath, offerStr);
 
   if (options.verbose) {
     console.warn(
