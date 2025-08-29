@@ -1,5 +1,12 @@
 # @agoric/synthetic-chain
 
+## 0.6.2
+
+### Patch Changes
+
+- 74dd6a3: make executeOffer support an OfferSpec arg
+- aad6786: bump dependencies, removing axios from transitive
+
 ## 0.6.1
 
 ### Patch Changes
