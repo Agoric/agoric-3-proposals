@@ -11,7 +11,7 @@ const getManifestCall = harden([
       },
     },
     options: {
-      ymaxControlAddress: "agoric1e80twfutmrm3wrk3fysjcnef4j82mq8dn6nmcq",
+      ymaxControlAddress: "agoric15u29seyj3c9rdwg7gwkc97uttrk6j9fl4jkuyh",
     },
   },
 ]);
