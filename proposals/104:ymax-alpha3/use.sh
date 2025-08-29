@@ -22,3 +22,7 @@ addr="agoric15u29seyj3c9rdwg7gwkc97uttrk6j9fl4jkuyh"
 echo "$mnemonic" | agd keys add ymaxControl --recover --keyring-backend=test
 
 provisionSmartWallet "$addr" "200000000ubld"
+
+echo "== use invitation..."
+./use-invitation.js
+
