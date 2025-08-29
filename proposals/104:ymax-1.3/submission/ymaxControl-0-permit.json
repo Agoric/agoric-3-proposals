@@ -1,0 +1,28 @@
+{
+  "consume": {
+    "contractKits": "to upgrade walletFactory using its adminFacet",
+    "governedContractKits": "to get walletReviver from provisionPool.creatorFacet",
+    "chainStorage": "to allow walletFactory to (continue) write to vstorage",
+    "walletBridgeManager": "to handle bridged cosmos SpendAction messages",
+    "agoricNames": true,
+    "board": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "consume": {
+      "walletFactory": true,
+      "provisionPool": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
