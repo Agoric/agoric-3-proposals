@@ -89,8 +89,8 @@ jobs:
         id: user_from_scratch
         env:
           INPUT: ${{ inputs.from_scratch }}
-          FORCE: ${{ contains(github.event.pull_request.labels.*.name, 'force:from-scratch') && 'true' || 'false' }}
-          BYPASS: ${{ contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
+          FORCE: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force:from-scratch') && 'true' || 'false' }}
+          BYPASS: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
         run: |
           set -ex
           if [[ "$INPUT" == true ]]; then
@@ -107,11 +107,18 @@ jobs:
         env:
           USER_CHOICE: ${{ steps.user_from_scratch.outputs.choice }}
           PACKAGES_CHANGED: ${{ steps.git_diff.outputs.diff && 'true' || 'false' }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
         run: |
           set -ex
           if [ "$PACKAGES_CHANGED" == true ] && [ "$USER_CHOICE" == none ]; then
-            echo "packages source changed; you must choose between force:from-scratch or bypass:from-scratch"
-            exit 1
+            if [ "$IS_PR" == true ]; then
+              echo "packages source changed; you must choose between force:from-scratch or bypass:from-scratch"
+              exit 1
+            else
+              echo "packages source changed on main branch; rebuilding from scratch"
+              echo "from_scratch=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
           elif [ "$USER_CHOICE" == true ]; then
             echo "from_scratch=true" >> $GITHUB_OUTPUT
           else
