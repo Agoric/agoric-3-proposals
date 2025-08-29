@@ -1,5 +1,5 @@
 // @ts-check
-import '@endo/init/debug.js';
+import '@endo/init/legacy.js'; // compat with tendermint-rpc < 0.34 which has axios
 
 import {
   LOCAL_CONFIG,
