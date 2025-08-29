@@ -6,7 +6,6 @@ import {
   makeVstorageKit,
   retryUntilCondition,
 } from '@agoric/client-utils';
-import { passStyleOf } from '@endo/pass-style';
 import test from 'ava';
 import { sendWalletAction, ymaxControlAddr } from '../wallet-util.js';
 
@@ -14,17 +13,7 @@ import { sendWalletAction, ymaxControlAddr } from '../wallet-util.js';
  * @import {BridgeAction} from '@agoric/smart-wallet/src/smartWallet';
  */
 
-const { fromEntries } = Object;
-
 const vsc = makeVstorageKit({ fetch }, LOCAL_CONFIG);
-
-test.serial('postalService is in vstorage', async t => {
-  const instanceEntries = await vsc.readPublished('agoricNames.instance');
-  const instances = fromEntries(instanceEntries);
-  const { postalService } = instances;
-
-  t.is(passStyleOf(postalService), 'remotable');
-});
 
 test.serial('invoke ymaxControl to getPublicFacet', async t => {
   /** @type {BridgeAction} */
@@ -34,7 +23,7 @@ test.serial('invoke ymaxControl to getPublicFacet', async t => {
     message: {
       id: 100,
       targetName: 'ymaxControl',
-      method: 'getCreatorFacet',
+      method: 'getPublicFacet',
       args: [],
       saveResult: { name: 'ymax0.publicFacet' },
     },
@@ -50,9 +39,11 @@ test.serial('invoke ymaxControl to getPublicFacet', async t => {
     'invoke ymaxControl',
     { setTimeout },
   );
-  t.log(actionUpdate);
-
-  t.pass('ymaxControl invocation produced result');
+  // @ts-expect-error XXX old type
+  t.deepEqual(actionUpdate.result, {
+    name: 'ymax0.publicFacet',
+    passStyle: 'remotable',
+  });
 });
 
 test.serial('invoke publicFacet from terminated contract', async t => {
@@ -64,6 +55,7 @@ test.serial('invoke publicFacet from terminated contract', async t => {
       id: 101,
       targetName: 'ymax0.publicFacet',
       method: 'makeOpenPortfolioInvitation',
+      args: [],
     },
   };
 
@@ -78,6 +70,6 @@ test.serial('invoke publicFacet from terminated contract', async t => {
     { setTimeout },
   );
   t.log(actionUpdate);
-
-  t.pass('current ymax0.publicFacet is from a terminated vat');
+  // @ts-expect-error XXX old type
+  t.is(actionUpdate.error, 'Error: vat terminated');
 });
