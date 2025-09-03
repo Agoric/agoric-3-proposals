@@ -27,7 +27,6 @@ const buildConfig = readBuildConfig(root);
 
 const { positionals, values } = parseArgs({
   options: {
-    all: { type: 'boolean', default: false },
     match: { short: 'm', type: 'string' },
     dry: { type: 'boolean' },
     debug: { type: 'boolean' },
@@ -95,53 +94,48 @@ const prepareDockerBuild = (range: ProposalRange) => {
 
 switch (cmd) {
   case 'make-ranges': {
-    const { all, rebuild, 'no-push': noPush } = values;
+    const { rebuild, 'no-push': noPush } = values;
+
     const ranges: string[] = [];
-    let lastName: string | undefined;
     let rebuildRest = rebuild;
     const someProposals = range.proposals;
-    const lastUpgrade = range.proposals.findLastIndex(
-      p => p.type === 'Software Upgrade Proposal',
-    );
-    const tail = lastUpgrade < 0 ? 0 : lastUpgrade;
+
     for (let i = 0; i < someProposals.length; i++) {
       const proposal = someProposals[i];
       const name = proposal.proposalName;
       if (!rebuildRest) {
         const image = imageNameForProposal(proposal, 'use');
-        if (
-          i < tail &&
-          (all || proposal.type === 'Software Upgrade Proposal')
-        ) {
-          console.warn(
-            `[${i + 1}/${someProposals.length}] Checking ${image.name}...`,
-          );
-          try {
-            execSync(`docker manifest inspect ${JSON.stringify(image.name)}`, {
-              stdio: 'ignore',
-            });
-            console.warn(`Skipping ${name} because it is already pushed`);
-            lastName = name;
-            continue;
-          } catch (e) {}
-        }
-        if (i >= tail || !noPush) {
+        console.warn(
+          `[${i + 1}/${someProposals.length}] Checking ${image.name}...`,
+        );
+        try {
+          execSync(`docker manifest inspect ${JSON.stringify(image.name)}`, {
+            stdio: 'ignore',
+          });
+          console.warn(`Skipping ${name} because it is already pushed`);
+          continue;
+        } catch (e) {}
+        if (!noPush) {
           console.warn(`Rebuilding ${name} and the rest...`);
-          rebuildRest = true;
-        } else if (noPush) {
+        } else {
           console.error(`${name} not found, needs to be pushed`);
           process.exit(1);
         }
       }
+      rebuildRest = true;
 
-      if (lastName !== undefined) {
-        ranges.push(`${lastName}/${name}`);
+      if (ranges.length) {
+        ranges[ranges.length - 1] += name;
       }
-      lastName = name;
+
+      ranges.push(`${name}/`);
     }
 
-    if (lastName !== undefined) {
-      ranges.push(`${lastName}/`);
+    if (ranges.length && !range.lastProposalIsLatest) {
+      // This assumes `range` stopped at the `stop` argument
+      // Consider finding the proposal after the last processed proposal instead
+      const { stop } = values;
+      ranges[ranges.length - 1] += stop;
     }
 
     console.log(JSON.stringify(ranges));
