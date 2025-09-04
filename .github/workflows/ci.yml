@@ -20,7 +20,12 @@ name: Proposal tests
 # and clicking "Run workflow", specifying this branch.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
   workflow_dispatch:
     inputs:
       from_scratch:
