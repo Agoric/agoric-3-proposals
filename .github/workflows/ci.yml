@@ -28,6 +28,11 @@ on:
         required: false
         default: false
         type: boolean
+      from_proposal:
+        description: 'Rebuild proposals from the given name'
+        required: false
+        default: ''
+        type: string
   merge_group:
   push:
     branches: [main]
@@ -65,10 +70,11 @@ jobs:
         run: yarn test
         working-directory: packages/synthetic-chain
 
-  from-scratch:
+  from-proposal:
     runs-on: ubuntu-latest
     outputs:
-      from-scratch: ${{ steps.from_scratch.outputs.from_scratch }}
+      rebuild: ${{ steps.get-rebuild.outputs.result }}
+      from: ${{ steps.get-forced-from-proposal.outputs.result }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -85,48 +91,67 @@ jobs:
             packages/**/*.ts
             packages/**/*.mts
             packages/**/*.cts
-      - name: Set user's choice with label
-        id: user_from_scratch
+      # Select a forced proposal from which to rebuild
+      - name: Get forced from proposal
+        id: get-forced-from-proposal
         env:
-          INPUT: ${{ inputs.from_scratch }}
-          FORCE: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force:from-scratch') && 'true' || 'false' }}
-          BYPASS: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
-        run: |
-          set -ex
-          if [[ "$INPUT" == true ]]; then
-            echo "choice=true" >> $GITHUB_OUTPUT
-          elif [[ "$FORCE" == true ]]; then
-            echo "choice=true" >> $GITHUB_OUTPUT
-          elif [[ "$BYPASS" == true ]]; then
-            echo "choice=false" >> $GITHUB_OUTPUT
-          else
-            echo "choice=none" >> $GITHUB_OUTPUT
-          fi
-      - name: Set from_scratch flag
-        id: from_scratch
+          INPUT_FROM_PROPOSAL: ${{ inputs.from_proposal }}
+          INPUT_FROM_SCRATCH: ${{ inputs.from_scratch }}
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |-
+            let forced = '';
+            if (context.payload.pull_request) {
+              const { body } = context.payload.pull_request;
+              const regex = /^\#force-from-proposal:\s+(\S+)/m;
+              const result = regex.exec(body);
+              if (result) {
+                forced = result[1];
+              }
+            } else if (process.env.INPUT_FROM_PROPOSAL) {
+              if (process.env.INPUT_FROM_SCRATCH === 'true') {
+                core.setFailed('from-scratch should not be set if from-proposal is set')
+              }
+              forced = process.env.INPUT_FROM_PROPOSAL;
+            }
+            console.log('Forced from proposal: ' + forced);
+            return forced;
+      - name: Get user's rebuild choice from label or input
+        id: get-rebuild
         env:
-          USER_CHOICE: ${{ steps.user_from_scratch.outputs.choice }}
+          FORCE_FROM_PROPOSAL: ${{ steps.get-forced-from-proposal.outputs.result && 'true' || 'false' }}
+          FORCE_FROM_SCRATCH: ${{ inputs.from_scratch || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force:from-scratch')) && 'true' || 'false' }}
+          BYPASS_FROM_SCRATCH: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
           PACKAGES_CHANGED: ${{ steps.git_diff.outputs.diff && 'true' || 'false' }}
           IS_PR: ${{ github.event_name == 'pull_request' }}
-        run: |
-          set -ex
-          if [ "$PACKAGES_CHANGED" == true ] && [ "$USER_CHOICE" == none ]; then
-            if [ "$IS_PR" == true ]; then
-              echo "packages source changed; you must choose between force:from-scratch or bypass:from-scratch"
-              exit 1
-            else
-              echo "packages source changed on main branch; rebuilding from scratch"
-              echo "from_scratch=true" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-          elif [ "$USER_CHOICE" == true ]; then
-            echo "from_scratch=true" >> $GITHUB_OUTPUT
-          else
-            echo "from_scratch=false" >> $GITHUB_OUTPUT
-          fi
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |-
+            let choice = 'none';
+            if (process.env.FORCE_FROM_SCRATCH == 'true' || process.env.FORCE_FROM_PROPOSAL == 'true') {
+              choice = true;
+            } else if (process.env.BYPASS_FROM_SCRATCH == 'true') {
+              choice = false;
+            }
+
+            if (process.env.PACKAGES_CHANGED == 'true' && choice === 'none') {
+              if (process.env.IS_PR == 'true') {
+                core.setFailed('packages source changed; you must choose between force:from-scratch or bypass:from-scratch');
+                return;
+              }
+              console.log('packages source changed on main branch; rebuilding from scratch');
+              return true;
+            }
+
+            const result = choice === true
+            console.log('Rebuild: ' + result);
+
+            return result;
 
   make-ranges:
-    needs: from-scratch
+    needs: from-proposal
     runs-on: ubuntu-latest
     outputs:
       ranges: ${{ steps.make-ranges.outputs.ranges }}
@@ -146,12 +171,16 @@ jobs:
         id: make-ranges
         env:
           IS_PR: ${{ github.event_name == 'pull_request'}}
-          FROM_SCRATCH: ${{ needs.from-scratch.outputs.from-scratch}}
+          FROM_PROPOSAL: ${{ needs.from-proposal.outputs.from }}
+          REBUILD: ${{ needs.from-proposal.outputs.rebuild }}
         run: |
           set -ex -o pipefail
           opts=
-          if [ "$FROM_SCRATCH" == true ]; then
+          if [ "$REBUILD" == true ]; then
             opts="$opts --rebuild"
+          fi
+          if [ -n "$FROM_PROPOSAL" ]; then
+            opts="$opts --start $FROM_PROPOSAL"
           fi
           if [ "$IS_PR" == true ]; then
             opts="$opts --no-push"
