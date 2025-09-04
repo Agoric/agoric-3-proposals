@@ -131,7 +131,7 @@ ${createCopyCommand(
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
-COPY --link --from=prepare-${proposalName} /root/.agoric /root/.agoric
+COPY --from=prepare-${proposalName} /root/.agoric /root/.agoric
 
 SHELL ["/bin/bash", "-c"]
 RUN ./run_execute.sh ${planName}
@@ -254,7 +254,6 @@ export const createCopyCommand = (
 ) =>
   [
     'COPY',
-    '--link',
     '--chmod=755',
     ...exclusionList.map(excluded => `--exclude=${excluded}`),
     ...files,
