@@ -82,7 +82,7 @@ ENV \
     SKIP_PROPOSAL_VALIDATION=${skipProposalValidation}
 
 ${createCopyCommand(
-  ['host', 'node_modules', 'test', 'test.sh'],
+  ['host', 'node_modules', '**/.yarn/install-state.gz', 'test', 'test.sh'],
   `./proposals/${path}`,
   `/usr/src/proposals/${path}`,
 )}
@@ -117,7 +117,7 @@ WORKDIR /usr/src/upgrade-test-scripts
 
 # base is a fresh sdk image so set up the proposal and its dependencies
 ${createCopyCommand(
-  ['host', 'node_modules', 'test', 'test.sh'],
+  ['host', 'node_modules', '**/.yarn/install-state.gz', 'test', 'test.sh'],
   `./proposals/${path}`,
   `/usr/src/proposals/${path}`,
 )}
@@ -131,7 +131,7 @@ ${createCopyCommand(
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
-COPY --link --from=prepare-${proposalName} /root/.agoric /root/.agoric
+COPY --from=prepare-${proposalName} /root/.agoric /root/.agoric
 
 SHELL ["/bin/bash", "-c"]
 RUN ./run_execute.sh ${planName}
@@ -150,7 +150,7 @@ RUN ./run_execute.sh ${planName}
 FROM use-${lastProposal.proposalName} as eval-${proposalName}
 
 ${createCopyCommand(
-  ['host', 'node_modules', 'test', 'test.sh'],
+  ['host', 'node_modules', '**/.yarn/install-state.gz', 'test', 'test.sh'],
   `./proposals/${path}`,
   `/usr/src/proposals/${path}`,
 )}
@@ -216,7 +216,7 @@ FROM use-${proposalName} as test-${proposalName}
 # to copy only missing files, but there may be none. Fortunately, copying extra
 # does not invalidate other images because nothing depends on this layer.
 ${createCopyCommand(
-  ['host', 'node_modules'],
+  ['host', 'node_modules', '**/.yarn/install-state.gz'],
   `./proposals/${path}`,
   `/usr/src/proposals/${path}`,
 )}
@@ -254,7 +254,6 @@ export const createCopyCommand = (
 ) =>
   [
     'COPY',
-    '--link',
     '--chmod=755',
     ...exclusionList.map(excluded => `--exclude=${excluded}`),
     ...files,
