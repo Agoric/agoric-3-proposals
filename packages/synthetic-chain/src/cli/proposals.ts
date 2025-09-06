@@ -36,7 +36,12 @@ export function synthesizePreviousProposal(fromTag: string): ProposalInfo {
 export function getProposalRange(
   allProposals: ProposalInfo[],
   { fromTag }: AgoricSyntheticChainConfig,
-  { start, stop, match }: { start: string; stop: string; match?: string },
+  {
+    start,
+    stop,
+    match,
+    exact,
+  }: { start: string; stop: string; match?: string; exact?: boolean },
 ): ProposalRange {
   let failures = '';
   let sep = '';
@@ -83,7 +88,9 @@ export function getProposalRange(
   }
 
   const proposalsToTest = match
-    ? proposals.filter(p => p.proposalName.includes(match))
+    ? proposals.filter(p =>
+        exact ? p.proposalName === match : p.proposalName.includes(match),
+      )
     : proposals;
   const lastProposalIsLatest = sliceEnd === allProposals.length;
 

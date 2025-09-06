@@ -28,6 +28,7 @@ const buildConfig = readBuildConfig(root);
 const { positionals, values } = parseArgs({
   options: {
     match: { short: 'm', type: 'string' },
+    exact: { type: 'boolean', default: false },
     dry: { type: 'boolean' },
     debug: { type: 'boolean' },
     rebuild: { type: 'boolean', default: false },
@@ -57,6 +58,7 @@ test            - build the "test" images and run them
                   respecting any SLOGFILE environment variable
                   https://github.com/Agoric/agoric-sdk/blob/master/docs/env.md#slogfile
   [-m <name>]   - target a particular proposal by substring match
+    [--exact]   - require the proposal name to match exactly
     [--debug]   - run containers with interactive TTY and port mapping
   [--dry]       - print the config without building images
 
