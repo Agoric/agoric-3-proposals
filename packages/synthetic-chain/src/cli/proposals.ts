@@ -60,10 +60,7 @@ export function getProposalRange(
 
   const sliceStart = start ? startIndex : 0;
   const sliceEnd = stop ? stopIndex : allProposals.length;
-  const someProposals = allProposals.slice(sliceStart, sliceEnd);
-  const proposals = match
-    ? someProposals.filter(p => p.proposalName.includes(match))
-    : someProposals;
+  const proposals = allProposals.slice(sliceStart, sliceEnd);
 
   const previousProposal = sliceStart
     ? allProposals[sliceStart - 1]
@@ -85,7 +82,9 @@ export function getProposalRange(
     );
   }
 
-  const proposalsToTest = proposals;
+  const proposalsToTest = match
+    ? proposals.filter(p => p.proposalName.includes(match))
+    : proposals;
   const lastProposalIsLatest = sliceEnd === allProposals.length;
 
   if (failures) {
