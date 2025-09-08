@@ -1,5 +1,18 @@
 # @agoric/synthetic-chain
 
+## 0.6.3
+
+### Patch Changes
+
+- 4b40090: Improve dockerfile caching
+
+  Avoid `--link` in COPY and exclude yarn cache
+
+- 544a0ab: Check all proposals in make-ranges.
+  Skip last proposal if already pushed.
+- 7ece7b5: Support an exact match option
+- b92375e: Fix match proposal behavior. Match only applies to proposals to test
+
 ## 0.6.2
 
 ### Patch Changes
