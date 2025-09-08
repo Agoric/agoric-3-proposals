@@ -1,0 +1,31 @@
+name: Setup Node.js
+description: 'Set up Node.js environment'
+
+inputs:
+  lock-path:
+    description: 'The path to yarn.lock files for setup-node to cache with'
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    # Set up for Corepack before trying to cache yarn. See
+    # https://github.com/actions/setup-node/issues/899#issuecomment-1828798029.
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+
+    # Before setup-node because that action tries to discover the cache directory.
+    # See https://github.com/actions/setup-node/issues/480#issuecomment-1915448139
+    - shell: bash
+      run: |
+        set -ex
+        corepack enable
+        mkdir -p "$(yarn config get cacheFolder)"
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: yarn
+        cache-dependency-path: ${{ inputs.lock-path }}

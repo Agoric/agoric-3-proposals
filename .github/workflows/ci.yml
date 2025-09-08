@@ -28,11 +28,6 @@ on:
       - unlabeled
   workflow_dispatch:
     inputs:
-      from_scratch:
-        description: 'Rebuild all proposals from scratch'
-        required: false
-        default: false
-        type: boolean
       from_proposal:
         description: 'Rebuild proposals from the given name'
         required: false
@@ -78,7 +73,6 @@ jobs:
   from-proposal:
     runs-on: ubuntu-latest
     outputs:
-      rebuild: ${{ steps.get-rebuild.outputs.result }}
       from: ${{ steps.get-forced-from-proposal.outputs.result }}
     steps:
       - name: Checkout repository
@@ -101,7 +95,6 @@ jobs:
         id: get-forced-from-proposal
         env:
           INPUT_FROM_PROPOSAL: ${{ inputs.from_proposal }}
-          INPUT_FROM_SCRATCH: ${{ inputs.from_scratch }}
         uses: actions/github-script@v7
         with:
           result-encoding: string
@@ -115,131 +108,24 @@ jobs:
                 forced = result[1];
               }
             } else if (process.env.INPUT_FROM_PROPOSAL) {
-              if (process.env.INPUT_FROM_SCRATCH === 'true') {
-                core.setFailed('from-scratch should not be set if from-proposal is set')
-              }
               forced = process.env.INPUT_FROM_PROPOSAL;
             }
             console.log('Forced from proposal: ' + forced);
             return forced;
-      - name: Get user's rebuild choice from label or input
-        id: get-rebuild
-        env:
-          FORCE_FROM_PROPOSAL: ${{ steps.get-forced-from-proposal.outputs.result && 'true' || 'false' }}
-          FORCE_FROM_SCRATCH: ${{ inputs.from_scratch || (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'force:from-scratch')) && 'true' || 'false' }}
-          BYPASS_FROM_SCRATCH: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch') && 'true' || 'false' }}
-          PACKAGES_CHANGED: ${{ steps.git_diff.outputs.diff && 'true' || 'false' }}
-          IS_PR: ${{ github.event_name == 'pull_request' }}
-        uses: actions/github-script@v7
-        with:
-          result-encoding: string
-          script: |-
-            let choice = 'none';
-            if (process.env.FORCE_FROM_SCRATCH == 'true' || process.env.FORCE_FROM_PROPOSAL == 'true') {
-              choice = true;
-            } else if (process.env.BYPASS_FROM_SCRATCH == 'true') {
-              choice = false;
-            }
 
-            if (process.env.PACKAGES_CHANGED == 'true' && choice === 'none') {
-              if (process.env.IS_PR == 'true') {
-                core.setFailed('packages source changed; you must choose between force:from-scratch or bypass:from-scratch');
-                return;
-              }
-              console.log('packages source changed on main branch; rebuilding from scratch');
-              return true;
-            }
-
-            const result = choice === true
-            console.log('Rebuild: ' + result);
-
-            return result;
-
-  make-ranges:
+  proposals:
     needs: from-proposal
-    runs-on: ubuntu-latest
-    outputs:
-      ranges: ${{ steps.make-ranges.outputs.ranges }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install deps
-        run: |
-          set -e
-          # Enable corepack for packageManager config
-          corepack enable || sudo corepack enable
-          yarn install
-          yarn build-cli
-
-      - name: Decide how to batch the ranges
-        id: make-ranges
-        env:
-          IS_PR: ${{ github.event_name == 'pull_request'}}
-          FROM_PROPOSAL: ${{ needs.from-proposal.outputs.from }}
-          REBUILD: ${{ needs.from-proposal.outputs.rebuild }}
-        run: |
-          set -ex -o pipefail
-          opts=
-          if [ "$REBUILD" == true ]; then
-            opts="$opts --rebuild"
-          fi
-          if [ -n "$FROM_PROPOSAL" ]; then
-            opts="$opts --start $FROM_PROPOSAL"
-          fi
-          if [ "$IS_PR" == true ]; then
-            opts="$opts --no-push"
-          fi
-          ranges=$(yarn synthetic-chain make-ranges$opts)
-          echo "ranges=$ranges" >> "$GITHUB_OUTPUT"
-
-  test-proposals-ranges:
-    needs: make-ranges
-    strategy:
-      fail-fast: true
-      # XXX We need to split the proposals and build each range sequentially
-      # to avoid overwhelming the Depot builder with too much parallelism.
-      max-parallel: 1
-      matrix:
-        range: ${{ fromJson(needs.make-ranges.outputs.ranges) }}
+    secrets: inherit
     uses: ./.github/workflows/docker-proposals.yml
     with:
-      range: ${{ matrix.range }}
+      range: ${{ needs.from-proposal.outputs.from && format('{0}/', needs.from-proposal.outputs.from) || '' }}
       image_name: ${{ github.repository }}
-    secrets: inherit
 
   test-proposals:
-    needs: [test-proposals-ranges, make-ranges]
+    needs: [proposals]
     runs-on: ubuntu-latest
-    if: >-
-      always() &&
-      !contains(github.event.pull_request.labels.*.name, 'bypass:from-scratch')
     steps:
-      - name: Check test-proposals-ranges result
-        env:
-          TEST_PROPOSALS_RESULT: ${{ needs.test-proposals-ranges.result }}
-          MAKE_RANGES_RESULT: ${{ needs.make-ranges.result }}
-        run: |
-
-          echo "test-proposals-ranges result: $TEST_PROPOSALS_RESULT"
-          case "$TEST_PROPOSALS_RESULT" in
-            success | skipped)
-              ;;
-            *)
-              echo "Some proposals failed!"
-              exit 1
-              ;;
-          esac
-
-          echo "make-ranges result: $MAKE_RANGES_RESULT"
-          case "$MAKE_RANGES_RESULT" in
-            success | skipped)
-              ;;
-            *)
-              echo "Make ranges failed!"
-              exit 1
-              ;;
-          esac
+      - run: echo success
 
   notify-on-failure:
     needs: [test-package, test-proposals]
