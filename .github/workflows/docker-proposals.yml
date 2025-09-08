@@ -18,7 +18,7 @@ on:
       image_name:
         description: 'Container image name'
         required: false
-        default: agoric/agoric-3-proposals # XXX: '${{ github.repository }}'
+        default: Agoric/agoric-3-proposals # XXX: '${{ github.repository }}'
         type: string
   workflow_call:
     # XXX: Would be great to use a YAML anchor for shared inputs, but they are
@@ -37,7 +37,7 @@ on:
       image_name:
         description: 'Container image name'
         required: false
-        default: agoric/agoric-3-proposals # XXX: '${{ github.repository }}'
+        default: Agoric/agoric-3-proposals # XXX: '${{ github.repository }}'
         type: string
 
 jobs:
@@ -248,7 +248,8 @@ jobs:
           PROJECT_ID: ${{ needs.build.outputs.project-id }}
           REGISTRY: ${{ inputs.registry }}
           IMAGE_NAME: ${{ inputs.image_name }}
-        run: depot push --project $PROJECT_ID --tag "$REGISTRY/$IMAGE_NAME:$TARGET" --target $TARGET $BUILD_ID
+        # ,, to lowercase because Agoric org is uppercase and Depot requires lowercase
+        run: depot push --project $PROJECT_ID --tag "$REGISTRY/${IMAGE_NAME,,}:$TARGET" --target $TARGET $BUILD_ID
 
       # XXX: depot.dev is configured with a 1-day retention for registry images
       # It'd be nice if we could explicitly remove the build images since we're done with them
