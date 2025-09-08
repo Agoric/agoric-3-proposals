@@ -248,6 +248,7 @@ jobs:
           PROJECT_ID: ${{ needs.build.outputs.project-id }}
           REGISTRY: ${{ inputs.registry }}
           IMAGE_NAME: ${{ inputs.image_name }}
+        # ,, to lowercase because Agoric org is uppercase and Depot requires lowercase
         run: depot push --project $PROJECT_ID --tag "$REGISTRY/${IMAGE_NAME,,}:$TARGET" --target $TARGET $BUILD_ID
 
       # XXX: depot.dev is configured with a 1-day retention for registry images
