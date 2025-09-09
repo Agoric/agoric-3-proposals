@@ -12,18 +12,6 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-
-      - name: Setup node
-        uses: ./.github/actions/setup-node
-        with:
-          # we only care about the root yarn.lock for the synthetic-chain tool
-          lock-path: ./yarn.lock
-
-      - name: Install deps
-        run: yarn install
-
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
@@ -35,18 +23,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN_V2 }}
       
-      # - name: Check whoami access
-      #   run: yarn npm whoami
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-
-      # - name: Send a Slack notification if a publish happens
-      #   if: steps.changesets.outputs.published == 'true'
-      #   uses: slackapi/slack-github-action@v2.1.0
-      #   with:
-      #     webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-      #     webhook-type: incoming-webhook
-      #     payload: |
-      #       text: "A new version of ${GITHUB_REPOSITORY} was published!"
+      
