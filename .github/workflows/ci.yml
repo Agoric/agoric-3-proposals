@@ -48,16 +48,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup node
+        uses: ./.github/actions/setup-node
         with:
-          node-version: 20
+          # we only care about the root yarn.lock for the synthetic-chain tool
+          lock-path: ./yarn.lock
 
       - name: Install deps
-        run: |
-          set -e
-          # Enable corepack for packageManager config
-          corepack enable || sudo corepack enable
-          yarn install
+        run: yarn install
 
       - name: Lint repo
         run: yarn lint
