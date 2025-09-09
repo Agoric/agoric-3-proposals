@@ -21,12 +21,12 @@ jobs:
           # we only care about the root yarn.lock for the synthetic-chain tool
           lock-path: ./yarn.lock
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_V2 }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install deps
         run: yarn install
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_V2 }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
@@ -37,7 +37,7 @@ jobs:
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_V2 }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       
       # - name: Check whoami access
       #   run: yarn npm whoami
