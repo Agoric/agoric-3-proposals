@@ -17,7 +17,7 @@
     "test": "ava"
   },
   "engines": {
-    "node": "^18.19 || ^20.9"
+    "node": "^18.19 || ^20.9 || ^22.11"
   },
   "dependencies": {
     "@agoric/client-utils": "0.1.1-dev-c393dc4.0.c393dc4",

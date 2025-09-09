@@ -99,7 +99,6 @@ jobs:
       - name: Setup node
         uses: ./.github/actions/setup-node
         with:
-          node-version: node-new
           # we only care about the root yarn.lock for the cli build
           lock-path: ./yarn.lock
 
@@ -183,7 +182,6 @@ jobs:
       - name: Setup node
         uses: ./.github/actions/setup-node
         with:
-          node-version: node-new
           # we only care about the root yarn.lock for the cli build
           lock-path: ./yarn.lock
 

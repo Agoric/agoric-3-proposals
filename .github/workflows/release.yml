@@ -13,18 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js 20.x
-        uses: actions/setup-node@v3
+      - name: Setup node
+        uses: ./.github/actions/setup-node
         with:
-          node-version: 20.x
+          # we only care about the root yarn.lock for the synthetic-chain tool
+          lock-path: ./yarn.lock
 
       - name: Install deps
-        run: |
-          # Enable corepack for packageManager config
-          corepack enable || sudo corepack enable
-          yarn install
+        run: yarn install
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets

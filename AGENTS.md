@@ -47,6 +47,6 @@ Example: `docker run -p 26657:26657 -p 1317:1317 -p 9090:9090 ghcr.io/agoric/ago
 
 ## Security & Configuration Tips
 
-- Node: `.node-version` is `20.17.0`; use a version manager (nodenv/nvm). Yarn v4 is configured.
+- Node: `.node-version` is `22.19.0`; use a version manager (nodenv/nvm). Yarn v4 is configured.
 - Secrets: Do not commit private keys or credentials. Proposal artifacts should be public.
 - Docker: Builds are multi‑stage; local runs may be platform‑specific—use the published image tags shown in CI/README.
