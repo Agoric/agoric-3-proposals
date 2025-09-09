@@ -33,7 +33,7 @@ jobs:
           createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_V2 }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       
       # - name: Check whoami access
       #   run: yarn npm whoami
