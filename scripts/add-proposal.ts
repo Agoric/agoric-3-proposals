@@ -11,7 +11,10 @@ import { makeTendermint34Client } from '@agoric/client-utils';
 import { QueryClient, setupGovExtension } from '@cosmjs/stargate';
 import { ProposalStatus } from 'cosmjs-types/cosmos/gov/v1beta1/gov.js';
 
-import { saveProposalContents, DEFAULT_ARCHIVE_NODE } from '../packages/synthetic-chain/src/cli/chain.ts';
+import {
+  saveProposalContents,
+  DEFAULT_ARCHIVE_NODE,
+} from '../packages/synthetic-chain/src/cli/chain.ts';
 import {
   readProposalsOf,
   type CoreEvalPackage,
@@ -99,6 +102,11 @@ switch (proposalType) {
     } as ParameterChangePackage;
     break;
   default:
+    console.error(`Unsupported proposal type: ${proposalType}`);
+    console.error('Supported types are:');
+    console.error('  - /agoric.swingset.CoreEvalProposal');
+    console.error('  - /cosmos.staking.v1beta1.MsgUpdateParams');
+    console.error('  - /cosmos.params.v1beta1.ParameterChangeProposal');
     throw new Error(`Unsupported proposal type: ${proposalType}`);
 }
 
@@ -113,7 +121,7 @@ async function stubProposal(proposal: ProposalInfo, root: DirRW) {
     `Proposal directory ${proposalDir} already exists`,
   );
   await proposalDir.mkdir();
-  
+
   // Create a package.json file with the proposal details
   const packageJsonPath = proposalDir.join('package.json');
   const minProposalPackage = createMinProposalPackage(proposal.type);
@@ -134,16 +142,21 @@ async function stubProposal(proposal: ProposalInfo, root: DirRW) {
   await readmePath.asFileRW().writeText(readmeContent);
 }
 
-function createReadmeContent(chainProposal: any, proposal: ProposalInfo): string {
-  const title = chainProposal.content?.title || `Proposal ${proposal.proposalIdentifier}`;
-  const description = chainProposal.content?.description || 'No description available';
-  
+function createReadmeContent(
+  chainProposal: any,
+  proposal: ProposalInfo,
+): string {
+  const title =
+    chainProposal.content?.title || `Proposal ${proposal.proposalIdentifier}`;
+  const description =
+    chainProposal.content?.description || 'No description available';
+
   let content = `# ${title}\n\n`;
   content += `**Proposal ID:** ${proposal.proposalIdentifier}\n`;
   content += `**Type:** ${proposal.type}\n`;
   content += `**Status:** ${ProposalStatus[chainProposal.status]}\n\n`;
   content += `## Description\n\n${description}\n\n`;
-  
+
   if (proposal.type === '/cosmos.staking.v1beta1.MsgUpdateParams') {
     content += `## Staking Parameter Updates\n\n`;
     content += `This proposal updates staking module parameters. See \`proposal-data.json\` for the specific parameter changes.\n\n`;
@@ -151,13 +164,13 @@ function createReadmeContent(chainProposal: any, proposal: ProposalInfo): string
     content += `## Core Evaluation\n\n`;
     content += `Files under \`submission/\` contain the core evaluation code and permits.\n\n`;
   }
-  
+
   content += `## Proposal Information\n\n`;
   content += `- **Submit Time:** ${chainProposal.submitTime}\n`;
   content += `- **Voting Start Time:** ${chainProposal.votingStartTime}\n`;
   content += `- **Voting End Time:** ${chainProposal.votingEndTime}\n`;
   content += `- **Total Deposit:** ${chainProposal.totalDeposit?.map((d: any) => `${d.amount} ${d.denom}`).join(', ') || 'N/A'}\n`;
-  
+
   return content;
 }
 

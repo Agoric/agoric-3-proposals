@@ -135,9 +135,16 @@ export async function saveProposalContents(
       const proposalDir = proposalsDir.join(
         `${proposal.proposalIdentifier}:${proposal.proposalName}`,
       );
-      const proposalDataFile = proposalDir.asFileRW().join('proposal-data.json');
-      await proposalDataFile.writeText(JSON.stringify(msgUpdateParams, null, 2));
-      console.log('Staking param update proposal data saved to', `${proposalDataFile}`);
+      const proposalDataFile = proposalDir
+        .asFileRW()
+        .join('proposal-data.json');
+      await proposalDataFile.writeText(
+        JSON.stringify(msgUpdateParams, null, 2),
+      );
+      console.log(
+        'Staking param update proposal data saved to',
+        `${proposalDataFile}`,
+      );
       break;
     case '/cosmos.params.v1beta1.ParameterChangeProposal':
       console.log('Nothing to save for Parameter Change Proposal');

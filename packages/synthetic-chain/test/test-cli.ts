@@ -62,13 +62,13 @@ test('StakingParamUpdatePackage type support', t => {
     proposalName: 'test-staking-update',
     proposalIdentifier: '123',
   };
-  
+
   t.is(stakingProposal.type, '/cosmos.staking.v1beta1.MsgUpdateParams');
   t.is(stakingProposal.proposalName, 'test-staking-update');
-  
+
   const image = imageNameForProposal(stakingProposal, 'test');
   t.deepEqual(image, {
     name: 'ghcr.io/agoric/agoric-3-proposals:test-test-staking-update',
-    target: 'test-test-staking-update'
+    target: 'test-test-staking-update',
   });
 });
