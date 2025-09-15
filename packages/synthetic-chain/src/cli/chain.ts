@@ -2,6 +2,7 @@ import assert from 'node:assert';
 
 import { makeTendermint34Client } from '@agoric/client-utils';
 import { CoreEvalProposal } from '@agoric/cosmic-proto/agoric/swingset/swingset.js';
+import { MsgUpdateParams } from '@agoric/cosmic-proto/cosmos/staking/v1beta1/tx.js';
 import { fromBase64 } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { QueryClient, setupGovExtension } from '@cosmjs/stargate';
@@ -127,6 +128,16 @@ export async function saveProposalContents(
       } else {
         console.log('No bundle IDs found in proposal eval code.');
       }
+      break;
+    case '/cosmos.staking.v1beta1.MsgUpdateParams':
+      const msgUpdateParams = MsgUpdateParams.fromProtoMsg(data.content as any);
+      console.log('Decoded staking param update proposal:', msgUpdateParams);
+      const proposalDir = proposalsDir.join(
+        `${proposal.proposalIdentifier}:${proposal.proposalName}`,
+      );
+      const proposalDataFile = proposalDir.asFileRW().join('proposal-data.json');
+      await proposalDataFile.writeText(JSON.stringify(msgUpdateParams, null, 2));
+      console.log('Staking param update proposal data saved to', `${proposalDataFile}`);
       break;
     case '/cosmos.params.v1beta1.ParameterChangeProposal':
       console.log('Nothing to save for Parameter Change Proposal');
