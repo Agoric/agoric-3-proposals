@@ -1,0 +1,49 @@
+{
+  "@type": "/cosmos.params.v1beta1.ParameterChangeProposal",
+  "title": "Lower Bundle Cost ",
+  "description": "As developers we continue to build upon Agoric blockchain's capabilities; however, one pressing challenge that our community faces is the high cost associated with installing bundles on-chain.\n\nCurrently, the cost stands at approximately 0.002 IST/byte or $2 per kilobyte (KB) (see [DefaultBeansPerStorageByte parameter](https://github.com/Agoric/agoric-sdk/blob/ac9f916a844f06db1c43e9cc69a948d9c3528a4e/golang/cosmos/x/swingset/types/default-params.go#L51)), a rate that significantly restricts participation and innovation, particularly for developers and projects that require deploying large or numerous smart contracts and applications on Agoric blockchain.\n\nTo address the outlined issues and foster a more inclusive and innovative environment, we’d like to propose reducing the cost of installing a bundle on-chain from $2/KB to $0.02/KB.",
+  "changes": [
+    {
+      "subspace": "swingset",
+      "key": "beans_per_unit",
+      "value": [
+        {
+          "key": "blockComputeLimit",
+          "beans": "6500000000"
+        },
+        {
+          "key": "feeUnit",
+          "beans": "1000000000000"
+        },
+        {
+          "key": "inboundTx",
+          "beans": "10000000000"
+        },
+        {
+          "key": "message",
+          "beans": "1000000000"
+        },
+        {
+          "key": "messageByte",
+          "beans": "20000000"
+        },
+        {
+          "key": "minFeeDebit",
+          "beans": "200000000000"
+        },
+        {
+          "key": "vatCreation",
+          "beans": "30000000"
+        },
+        {
+          "key": "xsnapComputron",
+          "beans": "100"
+        },
+        {
+          "key": "storageByte",
+          "beans": "20000000"
+        }
+      ]
+    }
+  ]
+}
