@@ -236,14 +236,9 @@ ENTRYPOINT ./run_test.sh ${path}
    * The last target in the file, for untargeted `docker build`
    */
   LAST(lastProposal: ProposalInfo) {
-    // Assumes the 'use' image is built and tagged.
-    // This isn't necessary for a multi-stage build, but without it CI
-    // rebuilds the last "use" image during the "default" image step
-    // Some background: https://github.com/moby/moby/issues/34715
-    const useImage = imageNameForProposal(lastProposal, 'use').name;
     return `
 ## LAST
-FROM ${useImage} as latest
+FROM use-${lastProposal.proposalName} as latest
 `;
   },
 };
