@@ -1,5 +1,11 @@
 # @agoric/synthetic-chain
 
+## 0.6.4
+
+### Patch Changes
+
+- eca190e: build latest from the multi-stage build target
+
 ## 0.6.3
 
 ### Patch Changes
