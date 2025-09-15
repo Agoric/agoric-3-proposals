@@ -1,0 +1,12 @@
+{
+  "@type": "/cosmos.params.v1beta1.ParameterChangeProposal",
+  "title": "Reduce Validator Set Size to 30",
+  "description": "This proposal seeks to reduce the maximum number of active validators from the current value to 30.\n\n community forum discussion: https://community.agoric.com/t/102-proposal-to-reduce-the-size-of-the-agoric-maximum-validator-set-to-75/867",
+  "changes": [
+    {
+      "subspace": "staking",
+      "key": "MaxValidators",
+      "value": 30
+    }
+  ]
+}

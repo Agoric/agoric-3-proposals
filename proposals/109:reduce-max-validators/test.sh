@@ -1,16 +1,15 @@
 #!/bin/bash
 set -e
 
-expected=20
+expected=30
 
-params="$(agd query swingset params -o json)"
-ucost="$(echo $params | jq -r ".beans_per_unit | .[] | select(.key == \"storageByte\") | .beans")"
-cost=$((ucost / 1000000))
+params="$(agd query staking params -o json)"
+maxv="$(echo $params | jq -r ".max_validators")"
 
 # fail if cost is not expected
-if [ "$cost" != "$expected" ]; then
-    echo "Expected cost $expected, got $cost"
+if [ "$maxv" != "$expected" ]; then
+    echo "Expected max_validators $expected, got $maxv"
     exit 1
 else
-    echo "Cost is $cost"
+    echo "max_validators is $maxv"
 fi
