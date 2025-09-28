@@ -131,7 +131,11 @@ ${createCopyCommand(
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
-COPY --from=prepare-${proposalName} /root/.agoric /root/.agoric
+# Efficient copy strategy: copy specific directories instead of entire .agoric
+# This reduces layer size compared to copying the entire .agoric directory with the large swingstore.sqlite
+COPY --from=prepare-${proposalName} /root/.agoric/config /root/.agoric/config
+COPY --from=prepare-${proposalName} /root/.agoric/data /root/.agoric/data
+COPY --from=prepare-${proposalName} /root/.agoric/keyring-test /root/.agoric/keyring-test
 
 SHELL ["/bin/bash", "-c"]
 RUN ./run_execute.sh ${planName}
@@ -179,14 +183,22 @@ RUN ./run_eval.sh ${path}
    *
    * - Perform any mutations that should be part of chain history
    */
-  USE({ path, proposalName, type }: ProposalInfo) {
+  USE(proposal: ProposalInfo) {
+    const { path, proposalName, type } = proposal;
     const previousStage =
       type === 'Software Upgrade Proposal' ? 'execute' : 'eval';
+
+    // Add SDK image tag label for Software Upgrade Proposals to track base image
+    const sdkImageLabel =
+      type === 'Software Upgrade Proposal'
+        ? `LABEL agoric.sdk-image-tag="${(proposal as SoftwareUpgradePackage).sdkImageTag}"\n`
+        : '';
+
     return `
 # USE ${proposalName}
 FROM ${previousStage}-${proposalName} as use-${proposalName}
 
-WORKDIR /usr/src/upgrade-test-scripts
+${sdkImageLabel}WORKDIR /usr/src/upgrade-test-scripts
 
 ${createCopyCommand(
   [],
