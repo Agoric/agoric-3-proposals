@@ -40,7 +40,7 @@ test.serial('invoke ymaxControl to getPublicFacet', async t => {
     'invoke ymaxControl',
     { setTimeout },
   );
-  // @ts-expect-error XXX old type
+  // @ts-expect-error type narrowing lost
   t.deepEqual(actionUpdate.result, {
     name: 'ymax0.publicFacet',
     passStyle: 'remotable',
@@ -80,6 +80,6 @@ test.serial('ymax0 told zoe that Access token is required', async t => {
     { setTimeout },
   );
   t.log(actionUpdate);
-  // @ts-expect-error XXX old type
+  // @ts-expect-error type narrowing lost
   t.regex(actionUpdate.status.error, /missing properties \["Access"\]/);
 });
