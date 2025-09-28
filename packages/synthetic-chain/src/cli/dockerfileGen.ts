@@ -4,7 +4,7 @@ import {
   encodeUpgradeInfo,
   imageNameForProposal,
   isPassed,
-  ProposalRange,
+  type ProposalRange,
   type CoreEvalPackage,
   type ParameterChangePackage,
   type ProposalInfo,
@@ -17,7 +17,7 @@ const syntaxPragma = '# syntax=docker/dockerfile:1.7-labs';
 /**
  * Templates for Dockerfile stages
  */
-const stage = {
+export const stage = {
   /**
    * Prepare an upgrade from ag0, start of the chain
    */
