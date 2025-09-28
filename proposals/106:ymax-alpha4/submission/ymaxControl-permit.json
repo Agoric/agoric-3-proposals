@@ -1,0 +1,37 @@
+{
+  "consume": {
+    "startUpgradable": true,
+    "namesByAddress": true,
+    "localchain": true,
+    "cosmosInterchainService": true,
+    "chainStorage": true,
+    "chainTimerService": true,
+    "agoricNames": true,
+    "board": true,
+    "zoe": "makeCoreProposalBehavior",
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "getDepositFacet": true,
+    "ymax0Kit": true,
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "installation": {
+    "consume": {
+      "postalService": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "produce": {
+      "postalService": true
+    },
+    "consume": {
+      "postalService": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
