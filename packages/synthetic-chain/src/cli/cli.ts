@@ -178,9 +178,11 @@ switch (cmd) {
         runTestImage({ proposal });
         // delete the image to reclaim disk space. The next build
         // will use the build cache.
-        execSync('docker system df', { stdio: 'inherit' });
-        execSync(`docker rmi ${image.name}`, { stdio: 'inherit' });
-        execSync('docker system df', { stdio: 'inherit' });
+        if (!values.dry) {
+          execSync('docker system df', { stdio: 'inherit' });
+          execSync(`docker rmi ${image.name}`, { stdio: 'inherit' });
+          execSync('docker system df', { stdio: 'inherit' });
+        }
       }
     }
     break;
