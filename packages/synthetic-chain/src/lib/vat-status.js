@@ -47,6 +47,7 @@ const makeSwingstoreTool = db => {
     return Object.freeze({
       source: () => kvGetJSON(`${vatID}.source`),
       options: () => kvGetJSON(`${vatID}.options`),
+      parameters: () => kvGetJSON(`${vatID}.vatParameters`),
       currentSpan: () =>
         sql.get`select * from transcriptSpans where isCurrent = 1 and vatID = ${vatID}`,
       terminated: () => {
@@ -140,6 +141,12 @@ export const getVatDetails = async vatName => {
   const kStore = buildSwingstoreTool();
   const vatID = kStore.findVat(vatName);
   return getVatDetailsFromID(kStore, vatID);
+};
+
+/** @param {string} vatID */
+export const getVatInfoFromID = async vatID => {
+  const kStore = buildSwingstoreTool();
+  return kStore.lookupVat(vatID);
 };
 
 /**
