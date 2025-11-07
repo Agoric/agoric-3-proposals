@@ -1,5 +1,13 @@
 # @agoric/synthetic-chain
 
+## 0.6.4
+
+### Patch Changes
+
+- 4790777: add getVatInfoFromID and vatParameters support to vat-status tools
+- eca190e: build latest from the multi-stage build target
+- 2c95326: Do not remove test image when --dry
+
 ## 0.6.3
 
 ### Patch Changes
