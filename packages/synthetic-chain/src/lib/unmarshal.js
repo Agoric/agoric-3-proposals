@@ -1,4 +1,5 @@
-// TODO use actual @endo/marshal
+// TODO use actual @endo/marshal once it can work without a hardened env
+// https://github.com/endojs/endo/issues/1686
 
 const {
   create,
