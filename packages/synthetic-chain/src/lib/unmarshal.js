@@ -6,11 +6,13 @@ const {
   entries,
   fromEntries,
   freeze,
+  getPrototypeOf,
   keys,
-  setPrototypeOf,
   prototype: objectPrototype,
+  setPrototypeOf,
 } = Object;
 const { isArray } = Array;
+const PASS_STYLE = Symbol.for('passStyle');
 
 const sigilDoc = {
   '!': 'escaped string',
@@ -38,6 +40,51 @@ export const objectMap = (original, mapFn) => {
   return harden(fromEntries(mapEnts));
 };
 harden(objectMap);
+
+const needsEscaping = (str = '') => str.length > 0 && sigils.includes(str[0]);
+
+const escapeString = str => (needsEscaping(str) ? `!${str}` : str);
+
+const encodeCopyData = value => {
+  const type = typeof value;
+  switch (type) {
+    case 'undefined':
+      return '#undefined';
+    case 'boolean':
+      return value;
+    case 'number':
+      if (Number.isNaN(value)) return '#NaN';
+      if (value === Infinity) return '#Infinity';
+      if (value === -Infinity) return '#-Infinity';
+      if (Object.is(value, -0)) return '#-0';
+      return value;
+    case 'bigint':
+      return value < 0 ? `-${(-value).toString()}` : `+${value.toString()}`;
+    case 'string':
+      return escapeString(value);
+    case 'object':
+      if (value === null) return value;
+      if (isArray(value)) {
+        return value.map(encodeCopyData);
+      }
+      if (PASS_STYLE in value) {
+        throw RangeError(`Cannot serialize pass-style ${value[PASS_STYLE]}`);
+      }
+      if (typeof value.then === 'function') {
+        throw RangeError('Cannot serialize Promise');
+      }
+      const proto = getPrototypeOf(value);
+      if (proto !== objectPrototype && proto !== null) {
+        throw RangeError('Cannot serialize non-plain object');
+      }
+      return objectMap(value, encodeCopyData);
+    case 'symbol':
+    case 'function':
+      throw RangeError(`Cannot serialize ${type} values`);
+    default:
+      throw RangeError(`Unexpected value type ${type}`);
+  }
+};
 
 export const makeMarshal = (_v2s, convertSlotToVal = (s, _i) => s) => {
   const fromCapData = ({ body, slots }) => {
@@ -67,8 +114,12 @@ export const makeMarshal = (_v2s, convertSlotToVal = (s, _i) => s) => {
                   return undefined;
                 case '#Infinity':
                   return Infinity;
+                case '#-Infinity':
+                  return -Infinity;
                 case '#NaN':
-                  return Infinity;
+                  return NaN;
+                case '#-0':
+                  return -0;
                 default:
                   throw RangeError(`Unexpected constant ${v}`);
               }
@@ -92,8 +143,9 @@ export const makeMarshal = (_v2s, convertSlotToVal = (s, _i) => s) => {
     return recur(encoding);
   };
 
-  const toCapData = () => {
-    throw Error('not implemented');
+  const toCapData = value => {
+    const encoding = encodeCopyData(value);
+    return harden({ body: `#${JSON.stringify(encoding)}`, slots: [] });
   };
 
   return harden({
@@ -105,7 +157,6 @@ export const makeMarshal = (_v2s, convertSlotToVal = (s, _i) => s) => {
 };
 harden(makeMarshal);
 
-const PASS_STYLE = Symbol.for('passStyle');
 export const Far = (iface, methods) => {
   const proto = freeze(
     create(objectPrototype, {

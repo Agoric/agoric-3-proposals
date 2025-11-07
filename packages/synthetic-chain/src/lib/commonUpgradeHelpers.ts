@@ -6,20 +6,27 @@ import {
 import assert from 'node:assert';
 import fsp from 'node:fs/promises';
 import * as path from 'node:path';
-import { type Marshal, makeMarshal } from '@endo/marshal';
+import { makeMarshal } from './unmarshal.js';
 import { agd, agops, agoric } from './cliHelper.js';
 import { CHAINID, VALIDATORADDR } from './constants.js';
 import type { OfferSpec } from '@agoric/smart-wallet/src/offers.js';
 import type { ExecuteOfferAction } from '@agoric/smart-wallet/src/smartWallet.js';
 
-const noSlottingMarshaller = makeMarshal<string>(undefined, undefined);
+type SlotlessMarshal = {
+  toCapData: (value: unknown) => { body: string; slots: string[] };
+};
+
+const noSlottingMarshaller = makeMarshal(
+  undefined,
+  undefined,
+) as SlotlessMarshal;
 
 /**
  * Encodes an offer for transmission over the network.
  */
 export const serializeOfferAction = (
   offer: OfferSpec,
-  { toCapData }: Pick<Marshal<string>, 'toCapData'> = noSlottingMarshaller,
+  { toCapData }: SlotlessMarshal = noSlottingMarshaller,
 ): string => {
   const action: ExecuteOfferAction = {
     method: 'executeOffer',
