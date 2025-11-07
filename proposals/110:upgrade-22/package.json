@@ -1,0 +1,45 @@
+{
+  "agoricProposal": {
+    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-22",
+    "sdkImageTag": "69",
+    "planName": "agoric-upgrade-22",
+    "upgradeInfo": {
+      "binaries": {
+        "any": "https://github.com/Agoric/agoric-sdk/archive/d15cbb93a8c1e96b364de7d961909ff1199876e5.zip//agoric-sdk-d15cbb93a8c1e96b364de7d961909ff1199876e5?checksum=sha256:3d1252d62cd57db86848707692f636e9518d02338eb538933238dad3b4c5b243"
+      },
+      "source": "https://github.com/Agoric/agoric-sdk/archive/d15cbb93a8c1e96b364de7d961909ff1199876e5.zip?checksum=sha256:3d1252d62cd57db86848707692f636e9518d02338eb538933238dad3b4c5b243"
+    },
+    "type": "Software Upgrade Proposal"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@agoric/client-utils": "dev",
+    "@agoric/ertp": "dev",
+    "@agoric/internal": "dev",
+    "@agoric/synthetic-chain": "^0.6.1",
+    "@agoric/zoe": "dev",
+    "@endo/errors": "^1.2.13",
+    "@endo/init": "^1.1.12",
+    "@endo/marshal": "^1.8.0",
+    "agoric": "dev",
+    "ava": "^5.3.1",
+    "execa": "9.1.0"
+  },
+  "ava": {
+    "concurrency": 1,
+    "timeout": "2m",
+    "files": [
+      "!submission"
+    ]
+  },
+  "scripts": {
+    "agops": "yarn --cwd /usr/src/agoric-sdk/ agops"
+  },
+  "packageManager": "yarn@4.9.3",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~5.9.2"
+  }
+}
