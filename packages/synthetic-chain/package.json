@@ -55,9 +55,6 @@
     },
     "nodeArguments": [
       "--import=ts-blank-space/register"
-    ],
-    "require": [
-      "@endo/init/debug.js"
     ]
   },
   "license": "Apache-2.0",
