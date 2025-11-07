@@ -1,5 +1,11 @@
 # @agoric/synthetic-chain
 
+## 0.6.5
+
+### Patch Changes
+
+- 4e23259: fix loading in normal env (not hardened by @endo/init)
+
 ## 0.6.4
 
 ### Patch Changes
