@@ -14,7 +14,7 @@ runs:
     # https://github.com/actions/setup-node/issues/899#issuecomment-1828798029.
     - uses: actions/setup-node@v4
       with:
-        node-version: lts/*
+        node-version: 22
 
     # Before setup-node because that action tries to discover the cache directory.
     # See https://github.com/actions/setup-node/issues/480#issuecomment-1915448139
@@ -26,6 +26,6 @@ runs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: lts/*
+        node-version: 22
         cache: yarn
         cache-dependency-path: ${{ inputs.lock-path }}
