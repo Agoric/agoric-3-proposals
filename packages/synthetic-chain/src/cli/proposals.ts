@@ -136,10 +136,15 @@ export type ParameterChangePackage = ProposalCommon & {
   type: '/cosmos.params.v1beta1.ParameterChangeProposal';
 };
 
+export type StakingParamUpdatePackage = ProposalCommon & {
+  type: '/cosmos.staking.v1beta1.MsgUpdateParams';
+};
+
 export type ProposalInfo =
   | SoftwareUpgradePackage
   | CoreEvalPackage
-  | ParameterChangePackage;
+  | ParameterChangePackage
+  | StakingParamUpdatePackage;
 
 /** @deprecated use readInfoOf */
 function readInfo(proposalPath: string): ProposalInfo {

@@ -1,6 +1,7 @@
 import test from 'ava';
 import {
   type ProposalInfo,
+  type StakingParamUpdatePackage,
   compareProposalDirNames,
   imageNameForProposal,
 } from '../src/cli/proposals.js';
@@ -51,5 +52,23 @@ test('imageNameForProposal', t => {
   t.deepEqual(imageNameForProposal(proposal, 'test'), {
     name: 'ghcr.io/agoric/agoric-3-proposals:test-foo',
     target: 'test-foo',
+  });
+});
+
+test('StakingParamUpdatePackage type support', t => {
+  const stakingProposal: StakingParamUpdatePackage = {
+    type: '/cosmos.staking.v1beta1.MsgUpdateParams',
+    path: '123:test-staking-update',
+    proposalName: 'test-staking-update',
+    proposalIdentifier: '123',
+  };
+
+  t.is(stakingProposal.type, '/cosmos.staking.v1beta1.MsgUpdateParams');
+  t.is(stakingProposal.proposalName, 'test-staking-update');
+
+  const image = imageNameForProposal(stakingProposal, 'test');
+  t.deepEqual(image, {
+    name: 'ghcr.io/agoric/agoric-3-proposals:test-test-staking-update',
+    target: 'test-test-staking-update',
   });
 });
