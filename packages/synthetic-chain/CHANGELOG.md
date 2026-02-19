@@ -1,5 +1,11 @@
 # @agoric/synthetic-chain
 
+## 0.6.6
+
+### Patch Changes
+
+- 3493a30: Update `@agoric/synthetic-chain` dependencies to newer patch/minor releases, including `ts-blank-space`, `better-sqlite3`, `chalk`, `execa`, `tsup`, and `typescript`.
+
 ## 0.6.5
 
 ### Patch Changes
