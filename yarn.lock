@@ -458,7 +458,7 @@ __metadata:
     execa: "npm:^9.6.1"
     glob: "npm:^11.0.3"
     tmp: "npm:0.2.5"
-    ts-blank-space: "npm:^0.6.2"
+    ts-blank-space: "npm:^0.7.0"
     tsup: "npm:^8.5.1"
     typescript: "npm:^5.9.3"
   bin:
@@ -6139,12 +6139,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-blank-space@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "ts-blank-space@npm:0.6.2"
+"ts-blank-space@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "ts-blank-space@npm:0.7.0"
   dependencies:
     typescript: "npm:5.1.6 - 5.9.x"
-  checksum: 10c0/fcc0fca1f2d8a711d8abdad26335d3dd86eef54a2c853a1703d2f9a4adb79de0b2ef1bb3dc38b4417cb74786fbc4f1c8096cc32acf0aaad868e91bba9bf9cc77
+  checksum: 10c0/60f9ab704380ff5e8a28ab8d5048cc9f85c2cbc7215738497abaf989171e7dbd69ed27b2a8866b3b5c96e433a477b70e667dadf1d1d2a58e71c01681880e50b5
   languageName: node
   linkType: hard
 

@@ -38,7 +38,7 @@
     "@types/node": "^22.19.11",
     "@types/tmp": "0.2.6",
     "ava": "^6.4.1",
-    "ts-blank-space": "^0.6.2",
+    "ts-blank-space": "^0.7.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
