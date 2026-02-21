@@ -4,7 +4,7 @@ import {
   encodeUpgradeInfo,
   imageNameForProposal,
   isPassed,
-  ProposalRange,
+  type ProposalRange,
   type CoreEvalPackage,
   type ParameterChangePackage,
   type ProposalInfo,
@@ -17,7 +17,7 @@ const syntaxPragma = '# syntax=docker/dockerfile:1.7-labs';
 /**
  * Templates for Dockerfile stages
  */
-const stage = {
+export const stage = {
   /**
    * Prepare an upgrade from ag0, start of the chain
    */
@@ -67,19 +67,24 @@ FROM ghcr.io/agoric/agoric-3-proposals:use-${proposalName} as use-${proposalName
       proposalName,
       upgradeInfo,
       releaseNotes,
+      sdkImageTag,
     }: SoftwareUpgradePackage,
     lastProposal: ProposalInfo,
+    currentSdkImageTag: string,
   ) {
     const skipProposalValidation = !releaseNotes;
     return `
 # PREPARE ${proposalName}
 
 # upgrading to ${planName}
-FROM use-${lastProposal.proposalName} as prepare-${proposalName}
+FROM ghcr.io/agoric/agoric-sdk:${currentSdkImageTag} as prepare-${proposalName}
 ENV \
     UPGRADE_TO=${planName} \
     UPGRADE_INFO=${JSON.stringify(encodeUpgradeInfo(upgradeInfo))} \
     SKIP_PROPOSAL_VALIDATION=${skipProposalValidation}
+
+# Copy chain state from previous layer
+COPY --from=use-${lastProposal.proposalName} /root/.agoric /root/.agoric
 
 ${createCopyCommand(
   ['host', 'node_modules', '**/.yarn/install-state.gz', 'test', 'test.sh'],
@@ -131,6 +136,7 @@ ${createCopyCommand(
 )}
 RUN --mount=type=cache,target=/root/.yarn ./install_deps.sh ${path}
 
+# Copy chain state from previous PREPARE stage
 COPY --from=prepare-${proposalName} /root/.agoric /root/.agoric
 
 SHELL ["/bin/bash", "-c"]
@@ -144,10 +150,14 @@ RUN ./run_execute.sh ${planName}
   EVAL(
     { path, proposalName }: CoreEvalPackage | ParameterChangePackage,
     lastProposal: ProposalInfo,
+    currentSdkImageTag: string,
   ) {
     return `
 # EVAL ${proposalName}
-FROM use-${lastProposal.proposalName} as eval-${proposalName}
+FROM ghcr.io/agoric/agoric-sdk:${currentSdkImageTag} as eval-${proposalName}
+
+# Copy chain state from previous layer
+COPY --from=use-${lastProposal.proposalName} /root/.agoric /root/.agoric
 
 ${createCopyCommand(
   ['host', 'node_modules', '**/.yarn/install-state.gz', 'test', 'test.sh'],
@@ -179,12 +189,19 @@ RUN ./run_eval.sh ${path}
    *
    * - Perform any mutations that should be part of chain history
    */
-  USE({ path, proposalName, type }: ProposalInfo) {
+  USE(proposal: ProposalInfo, currentSdkImageTag: string) {
+    const { path, proposalName, type } = proposal;
     const previousStage =
       type === 'Software Upgrade Proposal' ? 'execute' : 'eval';
+
     return `
 # USE ${proposalName}
-FROM ${previousStage}-${proposalName} as use-${proposalName}
+FROM ghcr.io/agoric/agoric-sdk:${currentSdkImageTag} as use-${proposalName}
+
+LABEL agoric.sdk-image-tag="${currentSdkImageTag}"
+
+# Copy chain state from previous stage
+COPY --from=${previousStage}-${proposalName} /root/.agoric /root/.agoric
 
 WORKDIR /usr/src/upgrade-test-scripts
 
@@ -207,10 +224,13 @@ ENTRYPOINT ./start_agd.sh
    *
    * Needs to be an image to have access to the SwingSet db. run it with `docker run --rm` to not make the container ephemeral.
    */
-  TEST({ path, proposalName }: ProposalInfo) {
+  TEST({ path, proposalName }: ProposalInfo, currentSdkImageTag: string) {
     return `
 # TEST ${proposalName}
-FROM use-${proposalName} as test-${proposalName}
+FROM ghcr.io/agoric/agoric-sdk:${currentSdkImageTag} as test-${proposalName}
+
+# Copy chain state from USE stage
+COPY --from=use-${proposalName} /root/.agoric /root/.agoric
 
 # Previous stages copied excluding test files (see COPY above). It would be good
 # to copy only missing files, but there may be none. Fortunately, copying extra
@@ -282,9 +302,20 @@ export function writeDockerfile(range: ProposalRange) {
   const blocks: string[] = [syntaxPragma];
 
   let previousProposal = range.previousProposal;
+  let currentSdkImageTag = 'latest'; // Default SDK image tag
+
   if (previousProposal) {
     blocks.push(stage.RESUME(previousProposal.proposalName));
+    // TODO: Extract SDK image tag from existing image when resuming
+    // For now, we'll use the first proposal's SDK image tag if available
+    const firstUpgradeProposal = range.proposals.find(
+      p => p.type === 'Software Upgrade Proposal',
+    ) as SoftwareUpgradePackage | undefined;
+    if (firstUpgradeProposal) {
+      currentSdkImageTag = firstUpgradeProposal.sdkImageTag;
+    }
   }
+
   for (const proposal of range.proposals) {
     // UNTIL region support https://github.com/microsoft/vscode-docker/issues/230
     blocks.push(
@@ -294,11 +325,22 @@ export function writeDockerfile(range: ProposalRange) {
     switch (proposal.type) {
       case '/agoric.swingset.CoreEvalProposal':
       case '/cosmos.params.v1beta1.ParameterChangeProposal':
-        blocks.push(stage.EVAL(proposal, previousProposal!));
+        blocks.push(
+          stage.EVAL(proposal, previousProposal!, currentSdkImageTag),
+        );
         break;
       case 'Software Upgrade Proposal':
+        // Update SDK image tag for upgrade proposals
+        currentSdkImageTag = proposal.sdkImageTag;
         if (previousProposal) {
-          blocks.push(stage.PREPARE(proposal, previousProposal));
+          // For PREPARE, use the previous SDK image tag, not the new one
+          const previousSdkImageTag = getPreviousSdkImageTag(
+            previousProposal,
+            range.proposals,
+          );
+          blocks.push(
+            stage.PREPARE(proposal, previousProposal, previousSdkImageTag),
+          );
         } else {
           // handle the first proposal of the chain specially
           blocks.push(
@@ -315,8 +357,8 @@ export function writeDockerfile(range: ProposalRange) {
 
     // The stages must be output in dependency order because if the builder finds a FROM
     // that it hasn't built yet, it will search for it in the registry. But it won't be there!
-    blocks.push(stage.USE(proposal));
-    blocks.push(stage.TEST(proposal));
+    blocks.push(stage.USE(proposal, currentSdkImageTag));
+    blocks.push(stage.TEST(proposal, currentSdkImageTag));
     previousProposal = proposal;
   }
 
@@ -330,4 +372,28 @@ export function writeDockerfile(range: ProposalRange) {
 
   const contents = blocks.join('\n');
   fs.writeFileSync('Dockerfile', contents);
+}
+
+/**
+ * Get the SDK image tag that should be used for a given proposal's base image
+ */
+function getPreviousSdkImageTag(
+  previousProposal: ProposalInfo,
+  allProposals: ProposalInfo[],
+): string {
+  // Find the most recent upgrade proposal before the current one
+  const previousIndex = allProposals.findIndex(
+    p => p.proposalName === previousProposal.proposalName,
+  );
+
+  // Look backwards for the last upgrade proposal
+  for (let i = previousIndex; i >= 0; i--) {
+    const prop = allProposals[i];
+    if (prop.type === 'Software Upgrade Proposal') {
+      return prop.sdkImageTag;
+    }
+  }
+
+  // Default fallback
+  return 'latest';
 }

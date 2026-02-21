@@ -3,7 +3,9 @@ import {
   type ProposalInfo,
   compareProposalDirNames,
   imageNameForProposal,
+  type SoftwareUpgradePackage,
 } from '../src/cli/proposals.js';
+import { stage } from '../src/cli/dockerfileGen.js';
 
 test('compareProposalDirNames', t => {
   const inputs = [
@@ -52,4 +54,78 @@ test('imageNameForProposal', t => {
     name: 'ghcr.io/agoric/agoric-3-proposals:test-foo',
     target: 'test-foo',
   });
+});
+
+test('EXECUTE stage uses agoric-sdk base and copies from prepare stage', t => {
+  const upgradeProposal: SoftwareUpgradePackage = {
+    type: 'Software Upgrade Proposal',
+    path: '65:upgrade-13',
+    proposalName: 'upgrade-13',
+    proposalIdentifier: '65',
+    sdkImageTag: '39',
+    planName: 'agoric-upgrade-13',
+    releaseNotes:
+      'https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-13',
+  };
+
+  const executeStage = stage.EXECUTE(upgradeProposal);
+
+  // Verify that the stage uses the correct agoric-sdk base image
+  t.true(executeStage.includes('FROM ghcr.io/agoric/agoric-sdk:39'));
+
+  // Verify that it copies chain state from the PREPARE stage
+  t.true(
+    executeStage.includes(
+      'COPY --from=prepare-upgrade-13 /root/.agoric /root/.agoric',
+    ),
+  );
+
+  // Verify it's the PREPARE stage (not USE stage)
+  t.true(
+    executeStage.includes('# Copy chain state from previous PREPARE stage'),
+  );
+});
+
+test('USE stage uses agoric-sdk base and includes SDK image tag label', t => {
+  const upgradeProposal: SoftwareUpgradePackage = {
+    type: 'Software Upgrade Proposal',
+    path: '65:upgrade-13',
+    proposalName: 'upgrade-13',
+    proposalIdentifier: '65',
+    sdkImageTag: '39',
+    planName: 'agoric-upgrade-13',
+    releaseNotes:
+      'https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-13',
+  };
+
+  const useStage = stage.USE(upgradeProposal, '39');
+
+  // Verify that the USE stage uses the correct agoric-sdk base
+  t.true(useStage.includes('FROM ghcr.io/agoric/agoric-sdk:39'));
+
+  // Verify that the USE stage includes the SDK image tag label
+  t.true(useStage.includes('LABEL agoric.sdk-image-tag="39"'));
+
+  // Verify that it copies from the execute stage
+  t.true(
+    useStage.includes(
+      'COPY --from=execute-upgrade-13 /root/.agoric /root/.agoric',
+    ),
+  );
+});
+
+test('USE stage includes SDK image tag for all proposal types', t => {
+  const coreEvalProposal: ProposalInfo = {
+    type: '/agoric.swingset.CoreEvalProposal',
+    path: '92:reset-psm-mintlimit',
+    proposalName: 'reset-psm-mintlimit',
+    proposalIdentifier: '92',
+    source: 'subdir',
+  };
+
+  const useStage = stage.USE(coreEvalProposal, '56');
+
+  // Verify that all proposals now include SDK image tag labels
+  t.true(useStage.includes('LABEL agoric.sdk-image-tag="56"'));
+  t.true(useStage.includes('FROM ghcr.io/agoric/agoric-sdk:56'));
 });
