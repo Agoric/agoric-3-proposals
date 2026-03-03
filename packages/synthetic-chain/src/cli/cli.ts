@@ -176,9 +176,14 @@ switch (cmd) {
       // don't bother to delete the test image because there's just one
       // and the user probably wants to run it again.
     } else {
-      assert(range.proposalsToTest.length > 0, 'no proposals to test!');
-      for (const proposal of range.proposalsToTest) {
-        console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
+      const proposalCount = range.proposalsToTest.length;
+      assert(proposalCount > 0, 'no proposals to test!');
+      for (const [i, proposal] of range.proposalsToTest.entries()) {
+        console.log(
+          chalk.cyan.bold(
+            `[${i + 1}/${proposalCount}] Testing ${proposal.proposalName}`,
+          ),
+        );
         const image = imageNameForProposal(proposal, 'test');
         bakeTarget(image.target, values.dry);
         runTestImage({ proposal });
