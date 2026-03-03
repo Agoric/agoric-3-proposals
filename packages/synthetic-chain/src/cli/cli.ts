@@ -161,7 +161,7 @@ switch (cmd) {
     bakeTarget('use', values.dry);
     break;
   }
-  case 'test':
+  case 'test': {
     // Always rebuild all test images to keep it simple. With the "use" stages
     // cached, these are pretty fast building doesn't run agd.
     prepareDockerBuild(range);
@@ -192,6 +192,7 @@ switch (cmd) {
       }
     }
     break;
+  }
   case 'doctor':
     runDoctor(range.allProposals);
     break;
