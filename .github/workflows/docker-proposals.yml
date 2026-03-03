@@ -205,7 +205,7 @@ jobs:
       - name: Run proposal tests
         env:
           BUILD_FLAGS: ${{ needs.build.outputs.build-flags }}
-        run: yarn test $BUILD_FLAGS --dry -match "${{ matrix.proposal }}" --exact
+        run: yarn test $BUILD_FLAGS --dry --match "${{ matrix.proposal }}" --exact
 
   # Push the images if the tests pass and this is not a PR
   push:
