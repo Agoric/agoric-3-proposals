@@ -118,7 +118,8 @@ jobs:
           set -ex -o pipefail
 
           # prepare files for bake-action
-          yarn synthetic-chain prepare-build$BUILD_FLAGS
+          yarn synthetic-chain prepare-build $BUILD_FLAGS
+          cat docker-bake.json >&2
 
           # extract proposals to test and push
           proposals=$(jq -rc '.variable.PROPOSALS.default' docker-bake.json)
