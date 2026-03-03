@@ -22,27 +22,6 @@ import {
 } from './proposals.js';
 import { debugTestImage, runTestImage } from './run.js';
 
-const root = path.resolve('.');
-const buildConfig = readBuildConfig(root);
-
-const { positionals, values } = parseArgs({
-  options: {
-    match: { short: 'm', type: 'string' },
-    exact: { type: 'boolean', default: false },
-    dry: { type: 'boolean' },
-    debug: { type: 'boolean' },
-    rebuild: { type: 'boolean', default: false },
-    'no-push': { type: 'boolean', default: false },
-    start: { type: 'string', default: '' },
-    stop: { type: 'string', default: '' },
-  },
-  allowPositionals: true,
-});
-
-const range = getProposalRange(readProposals(root), buildConfig, values);
-
-const [cmd] = positionals;
-
 // TODO consider a lib like Commander for auto-gen help
 const USAGE = `USAGE:
 prepare-build   - generate Docker build configs
@@ -64,6 +43,32 @@ test            - build the "test" images and run them
 
 doctor          - diagnostics and quick fixes
 `;
+
+const root = path.resolve('.');
+const buildConfig = readBuildConfig(root);
+
+const { positionals, values } = parseArgs({
+  options: {
+    match: { short: 'm', type: 'string' },
+    exact: { type: 'boolean', default: false },
+    dry: { type: 'boolean' },
+    debug: { type: 'boolean' },
+    rebuild: { type: 'boolean', default: false },
+    'no-push': { type: 'boolean', default: false },
+    start: { type: 'string', default: '' },
+    stop: { type: 'string', default: '' },
+  },
+  allowPositionals: true,
+});
+
+const range = getProposalRange(readProposals(root), buildConfig, values);
+
+if (positionals.length > 1) {
+  console.error('Too many arguments!');
+  console.error(USAGE);
+  process.exit(1);
+}
+const cmd = positionals[0];
 
 const EXPLAIN_MULTIPLATFORM = `
 ERROR: docker exporter does not currently support exporting manifest lists
@@ -171,6 +176,7 @@ switch (cmd) {
       // don't bother to delete the test image because there's just one
       // and the user probably wants to run it again.
     } else {
+      assert(range.proposalsToTest.length > 0, 'no proposals to test!');
       for (const proposal of range.proposalsToTest) {
         console.log(chalk.cyan.bold(`Testing ${proposal.proposalName}`));
         const image = imageNameForProposal(proposal, 'test');
@@ -190,6 +196,7 @@ switch (cmd) {
     runDoctor(range.allProposals);
     break;
   default:
-    console.log(USAGE);
+    console.error('Unknown command!', cmd);
+    console.error(USAGE);
     process.exit(1);
 }
