@@ -33,6 +33,11 @@ on:
         required: false
         default: ''
         type: string
+      end_before_proposal:
+        description: 'Rebuild proposals up just before to the given name'
+        required: false
+        default: ''
+        type: string
   merge_group:
   push:
     branches: [main]
@@ -42,11 +47,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-package:
+  test-packages:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get changed packages
+        uses: technote-space/get-diff-action@v6.1.2
+        with:
+          PATTERNS: |
+            packages/**/*.json
+            packages/**/.hcl
+            packages/**/*.js
+            packages/**/*.mjs
+            packages/**/*.cjs
+            packages/**/*.ts
+            packages/**/*.mts
+            packages/**/*.cts
 
       - name: Setup node
         uses: ./.github/actions/setup-node
@@ -68,65 +86,57 @@ jobs:
         run: yarn test
         working-directory: packages/synthetic-chain
 
-  from-proposal:
+  # Check for a forced proposal range from which to rebuild
+  get-proposal-range:
     runs-on: ubuntu-latest
     outputs:
-      from: ${{ steps.get-forced-from-proposal.outputs.result }}
+      from: ${{ fromJson(steps.get-forced-range.outputs.result).from }}
+      endBefore: ${{ fromJson(steps.get-forced-range.outputs.result).endBefore }}
+      range: ${{ fromJson(steps.get-forced-range.outputs.result).range }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Get changed packages
-        id: git_diff
-        uses: technote-space/get-diff-action@v6.1.2
-        with:
-          PATTERNS: |
-            packages/**/*.json
-            packages/**/.hcl
-            packages/**/*.js
-            packages/**/*.mjs
-            packages/**/*.cjs
-            packages/**/*.ts
-            packages/**/*.mts
-            packages/**/*.cts
-      # Select a forced proposal from which to rebuild
-      - name: Get forced from proposal
-        id: get-forced-from-proposal
+      - name: Get forced proposal range
+        id: get-forced-range
         env:
           INPUT_FROM_PROPOSAL: ${{ inputs.from_proposal }}
+          INPUT_END_BEFORE_PROPOSAL: ${{ inputs.end_before_proposal }}
         uses: actions/github-script@v7
         with:
-          result-encoding: string
           script: |-
-            let forced = '';
+            // Workflow dispatch specifies inputs directly.
+            let from = process.env.INPUT_FROM_PROPOSAL || null;
+            let endBefore = process.env.INPUT_END_BEFORE_PROPOSAL || null;
+
+            // A pull request can specify them via body content.
             if (context.payload.pull_request) {
               const { body } = context.payload.pull_request;
-              const regex = /^\#force-from-proposal:\s+(\S+)/m;
-              const result = regex.exec(body);
-              if (result) {
-                forced = result[1];
-              }
-            } else if (process.env.INPUT_FROM_PROPOSAL) {
-              forced = process.env.INPUT_FROM_PROPOSAL;
+              const matchFrom = /^\#force-from-proposal:\s+(\S+)/m.exec(body);
+              const matchEnd = /^\#force-end-before-proposal:\s+(\S+)/m.exec(body);
+              from = matchFrom && matchFrom[1];
+              endBefore = matchEnd && matchEnd[1];
             }
-            console.log('Forced from proposal: ' + forced);
-            return forced;
 
-  proposals:
-    needs: from-proposal
+            const range = from || endBefore ? `${from || ''}/${endBefore || ''}` : null;
+            console.log('Forced from proposal: ' + from);
+            console.log('Forced end proposal: ' + endBefore);
+            console.log('Forced range: ' + range);
+            return { from, endBefore, range };
+
+  proposals-matrix-test:
+    needs: get-proposal-range
     secrets: inherit
     uses: ./.github/workflows/docker-proposals.yml
     with:
-      range: ${{ needs.from-proposal.outputs.from && format('{0}/', needs.from-proposal.outputs.from) || '' }}
+      range: ${{ needs.get-proposal-range.outputs.range || '' }}
       image_name: ${{ github.repository }}
 
   test-proposals:
-    needs: [proposals]
+    needs: [proposals-matrix-test]
     runs-on: ubuntu-latest
     steps:
       - run: echo success
 
   notify-on-failure:
-    needs: [test-package, test-proposals]
+    needs: [test-packages, proposals-matrix-test]
     runs-on: ubuntu-latest
     steps:
       - name: notify on failure
@@ -137,3 +147,12 @@ jobs:
           from: ${{ secrets.NOTIFY_EMAIL_FROM }}
           to: ${{ secrets.NOTIFY_EMAIL_TO }}
           password: ${{ secrets.NOTIFY_EMAIL_PASSWORD }}
+
+  # Fail if the proposal range end was forced (to block merging)
+  prohibit-force-end:
+    needs: [get-proposal-range, notify-on-failure]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Fail if the end proposal was forced'
+        if: ${{ needs.get-proposal-range.outputs.endBefore }}
+        run: 'exit 1'

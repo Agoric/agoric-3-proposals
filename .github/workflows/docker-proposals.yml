@@ -118,7 +118,8 @@ jobs:
           set -ex -o pipefail
 
           # prepare files for bake-action
-          yarn synthetic-chain prepare-build$BUILD_FLAGS
+          yarn synthetic-chain prepare-build $BUILD_FLAGS
+          cat docker-bake.json >&2
 
           # extract proposals to test and push
           proposals=$(jq -rc '.variable.PROPOSALS.default' docker-bake.json)
@@ -205,7 +206,7 @@ jobs:
       - name: Run proposal tests
         env:
           BUILD_FLAGS: ${{ needs.build.outputs.build-flags }}
-        run: yarn test $BUILD_FLAGS --dry -match "${{ matrix.proposal }}" --exact
+        run: yarn test $BUILD_FLAGS --dry --match "${{ matrix.proposal }}" --exact
 
   # Push the images if the tests pass and this is not a PR
   push:
