@@ -273,7 +273,7 @@ export function writeBakefileProposals(
       },
     },
   };
-  fs.writeFileSync('docker-bake.json', JSON.stringify(json, null, 2));
+  fs.writeFileSync('docker-bake.json', JSON.stringify(json, null, 2) + '\n');
 }
 
 export function writeDockerfile(range: ProposalRange) {

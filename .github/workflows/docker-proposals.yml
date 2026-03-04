@@ -135,6 +135,33 @@ jobs:
           fi
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
 
+      # Artifacts can be found at the bottom of the workflow `Summary` page.
+      # https://github.com/actions/upload-artifact?tab=readme-ov-file#where-does-the-upload-go
+      - name: archive Dockerfile
+        uses: actions/upload-artifact@v7
+        with:
+          name: Dockerfile
+          path: Dockerfile
+          archive: false
+      - name: archive docker-bake.json
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-bake.json
+          path: docker-bake.json
+          archive: false
+      - name: archive docker-bake.hcl
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-bake.hcl
+          path: docker-bake.hcl
+          archive: false
+      - name: archive docker/metadata-action bake-file
+        uses: actions/upload-artifact@v7
+        with:
+          name: docker-metadata-action-bake.json
+          path: ${{ steps.meta.outputs.bake-file }}
+          archive: false
+
       - uses: depot/setup-action@v1
 
       # Build "use" and "test" images across platforms.
