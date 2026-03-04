@@ -47,11 +47,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-package:
+  test-packages:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get changed packages
+        uses: technote-space/get-diff-action@v6.1.2
+        with:
+          PATTERNS: |
+            packages/**/*.json
+            packages/**/.hcl
+            packages/**/*.js
+            packages/**/*.mjs
+            packages/**/*.cjs
+            packages/**/*.ts
+            packages/**/*.mts
+            packages/**/*.cts
 
       - name: Setup node
         uses: ./.github/actions/setup-node
@@ -81,22 +94,6 @@ jobs:
       endBefore: ${{ fromJson(steps.get-forced-range.outputs.result).endBefore }}
       range: ${{ fromJson(steps.get-forced-range.outputs.result).range }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Get changed packages
-        id: git_diff
-        uses: technote-space/get-diff-action@v6.1.2
-        with:
-          PATTERNS: |
-            packages/**/*.json
-            packages/**/.hcl
-            packages/**/*.js
-            packages/**/*.mjs
-            packages/**/*.cjs
-            packages/**/*.ts
-            packages/**/*.mts
-            packages/**/*.cts
-      # Select a forced proposal range from which to rebuild
       - name: Get forced proposal range
         id: get-forced-range
         env:
@@ -124,7 +121,7 @@ jobs:
             console.log('Forced range: ' + range);
             return { from, endBefore, range };
 
-  proposals:
+  proposals-matrix-test:
     needs: get-proposal-range
     secrets: inherit
     uses: ./.github/workflows/docker-proposals.yml
@@ -133,13 +130,13 @@ jobs:
       image_name: ${{ github.repository }}
 
   test-proposals:
-    needs: [proposals]
+    needs: [proposals-matrix-test]
     runs-on: ubuntu-latest
     steps:
       - run: echo success
 
   notify-on-failure:
-    needs: [test-package, test-proposals]
+    needs: [test-packages, proposals-matrix-test]
     runs-on: ubuntu-latest
     steps:
       - name: notify on failure
