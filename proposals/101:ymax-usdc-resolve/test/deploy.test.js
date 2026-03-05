@@ -24,13 +24,15 @@ test('ymax0 is in vstorage', async t => {
     const latestValue = values[values.length - 1];
     const parsedValue = JSON.parse(latestValue);
     const bodyContent = parsedValue.body.slice(1);
-    const instanceEntries = JSON.parse(bodyContent);
-    const instanceNames = instanceEntries.map(([name]) => name).sort();
-    console.log('\n=== INSTANCE NAMES ===');
+    const instances = Object.fromEntries(JSON.parse(bodyContent));
+    const instanceNames = Object.keys(instances).sort();
+    t.log('\n=== INSTANCE BOARD IDS ===');
     instanceNames.forEach((name, index) => {
-      console.log(`${(index + 1).toString().padStart(2, ' ')}. ${name}`);
+      const slotIndex = instances[name]?.match?.(/^\$(\d+)(?:\.|$)/)?.[1];
+      const boardId = slotIndex ? parsedValue.slots.at(+slotIndex) : undefined;
+      t.log(`${(index + 1).toString().padStart(2, ' ')}. ${name} ${boardId}`);
     });
-    console.log(`\nTotal instances: ${instanceNames.length}\n`);
+    t.log(`\nTotal instances: ${instanceNames.length}\n`);
 
     t.log(`Found ${instanceNames.length} instances:`);
     t.log(instanceNames.join(', '));
