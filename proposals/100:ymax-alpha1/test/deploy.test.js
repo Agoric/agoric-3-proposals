@@ -15,6 +15,13 @@ const getCapDataStructure = cell => {
   return { structure, slots };
 };
 
+const slotIndexPatt = /^\$(\d+)(?:\.|$)/;
+
+const getBoardIdFromSlotRef = (slotRef, slots) => {
+  const slotIndex = slotRef.match(slotIndexPatt)?.[1];
+  return slotIndex ? slots.at(Number(slotIndex)) : undefined;
+};
+
 test('ymax0 is not in vstorage yet', async t => {
   const instanceArray = await agd.query(
     'vstorage',
@@ -28,18 +35,17 @@ test('ymax0 is not in vstorage yet', async t => {
     return;
   }
 
-  const instances = Object.fromEntries(
-    getCapDataStructure(values.at(-1)).structure,
+  const { structure: instanceEntries, slots } = getCapDataStructure(
+    values.at(-1),
   );
+  const instances = Object.fromEntries(instanceEntries);
   const instanceNames = Object.keys(instances).sort();
-  t.log('\n=== INSTANCE NAMES ===');
+  t.log('\n=== INSTANCE BOARD IDS ===');
   instanceNames.forEach((name, index) => {
-    t.log(`${(index + 1).toString().padStart(2, ' ')}. ${name}`);
+    const boardId = getBoardIdFromSlotRef(instances[name], slots);
+    t.log(`${(index + 1).toString().padStart(2, ' ')}. ${name} ${boardId}`);
   });
   t.log(`\nTotal instances: ${instanceNames.length}\n`);
-
-  t.log(`Found ${instanceNames.length} instances:`);
-  t.log(instanceNames.join(', '));
 
   t.false(instanceNames.includes('ymax0'), 'no ymax0 instance in vstorage yet');
 });
@@ -92,112 +98,63 @@ test('chain-info works', async t => {
 });
 
 test('PoC26 brand board IDs match in agoricNames.brand and vbankAsset', async t => {
-  const brandDataResponse = await agd.query(
-    'vstorage',
-    'data',
-    'published.agoricNames.brand',
+  const [brandsData, vBankAssetsData] = await Promise.all(
+    ['published.agoricNames.brand', 'published.agoricNames.vbankAsset'].map(
+      async vstoragePath => {
+        const response = await agd.query('vstorage', 'data', vstoragePath);
+        if (!response?.value) return { record: [], slots: [] };
+        const values = getCellValues(response);
+        if (!Array.isArray(values)) return { record: [], slots: [] };
+        const { structure, slots } = getCapDataStructure(values.at(-1));
+        return { record: Object.fromEntries(structure), slots };
+      },
+    ),
   );
-  const vBankDataResponse = await agd.query(
-    'vstorage',
-    'data',
-    'published.agoricNames.vbankAsset',
-  );
-
-  let brands = {};
-  if (brandDataResponse?.value) {
-    const values = getCellValues(brandDataResponse);
-
-    if (values && Array.isArray(values)) {
-      brands = Object.fromEntries(getCapDataStructure(values.at(-1)).structure);
-    }
-  }
-
-  let vBankAssets = {};
-  if (vBankDataResponse?.value) {
-    const values = getCellValues(vBankDataResponse);
-
-    if (values && Array.isArray(values)) {
-      vBankAssets = Object.fromEntries(
-        getCapDataStructure(values.at(-1)).structure,
-      );
-    }
-  }
 
   t.log('\n=== AVAILABLE BRANDS ===');
-  const brandKeys = Object.keys(brands).sort();
+  const brandKeys = Object.keys(brandsData.record).sort();
   brandKeys.forEach((key, index) => {
     t.log(`${(index + 1).toString().padStart(2, ' ')}. ${key}`);
   });
   t.log(`\nTotal brands: ${brandKeys.length}`);
 
   t.log('\n=== AVAILABLE VBANK ASSETS ===');
-  const vBankKeys = Object.keys(vBankAssets).sort();
+  const vBankKeys = Object.keys(vBankAssetsData.record).sort();
   vBankKeys.forEach((key, index) => {
     t.log(`${(index + 1).toString().padStart(2, ' ')}. ${key}`);
   });
   t.log(`\nTotal vBank assets: ${vBankKeys.length}\n`);
 
-  const poc26Brand = brands['PoC26'];
+  const poc26Brand = brandsData.record['PoC26'];
   t.truthy(
     poc26Brand,
     'PoC26 brand should exist in published.agoricNames.brand',
   );
+  const brandBoardId = getBoardIdFromSlotRef(
+    brandsData.record['PoC26'],
+    brandsData.slots,
+  );
 
-  const poc26VBankAsset = vBankAssets['upoc26'];
+  const poc26VBankAsset = vBankAssetsData.record['upoc26'];
   t.truthy(
     poc26VBankAsset,
     'upoc26 asset should exist in published.agoricNames.vbankAsset',
   );
-  t.truthy(poc26VBankAsset?.brand, 'upoc26 asset should have a brand property');
+  t.truthy(poc26VBankAsset.brand, 'upoc26 asset should have a brand property');
+  const vBankBoardId = getBoardIdFromSlotRef(
+    poc26VBankAsset.brand,
+    vBankAssetsData.slots,
+  );
 
-  let brandBoardId, vBankBoardId;
-
-  if (brandDataResponse?.value) {
-    const values = getCellValues(brandDataResponse);
-    if (values && Array.isArray(values)) {
-      const { structure, slots } = getCapDataStructure(values.at(-1));
-      const brandEntries = Object.fromEntries(structure);
-
-      const poc26Entry = brandEntries.PoC26;
-      if (poc26Entry && poc26Entry[1]) {
-        const slotMatch = poc26Entry[1].match(/\$(\d+)\./);
-        if (slotMatch && slots) {
-          const slotIndex = parseInt(slotMatch[1]);
-          brandBoardId = slots[slotIndex];
-        }
-      }
-    }
-  }
-
-  if (vBankDataResponse?.value) {
-    const values = getCellValues(vBankDataResponse);
-    if (values && Array.isArray(values)) {
-      const { structure, slots } = getCapDataStructure(values.at(-1));
-      const vBankEntries = Object.fromEntries(structure);
-
-      const upoc26Entry = vBankEntries.upoc26;
-      if (upoc26Entry && upoc26Entry[1] && upoc26Entry[1].brand) {
-        const slotMatch = upoc26Entry[1].brand.match(/\$(\d+)\./);
-        if (slotMatch && slots) {
-          const slotIndex = parseInt(slotMatch[1]);
-          vBankBoardId = slots[slotIndex];
-        }
-      }
-    }
-  }
-
-  t.log('=== POC26 BOARD ID COMPARISON ===');
+  t.log('=== POC26 BRAND BOARD ID COMPARISON ===');
+  t.log('PoC26 brand:', poc26Brand);
+  t.log('PoC26 vBank asset:', poc26VBankAsset);
   t.log('PoC26 brand board ID from published.agoricNames.brand:', brandBoardId);
   t.log(
     'PoC26 brand board ID from published.agoricNames.vbankAsset:',
     vBankBoardId,
   );
-  t.log('Board IDs match:', brandBoardId === vBankBoardId, '\n');
-
-  t.log('PoC26 brand:', poc26Brand);
-  t.log('PoC26 vBank asset:', poc26VBankAsset);
-  t.log('Brand board ID:', brandBoardId);
-  t.log('vBank board ID:', vBankBoardId);
 
   t.is(brandBoardId, vBankBoardId, 'PoC26 brand board IDs should match');
+  t.is(typeof brandBoardId, 'string', 'PoC26 brand board IDs should exist');
 });
