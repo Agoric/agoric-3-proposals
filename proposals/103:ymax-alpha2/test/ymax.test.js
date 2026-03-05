@@ -11,7 +11,7 @@ import { passStyleOf } from '@endo/pass-style';
  * @import {OfferSpec} from '@agoric/smart-wallet/src/offers.js';
  */
 
-const oldBoardId = 'board010155'; // from A3P proposal 100
+const oldBoardId = 'board024156'; // from A3P proposal 101
 
 const getCellValues = ({ value }) => {
   return JSON.parse(value).values;
@@ -34,7 +34,7 @@ test('ymax in agoricNames failed to update', async t => {
   const { slot, iface } = ymax0.getDetails();
   // The proposal was meant to update this, but it didn't because the CoreEval failed in Mainnet.
   // Verify that the A3P history matches Mainnet
-  t.log({ slot, oldBoardId });
+  t.is(slot, oldBoardId);
 });
 
 test('sending offer to ymax0 contract results in vat terminated error', async t => {

@@ -88,7 +88,7 @@ const getManifestCall = harden([
           },
         },
         // NB: Different from Mainnet
-        oldBoardId: "board010155",
+        oldBoardId: "board024156",
       },
     },
   },
