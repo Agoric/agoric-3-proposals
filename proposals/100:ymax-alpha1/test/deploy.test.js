@@ -102,9 +102,9 @@ test('PoC26 brand board IDs match in agoricNames.brand and vbankAsset', async t 
     ['published.agoricNames.brand', 'published.agoricNames.vbankAsset'].map(
       async vstoragePath => {
         const response = await agd.query('vstorage', 'data', vstoragePath);
-        if (!response?.value) return { record: [], slots: [] };
+        if (!response?.value) return { record: {}, slots: [] };
         const values = getCellValues(response);
-        if (!Array.isArray(values)) return { record: [], slots: [] };
+        if (!Array.isArray(values)) return { record: {}, slots: [] };
         const { structure, slots } = getCapDataStructure(values.at(-1));
         return { record: Object.fromEntries(structure), slots };
       },
