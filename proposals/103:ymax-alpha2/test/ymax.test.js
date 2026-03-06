@@ -11,7 +11,7 @@ import { passStyleOf } from '@endo/pass-style';
  * @import {OfferSpec} from '@agoric/smart-wallet/src/offers.js';
  */
 
-const oldBoardId = 'board010155'; // from A3P proposal 100
+const oldBoardId = 'board024156'; // from A3P proposal 101
 
 const getCellValues = ({ value }) => {
   return JSON.parse(value).values;
