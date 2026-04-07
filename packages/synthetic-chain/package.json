@@ -26,7 +26,7 @@
     "chalk": "^5.6.2",
     "cosmjs-types": "^0.10.1",
     "execa": "^9.6.1",
-    "glob": "^11.0.3",
+    "glob": "^13.0.6",
     "tmp": "0.2.5"
   },
   "devDependencies": {
@@ -34,7 +34,6 @@
     "@agoric/fast-usdc": "0.1.1-dev-c393dc4.0.c393dc4",
     "@agoric/inter-protocol": "0.16.2-dev-c393dc4.0.c393dc4",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/glob": "^9.0.0",
     "@types/node": "^22.19.17",
     "@types/tmp": "0.2.6",
     "ava": "^7.0.0",
