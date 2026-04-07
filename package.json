@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@agoric/synthetic-chain": "workspace:*",
-    "@changesets/cli": "^2.29.6"
+    "@changesets/cli": "^2.30.0"
   },
   "agoricSyntheticChain": {
     "fromTag": null,
