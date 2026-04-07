@@ -37,7 +37,7 @@
     "@types/glob": "^9.0.0",
     "@types/node": "^22.19.17",
     "@types/tmp": "0.2.6",
-    "ava": "^6.4.1",
+    "ava": "^7.0.0",
     "ts-blank-space": "^0.8.0",
     "tsup": "^8.5.1",
     "typescript": "^6.0.2"
