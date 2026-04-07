@@ -20,7 +20,7 @@ runs:
   steps:
     - name: send ${{ job.status }} email
       if: ${{ inputs.to != '' }}
-      uses: dawidd6/action-send-mail@v3
+      uses: dawidd6/action-send-mail@v6
       with:
         # mail server settings
         server_address: smtp.sendgrid.net
@@ -43,13 +43,12 @@ runs:
         from: ${{ inputs.from }}
     - name: Send GitHub trigger payload
       id: slack
-      uses: slackapi/slack-github-action@v1
+      uses: slackapi/slack-github-action@v2
       with:
+        webhook: ${{ inputs.webhook }}
+        webhook-type: incoming-webhook
         payload: |
           {
             "text": "Job ${{ github.job }} in workflow ${{ github.workflow }} of ${{ github.repository }} status ${{ job.status }}\nDetails at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
             "username": "GitHub"
           }
-      env:
-        SLACK_WEBHOOK_URL: ${{ inputs.webhook }}
-        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

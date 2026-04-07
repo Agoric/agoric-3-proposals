@@ -1,9 +1,11 @@
 env:
   PROJECT_ID: 60745596728
 
+permissions:
+  contents: read
+
 jobs:
   create-snapshot:
-    if: ${{ github.event.pull_request.merged }} == 'true'
     name: Create Mainfork Snapshot
     permissions:
       contents: read
@@ -11,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

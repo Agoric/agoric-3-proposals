@@ -42,16 +42,19 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test-packages:
     runs-on: 'ubuntu-latest'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Get changed packages
         uses: technote-space/get-diff-action@v6.1.2
@@ -99,7 +102,7 @@ jobs:
         env:
           INPUT_FROM_PROPOSAL: ${{ inputs.from_proposal }}
           INPUT_END_BEFORE_PROPOSAL: ${{ inputs.end_before_proposal }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |-
             // Workflow dispatch specifies inputs directly.
@@ -123,6 +126,14 @@ jobs:
 
   proposals-matrix-test:
     needs: get-proposal-range
+    # The called workflow's jobs cannot request more than what this caller
+    # job grants. docker-proposals.yml's build/test jobs need id-token: write
+    # for Depot OIDC, and the push job additionally needs packages: write to
+    # push to ghcr.io.
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     secrets: inherit
     uses: ./.github/workflows/docker-proposals.yml
     with:
@@ -150,6 +161,7 @@ jobs:
 
   # Fail if the proposal range end was forced (to block merging)
   prohibit-force-end:
+    # Ensure prohibit-force-end runs last even if the conditions for notify-on-failure change over time.
     needs: [get-proposal-range, notify-on-failure]
     runs-on: ubuntu-latest
     steps:
