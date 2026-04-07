@@ -1,6 +1,9 @@
 env:
   PROJECT_ID: 60745596728
 
+permissions:
+  contents: read
+
 jobs:
   create-snapshot:
     name: Create Mainfork Snapshot

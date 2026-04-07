@@ -42,6 +42,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -123,6 +126,14 @@ jobs:
 
   proposals-matrix-test:
     needs: get-proposal-range
+    # The called workflow's jobs cannot request more than what this caller
+    # job grants. docker-proposals.yml's build/test jobs need id-token: write
+    # for Depot OIDC, and the push job additionally needs packages: write to
+    # push to ghcr.io.
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     secrets: inherit
     uses: ./.github/workflows/docker-proposals.yml
     with:

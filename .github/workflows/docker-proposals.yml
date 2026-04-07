@@ -40,6 +40,9 @@ on:
         default: Agoric/agoric-3-proposals # XXX: '${{ github.repository }}'
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   # see https://docs.docker.com/build/ci/github-actions/test-before-push/
   build:
