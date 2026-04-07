@@ -1,6 +1,6 @@
 {
   "name": "@agoric/synthetic-chain",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Utilities to build a chain and test proposals atop it",
   "bin": "dist/cli/cli.mjs",
   "main": "./dist/lib/index.mjs",
