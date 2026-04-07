@@ -96,7 +96,8 @@ All files are optional other than `package.json` and `test.sh`.
   - `planName`: the cosmos-sdk "upgrade name" to target
   - `releaseNotes`: a URL to e.g. `https://github.com/Agoric/agoric-sdk/releases/tag/$releaseName`, or `false` for an unreleased upgrade
   - `sdkImageTag`: the tag to use for the output Docker image
-- `prepare.sh` is executed while the chain node is running but before the proposal is submitted.
+- `exec_prepare.sh` takes precedence over `prepare.sh`, and is executed while the chain node is running, but (unlike `prepare.sh`) it needs to do all the work of preparing, submitting, and voting on the Software Upgrade proposal.
+- `prepare.sh` is executed (if `exec_prepare.sh` does not exist) while the chain node is running but before the proposal is submitted.
 - `eval.sh` is executed in the EVAL stage while the chain node is running, as a replacement of default behavior based on `submission/`.
 - `submission/` is scanned for $name.js core-eval proposal scripts, corresponding $name-permit.json permits, and referenced b1-$hash.json bundles. [Default EVAL stage behavior](https://github.com/Agoric/agoric-3-proposals/blob/main/packages/synthetic-chain/public/upgrade-test-scripts/eval_submission.js) installs the bundles and submits a core-eval proposal referencing all of the ($name-permit.json, $name.js) pairs.
 - `use.sh` is executed in the USE stage while the chain node is running.

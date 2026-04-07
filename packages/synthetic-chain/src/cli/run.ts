@@ -79,6 +79,12 @@ export const runTestImage = ({
         'run',
         '--env',
         `MESSAGE_FILE_PATH=${containerFilePath}`,
+        // We need to publish the RPC port to allow local test scripts
+        // to interact with the chain running in the container. The
+        // old gymnastics of attempting to read an IP address from
+        // the container weren't portable to Docker running in a VM.
+        '--publish',
+        '127.0.0.1:26657:26657',
         '--mount',
         `source=${messageFilePath},target=${containerFilePath},type=bind`,
         ...(removeContainerOnExit ? ['--rm'] : []),
@@ -132,11 +138,10 @@ export const debugTestImage = (proposal: ProposalInfo) => {
       '/usr/src/upgrade-test-scripts/start_agd.sh',
       '--interactive',
       '--publish',
-      '1317:1317',
+      '127.0.0.1:1317:1317',
       '--publish',
-      '9090:9090',
-      '--publish',
-      '26657:26657',
+      '127.0.0.1:9090:9090',
+      // 127.0.0.1:26657 is already published directly by `runTestImage`
       '--tty',
     ],
     proposal,

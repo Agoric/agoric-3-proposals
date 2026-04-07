@@ -34,7 +34,11 @@ startAgd
 echo "[$PROPOSAL] Agd started."
 cd /usr/src/proposals/"$PROPOSAL/" || fail "Proposal $PROPOSAL does not exist"
 
-if [ -f "prepare.sh" ]; then
+if [ -f "exec_prepare.sh" ]; then
+  # This is for proposals that take control of all the rest of the preparation process.
+  echo "[$PROPOSAL] Execing exec_prepare.sh"
+  exec ./exec_prepare.sh
+elif [ -f "prepare.sh" ]; then
   # In case the proposal needs some chain actions to be done before the upgrade,
   # for example to set up some state that is tested after the upgrade.
   echo "[$PROPOSAL] Running prepare.sh"

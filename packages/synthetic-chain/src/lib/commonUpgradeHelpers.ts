@@ -270,8 +270,9 @@ export const voteLatestProposalAndWait = async (
             msgTitle = message?.value?.content?.value?.title;
           }
 
-          typeUrl === '/cosmos.gov.v1.MsgExecLegacyContent' ||
-            Fail`Unsupported proposal message type ${typeUrl}`;
+          // Just skip if the message isn't a legacy one.  We'll just match
+          // by the proposal's title instead.
+          if (typeUrl !== '/cosmos.gov.v1.MsgExecLegacyContent') return false;
           return msgTitle === title;
         });
       } else {
