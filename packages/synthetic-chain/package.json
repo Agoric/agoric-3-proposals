@@ -2,18 +2,18 @@
   "name": "@agoric/synthetic-chain",
   "version": "0.6.5",
   "description": "Utilities to build a chain and test proposals atop it",
-  "bin": "dist/cli/cli.js",
-  "main": "./dist/lib/index.js",
+  "bin": "dist/cli/cli.mjs",
+  "main": "./dist/lib/index.mjs",
   "type": "module",
-  "module": "./dist/lib/index.js",
-  "exports": "./dist/lib/index.js",
-  "types": "./dist/lib/index.d.ts",
+  "module": "./dist/lib/index.mjs",
+  "exports": "./dist/lib/index.mjs",
+  "types": "./dist/lib/index.d.mts",
   "files": [
     "dist"
   ],
   "scripts": {
     "prepare": "yarn build",
-    "build": "tsup",
+    "build": "tsdown",
     "test": "ava"
   },
   "engines": {
@@ -38,7 +38,7 @@
     "@types/tmp": "0.2.6",
     "ava": "^7.0.0",
     "ts-blank-space": "^0.8.0",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.21.7",
     "typescript": "^6.0.2"
   },
   "ava": {

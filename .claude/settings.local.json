@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(gh run:*)",
+      "Bash(git stash:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(npm view:*)",
+      "Bash(yarn build-cli:*)",
+      "Bash(yarn synthetic-chain:*)",
+      "Bash(yarn test:*)"
+    ]
+  }
+}
