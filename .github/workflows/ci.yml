@@ -150,6 +150,7 @@ jobs:
 
   # Fail if the proposal range end was forced (to block merging)
   prohibit-force-end:
+    # Ensure prohibit-force-end runs last even if the conditions for notify-on-failure change over time.
     needs: [get-proposal-range, notify-on-failure]
     runs-on: ubuntu-latest
     steps:
