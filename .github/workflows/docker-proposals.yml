@@ -94,7 +94,7 @@ jobs:
           images: ${{ inputs.registry }}/${{ inputs.image_name }}
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup node
         uses: ./.github/actions/setup-node
@@ -205,7 +205,7 @@ jobs:
           df -h
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup node
         uses: ./.github/actions/setup-node
