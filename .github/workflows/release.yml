@@ -19,8 +19,17 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - name: Checkout Repo
         uses: actions/checkout@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Setup node
         uses: ./.github/actions/setup-node
@@ -38,8 +47,9 @@ jobs:
           # This expects you to have a script called release which does a build for your packages and calls changeset publish
           publish: yarn release
           createGithubReleases: true
+          commitMode: github-api
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 

@@ -8,7 +8,9 @@
       "Bash(npm view:*)",
       "Bash(yarn build-cli:*)",
       "Bash(yarn synthetic-chain:*)",
-      "Bash(yarn test:*)"
+      "Bash(yarn test:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
