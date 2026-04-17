@@ -67,7 +67,7 @@ jobs:
           then
             IMAGE_TAG="$(
               curl --silent "$FOLLOWER_HOMEPAGE" | \
-              sed --regexp-extended --silent 's|.*ghcr.io/agoric/agoric-sdk:([0-9]+).*|\1|p'
+              sed --regexp-extended --silent 's|.*ghcr.io/agoric/agoric-sdk:(\S+).*|\1|p'
             )"
 
             if test -z "$IMAGE_TAG"
