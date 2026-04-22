@@ -4,6 +4,9 @@ import { resolve as resolvePath } from 'node:path';
 import { fileSync as createTempFile } from 'tmp';
 import { type ProposalInfo, imageNameForProposal } from './proposals.js';
 
+/** Use 26647 to avoid conflicts with 26657. */
+const DEFAULT_PUBLISHED_RPC_ENDPOINT = '127.0.0.1:26647';
+
 const createMessageFile = (proposal: ProposalInfo) =>
   createTempFile({ prefix: proposal.proposalName });
 
@@ -50,10 +53,12 @@ export const runTestImage = ({
   extraDockerArgs = [],
   proposal,
   removeContainerOnExit = true,
+  publishedRpcEndpoint = DEFAULT_PUBLISHED_RPC_ENDPOINT,
 }: {
   extraDockerArgs?: Array<string>;
   proposal: ProposalInfo;
   removeContainerOnExit?: boolean;
+  publishedRpcEndpoint?: string;
 }) => {
   const { name: messageFilePath, removeCallback: removeTempFileCallback } =
     createMessageFile(proposal);
@@ -66,6 +71,7 @@ export const runTestImage = ({
   try {
     executeHostScriptIfPresent(
       {
+        PUBLISHED_RPC_ENDPOINT: publishedRpcEndpoint,
         MESSAGE_FILE_PATH: messageFilePath,
       },
       proposal,
@@ -79,14 +85,14 @@ export const runTestImage = ({
         'run',
         '--env',
         `MESSAGE_FILE_PATH=${containerFilePath}`,
-        // We need to publish the RPC port to allow local test scripts
-        // to interact with the chain running in the container. The
-        // old gymnastics of attempting to read an IP address from
-        // the container weren't portable to Docker running in a VM.
-        '--publish',
-        '127.0.0.1:26657:26657',
         '--mount',
         `source=${messageFilePath},target=${containerFilePath},type=bind`,
+        // We need to publish the RPC port to allow before-test-run.sh and
+        // after-test-run.sh to interact with the chain running in the
+        // container. The old gymnastics of attempting to read an IP address
+        // from the container weren't portable to Docker running in a VM.
+        '--publish',
+        `${publishedRpcEndpoint}:26657`,
         ...(removeContainerOnExit ? ['--rm'] : []),
         ...propagateSlogfile(process.env),
         ...extraDockerArgs,
@@ -97,6 +103,7 @@ export const runTestImage = ({
 
     executeHostScriptIfPresent(
       {
+        PUBLISHED_RPC_ENDPOINT: publishedRpcEndpoint,
         MESSAGE_FILE_PATH: messageFilePath,
       },
       proposal,
@@ -141,7 +148,8 @@ export const debugTestImage = (proposal: ProposalInfo) => {
       '127.0.0.1:1317:1317',
       '--publish',
       '127.0.0.1:9090:9090',
-      // 127.0.0.1:26657 is already published directly by `runTestImage`
+      '--publish',
+      '127.0.0.1:26657:26657',
       '--tty',
     ],
     proposal,
