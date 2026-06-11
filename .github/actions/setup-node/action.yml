@@ -6,6 +6,14 @@ inputs:
     description: 'The path to yarn.lock files for setup-node to cache with'
     required: false
     default: ''
+  node-version:
+    description: 'The Node.js version to set up'
+    required: false
+    # TODO: Due to a circular dependency between synthetic-chain and Agoric SDK, CI can't
+    # use Node.js 24 until we can rely on a version of Agoric SDK that supports it, which
+    # means synthetic-chain needs to publish a compatible version first.
+    # default: '24'
+    default: '22'
 
 runs:
   using: composite
@@ -14,7 +22,7 @@ runs:
     # https://github.com/actions/setup-node/issues/899#issuecomment-1828798029.
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: ${{ inputs.node-version }}
 
     # Before setup-node because that action tries to discover the cache directory.
     # See https://github.com/actions/setup-node/issues/480#issuecomment-1915448139
@@ -26,6 +34,6 @@ runs:
 
     - uses: actions/setup-node@v4
       with:
-        node-version: 22
+        node-version: ${{ inputs.node-version }}
         cache: yarn
         cache-dependency-path: ${{ inputs.lock-path }}
