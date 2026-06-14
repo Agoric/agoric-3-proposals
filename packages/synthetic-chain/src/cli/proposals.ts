@@ -217,9 +217,8 @@ export function readProposals(proposalsParent: string): ProposalInfo[] {
   const proposalPaths = fs
     .readdirSync(proposalsDir, { withFileTypes: true })
     .filter(dirent => {
-      assert('path' in dirent, 'missing path in dirent added in Node 18.17');
       const hasPackageJson = fs.existsSync(
-        path.join(dirent.path, dirent.name, 'package.json'),
+        path.join(proposalsDir, dirent.name, 'package.json'),
       );
       if (!hasPackageJson) {
         console.warn(
