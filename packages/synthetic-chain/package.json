@@ -2,7 +2,12 @@
   "name": "@agoric/synthetic-chain",
   "version": "0.7.2",
   "description": "Utilities to build a chain and test proposals atop it",
-  "bin": "dist/cli/cli.mjs",
+  "repository": {
+    "url": "https://github.com/Agoric/agoric-3-proposals"
+  },
+  "bin": {
+    "synthetic-chain": "dist/cli/cli.mjs"
+  },
   "main": "./dist/lib/index.mjs",
   "type": "module",
   "module": "./dist/lib/index.mjs",
