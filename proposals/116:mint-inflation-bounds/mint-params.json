@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "@type": "/cosmos.mint.v1beta1.MsgUpdateParams",
+      "authority": "agoric10d07y265gmmuvt4z0w9aw880jnsr700jgl36x9",
+      "params": {
+        "mint_denom": "ubld",
+        "inflation_rate_change": "0.130000000000000000",
+        "inflation_max": "0.030000000000000000",
+        "inflation_min": "0.020000000000000000",
+        "goal_bonded": "0.670000000000000000",
+        "blocks_per_year": "6311520"
+      }
+    }
+  ],
+  "metadata": "",
+  "deposit": "100000ubld",
+  "title": "Adjust Mint Inflation Bounds to 2-3% Annual Range",
+  "summary": "Updates the mint module parameters: inflation_min to 0.02 and inflation_max to 0.03 (inflation_rate_change 0.13 and goal_bonded 0.67 unchanged)."
+}
