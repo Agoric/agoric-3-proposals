@@ -1,0 +1,46 @@
+{
+  "produce": {
+    "QstnContractKit": true
+  },
+  "consume": {
+    "localchain": true,
+    "cosmosInterchainService": true,
+    "chainStorage": true,
+    "chainTimerService": true,
+    "agoricNames": true,
+    "board": true,
+    "startUpgradable": true,
+    "zoe": "makeCoreProposalBehavior",
+    "chainInfoPublished": true,
+    "QstnContractKit": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "instance": {
+    "produce": {
+      "QstnContract": true
+    }
+  },
+  "installation": {
+    "consume": {
+      "QstnContract": true
+    },
+    "produce": "makeCoreProposalBehavior"
+  },
+  "brand": {
+    "consume": {
+      "BLD": true
+    }
+  },
+  "issuer": {
+    "consume": {
+      "BLD": true
+    }
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
