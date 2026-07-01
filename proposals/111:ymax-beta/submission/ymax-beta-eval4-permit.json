@@ -1,0 +1,24 @@
+{
+  "consume": {
+    "deliverContractControl": true,
+    "getUpgradeKit": true,
+    "ymax1Kit": true,
+    "localchain": true,
+    "cosmosInterchainService": true,
+    "chainTimerService": true,
+    "agoricNames": true,
+    "board": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
