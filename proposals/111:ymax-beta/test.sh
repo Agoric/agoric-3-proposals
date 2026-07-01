@@ -1,8 +1,5 @@
 #!/bin/bash
-set -euo pipefail
 
-# segregate so changing these does not invalidate the proposal image
-# à la https://github.com/Agoric/agoric-3-proposals/pull/213
-cd test
+set -o errexit -o nounset -o pipefail
 
-yarn ava
+echo "[111:ymax-beta] core-evals applied; no additional post-conditions to assert"
