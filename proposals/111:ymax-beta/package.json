@@ -1,0 +1,15 @@
+{
+  "agoricProposal": {
+    "type": "/agoric.swingset.CoreEvalProposal",
+    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/ymax-v0.2.0-beta"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@agoric/synthetic-chain": "~0.6.1"
+  },
+  "packageManager": "yarn@4.9.4",
+  "devDependencies": {
+    "ava": "^6.4.1"
+  }
+}

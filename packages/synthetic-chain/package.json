@@ -5,9 +5,7 @@
   "repository": {
     "url": "https://github.com/Agoric/agoric-3-proposals"
   },
-  "bin": {
-    "synthetic-chain": "dist/cli/cli.mjs"
-  },
+  "bin": "dist/cli/cli.mjs",
   "main": "./dist/lib/index.mjs",
   "type": "module",
   "module": "./dist/lib/index.mjs",
