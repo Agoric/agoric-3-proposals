@@ -108,6 +108,25 @@ All files are optional other than `package.json` and `test.sh`.
 - `host/before-test-run.sh` is executed on the Docker _host_ before launching a container for the TEST stage (useful for e.g. starting a follower).
 - `host/after-test-run.sh` is executed on the Docker _host_ after a container for the TEST stage exits (useful for e.g. stopping a follower).
 
+### Omitted proposals
+
+Some passed agoric-3 governance proposals are intentionally **not** modeled as
+subdirectories here, because they do not change the SwingSet/contract state that
+the synthetic chain replays or because their proposal type is not one of the
+supported build stages (Software Upgrade / Core Eval / Parameter Change):
+
+- **113** — `/ibc.core.client.v1.MsgRecoverClient` ("Recover IBC light client
+  for Stride"). This is an **unsupported proposal type**: the build only routes
+  Software Upgrade, Core Eval, and Parameter Change proposals, and
+  `dockerfileGen` has no stage for `MsgRecoverClient`. It recovers an expired IBC
+  light client and does not touch the contract/vat state the synthetic chain
+  replays, so it is omitted — the same posture the repo already takes toward text
+  proposals. If a future need arises it would have to be modeled with a custom
+  `eval.sh`/`prepare.sh` rather than the default `submission/` flow.
+- **117** — rejected on-chain, so it never executed.
+- **118** ("Burn 1 BLD per Reward Claim") — a `TextProposal`, which carries no
+  executable state change.
+
 ## Development
 
 ### Top-level commands

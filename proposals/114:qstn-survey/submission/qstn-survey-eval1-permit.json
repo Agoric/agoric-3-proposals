@@ -1,0 +1,21 @@
+{
+  "consume": {
+    "agoricNames": true,
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "chainStorage": true,
+    "vatAdminSvc": "makeCoreProposalBehavior",
+    "zoe": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "chainInfoPublished": true
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
