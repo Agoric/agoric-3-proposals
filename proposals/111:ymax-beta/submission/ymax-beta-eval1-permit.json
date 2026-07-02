@@ -1,0 +1,29 @@
+{
+  "consume": {
+    "agoricNamesAdmin": "makeCoreProposalBehavior",
+    "board": true,
+    "chainStorage": true,
+    "getDepositFacet": true,
+    "instancePrivateArgs": true,
+    "startUpgradable": true,
+    "zoe": "makeCoreProposalBehavior",
+    "vatAdminSvc": "makeCoreProposalBehavior"
+  },
+  "produce": {
+    "deliverContractControl": true
+  },
+  "instance": {
+    "consume": {
+      "postalService": true
+    }
+  },
+  "installation": {
+    "produce": "makeCoreProposalBehavior"
+  },
+  "evaluateBundleCap": "makeCoreProposalBehavior",
+  "modules": {
+    "utils": {
+      "runModuleBehaviors": "makeCoreProposalBehavior"
+    }
+  }
+}
