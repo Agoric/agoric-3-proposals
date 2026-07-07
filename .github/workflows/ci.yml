@@ -56,19 +56,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Get changed packages
-        uses: technote-space/get-diff-action@v6.1.2
-        with:
-          PATTERNS: |
-            packages/**/*.json
-            packages/**/.hcl
-            packages/**/*.js
-            packages/**/*.mjs
-            packages/**/*.cjs
-            packages/**/*.ts
-            packages/**/*.mts
-            packages/**/*.cts
-
       - name: Setup node
         uses: ./.github/actions/setup-node
         with:
