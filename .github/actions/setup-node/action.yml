@@ -20,9 +20,12 @@ runs:
   steps:
     # Set up for Corepack before trying to cache yarn. See
     # https://github.com/actions/setup-node/issues/899#issuecomment-1828798029.
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: ${{ inputs.node-version }}
+        # Corepack is not enabled yet, so setup-node must not try to detect
+        # the yarn cache on this first pass.
+        package-manager-cache: false
 
     # Before setup-node because that action tries to discover the cache directory.
     # See https://github.com/actions/setup-node/issues/480#issuecomment-1915448139
@@ -32,7 +35,7 @@ runs:
         corepack enable
         mkdir -p "$(yarn config get cacheFolder)"
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         node-version: ${{ inputs.node-version }}
         cache: yarn
