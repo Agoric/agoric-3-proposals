@@ -80,6 +80,12 @@ jobs:
           fi
         working-directory: scripts
 
+      - if: failure()
+        name: Notify on failure
+        uses: ./.github/actions/notify-status
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+
 name: Create Mainfork Snapshot
 
 on:

@@ -142,9 +142,6 @@ jobs:
         uses: ./.github/actions/notify-status
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          from: ${{ secrets.NOTIFY_EMAIL_FROM }}
-          to: ${{ secrets.NOTIFY_EMAIL_TO }}
-          password: ${{ secrets.NOTIFY_EMAIL_PASSWORD }}
 
   # Fail if the proposal range end was forced (to block merging)
   prohibit-force-end:
