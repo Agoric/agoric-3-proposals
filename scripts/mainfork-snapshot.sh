@@ -35,7 +35,8 @@ VM_ADMIN_SERVICE_ACCOUNT_JSON_FILE_PATH="$PARENT_FOLDER/vm-admin.json"
 execute_command_inside_vm() {
     local command="$1"
     gcloud compute ssh "$VM_NAME" \
-        --command "$command" --project "$PROJECT_NAME" --zone "$REGION"
+        --command "$command" --project "$PROJECT_NAME" \
+        --ssh-key-expire-after "1h" --zone "$REGION"
 }
 
 get_vm_status() {
