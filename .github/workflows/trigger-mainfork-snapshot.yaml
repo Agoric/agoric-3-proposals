@@ -56,7 +56,9 @@ jobs:
           echo "DIFFERENCE=$((current_count - previous_count))" >> $GITHUB_OUTPUT
         working-directory: proposals
 
-      - name: Trigger snapshot creation
+      - env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        name: Trigger snapshot creation
         run: |
           #! /bin/bash
           set -o errexit -o errtrace -o xtrace

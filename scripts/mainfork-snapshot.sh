@@ -13,6 +13,7 @@ REPOSITORY_URL="https://github.com/agoric-labs/cosmos-genesis-tinkerer.git"
 STORAGE_WRITE_SCOPES="https://www.googleapis.com/auth/devstorage.read_write"
 SECOND_NODE_DATA_FOLDER_NAME="agoric2"
 SECOND_NODE_IP="10.99.0.3"
+SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-""}"
 STORAGE_UPLOAD_URL="https://storage.googleapis.com/upload/storage/v1/b"
 TIMESTAMP="$(date '+%s')"
 VALIDATOR_STATE_FILE_NAME="priv_validator_state.json"
@@ -28,7 +29,6 @@ LOGS_FILE="/tmp/$TIMESTAMP.logs"
 LOGS_FOLDER="$PARENT_FOLDER/logs"
 REPOSITORY_FOLDER_NAME="tinkerer_$TIMESTAMP"
 SECOND_NODE_LOGS_FILE="/tmp/$SECOND_NODE_DATA_FOLDER_NAME.logs"
-SLACK_WEBHOOK_URL_FILE_PATH="$PARENT_FOLDER/slack-webhook-url"
 STORAGE_WRITE_SERVICE_ACCOUNT_JSON_FILE_PATH="$PARENT_FOLDER/chain-snapshot-writer.json"
 VM_ADMIN_SERVICE_ACCOUNT_JSON_FILE_PATH="$PARENT_FOLDER/vm-admin.json"
 
@@ -213,9 +213,9 @@ execute_command_inside_vm "
 
         exit_code=\$1
 
-        if ! test -f \"$SLACK_WEBHOOK_URL_FILE_PATH\"
+        if test -z '$SLACK_WEBHOOK_URL'
         then
-            echo 'Slack webhook URL file $SLACK_WEBHOOK_URL_FILE_PATH not found, skipping failure notification'
+            echo 'Slack webhook URL not provided, skipping failure notification'
             return
         fi
 
@@ -226,7 +226,7 @@ execute_command_inside_vm "
              '{\"text\": \$text, \"username\": \"$VM_NAME\"}'
         )\"
 
-        curl \"\$(cat $SLACK_WEBHOOK_URL_FILE_PATH)\" \
+        curl '$SLACK_WEBHOOK_URL' \
          --data \"\$payload\" \
          --header 'Content-Type: application/json' \
          --output '$VOID' \
