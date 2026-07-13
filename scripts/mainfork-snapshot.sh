@@ -13,6 +13,7 @@ REPOSITORY_URL="https://github.com/agoric-labs/cosmos-genesis-tinkerer.git"
 STORAGE_WRITE_SCOPES="https://www.googleapis.com/auth/devstorage.read_write"
 SECOND_NODE_DATA_FOLDER_NAME="agoric2"
 SECOND_NODE_IP="10.99.0.3"
+SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL:-""}"
 STORAGE_UPLOAD_URL="https://storage.googleapis.com/upload/storage/v1/b"
 TIMESTAMP="$(date '+%s')"
 VALIDATOR_STATE_FILE_NAME="priv_validator_state.json"
@@ -20,10 +21,12 @@ VM_NAME="jump-3"
 VM_OPERATIONS_SCOPES="https://www.googleapis.com/auth/cloud-platform"
 VM_RUNNING_STATUS="RUNNING"
 VM_STOPPED_STATUS="TERMINATED"
+VOID="/dev/null"
 
 FIRST_NODE_LOGS_FILE="/tmp/$FIRST_NODE_DATA_FOLDER_NAME.logs"
 IMAGE_NAME="ghcr.io/agoric/agoric-sdk:$IMAGE_TAG"
 LOGS_FILE="/tmp/$TIMESTAMP.logs"
+LOGS_FOLDER="$PARENT_FOLDER/logs"
 REPOSITORY_FOLDER_NAME="tinkerer_$TIMESTAMP"
 SECOND_NODE_LOGS_FILE="/tmp/$SECOND_NODE_DATA_FOLDER_NAME.logs"
 STORAGE_WRITE_SERVICE_ACCOUNT_JSON_FILE_PATH="$PARENT_FOLDER/chain-snapshot-writer.json"
@@ -32,7 +35,8 @@ VM_ADMIN_SERVICE_ACCOUNT_JSON_FILE_PATH="$PARENT_FOLDER/vm-admin.json"
 execute_command_inside_vm() {
     local command="$1"
     gcloud compute ssh "$VM_NAME" \
-        --command "$command" --project "$PROJECT_NAME" --zone "$REGION"
+        --command "$command" --project "$PROJECT_NAME" \
+        --ssh-key-expire-after "1h" --zone "$REGION"
 }
 
 get_vm_status() {
@@ -46,7 +50,12 @@ log_warning() {
 
 signal_vm_start() {
     gcloud compute instances start "$VM_NAME" \
-        --async --project "$PROJECT_NAME" --zone "$REGION" >/dev/null 2>&1
+        --async --project "$PROJECT_NAME" --zone "$REGION" > "$VOID" 2>&1
+}
+
+signal_vm_stop() {
+    gcloud compute instances stop "$VM_NAME" \
+        --async --project "$PROJECT_NAME" --zone "$REGION" > "$VOID" 2>&1
 }
 
 start_vm() {
@@ -59,6 +68,14 @@ start_vm() {
     fi
 }
 
+stop_vm_on_failure() {
+    local exit_code="$?"
+    if test "$exit_code" != "0"; then
+        log_warning "Snapshot triggering failed with exit code $exit_code, stopping VM $VM_NAME"
+        signal_vm_stop
+    fi
+}
+
 wait_for_vm_status() {
     local status="$1"
     while [ "$(get_vm_status)" != "$status" ]; do
@@ -66,6 +83,7 @@ wait_for_vm_status() {
     done
 }
 
+trap stop_vm_on_failure EXIT
 start_vm
 execute_command_inside_vm "
     #! /bin/bash
@@ -167,6 +185,7 @@ execute_command_inside_vm "
     }
     main() {
         trap stop_vm EXIT
+        remove_previous_logs
         cd $PARENT_FOLDER
         clone_repository
         cd $REPOSITORY_FOLDER_NAME
@@ -189,6 +208,35 @@ execute_command_inside_vm "
         upload_file_to_storage $BUCKET_NAME mainfork-snapshots/keyring-test.tar.gz state/keyring-test.tar.gz
         remove_repository
     }
+    notify_failure_on_slack() {
+        local exit_code payload
+
+        exit_code=\$1
+
+        if test -z '$SLACK_WEBHOOK_URL'
+        then
+            echo 'Slack webhook URL not provided, skipping failure notification'
+            return
+        fi
+
+        payload=\"\$(
+            jq \
+             --arg text \"Mainfork snapshot creation failed on VM $VM_NAME with exit code \$exit_code, logs preserved at $LOGS_FOLDER/$TIMESTAMP.logs\" \
+             --null-input \
+             '{\"text\": \$text, \"username\": \"$VM_NAME\"}'
+        )\"
+
+        curl '$SLACK_WEBHOOK_URL' \
+         --data \"\$payload\" \
+         --header 'Content-Type: application/json' \
+         --output '$VOID' \
+         --request 'POST' \
+         --silent
+    }
+    preserve_logs_file() {
+        mkdir --parents $LOGS_FOLDER
+        cp $LOGS_FILE $LOGS_FOLDER
+    }
     remove_all_running_containers() {
         docker container ls --all --format '{{.ID}}' | \
         xargs -I {} docker container stop {} | \
@@ -198,6 +246,10 @@ execute_command_inside_vm "
         sudo rm --force \
          state/mainfork/$FIRST_NODE_DATA_FOLDER_NAME/data/agoric/flight-recorder.bin \
          state/mainfork/$SECOND_NODE_DATA_FOLDER_NAME/data/agoric/flight-recorder.bin
+    }
+    remove_previous_logs() {
+        mkdir --parents $LOGS_FOLDER
+        rm --force $LOGS_FOLDER/*
     }
     remove_repository() {
         cd \$HOME
@@ -225,12 +277,21 @@ execute_command_inside_vm "
          start --home /state/\$node_data_folder_name
     }
     stop_vm() {
+        local exit_code=\"\$?\"
+
+        preserve_logs_file || echo 'Failed to preserve logs file'
+
+        if test \"\$exit_code\" -ne 0
+        then
+            notify_failure_on_slack \"\$exit_code\" || echo 'Failed to send failure notification to Slack'
+        fi
+
         local access_token=\"\$(get_access_token \"$VM_OPERATIONS_SCOPES\" \"$VM_ADMIN_SERVICE_ACCOUNT_JSON_FILE_PATH\")\"
         curl \"https://compute.googleapis.com/compute/v1/projects/$PROJECT_NAME/zones/$REGION/instances/$VM_NAME/stop\" \
         --header \"Authorization: Bearer \$access_token\" \
-        --header \"Content-Type: application/json\" \
-        --output /dev/null \
-        --request POST \
+        --header 'Content-Type: application/json' \
+        --output '$VOID' \
+        --request 'POST' \
         --silent
     }
     tinker_genesis() {
@@ -252,8 +313,8 @@ execute_command_inside_vm "
         local http_code=\$(
             curl \"$STORAGE_UPLOAD_URL/\$bucket_name/o?name=\$object_name&uploadType=media\" \
             --header \"Authorization: Bearer \$access_token\" \
-            --output /dev/null \
-            --request POST \
+            --output '$VOID' \
+            --request 'POST' \
             --silent \
             --upload-file \$file_path \
             --write-out \"%{http_code}\"
