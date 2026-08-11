@@ -1,26 +1,16 @@
-name: Release
-
-on:
-  push:
-    branches:
-      - main
-
 concurrency: ${{ github.workflow }}-${{ github.ref }}
-
-permissions:
-  contents: read
 
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
       id-token: write
+      pull-requests: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Generate GitHub App token
-        id: app-token
+      - id: app-token
+        name: Generate GitHub App token
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
@@ -34,24 +24,25 @@ jobs:
       - name: Setup node
         uses: ./.github/actions/setup-node
         with:
-          # we only care about the root yarn.lock for the synthetic-chain tool
           lock-path: ./yarn.lock
 
       - name: Install deps
         run: yarn install
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Update npm for OIDC trusted publishing
+        run: |
+          npm install --global npm@^11.5.1
+          npm --version
+
+      - env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         id: changesets
+        name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
-          # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: yarn release
-          createGithubReleases: true
           commitMode: github-api
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          createGithubReleases: true
+          publish: yarn release
 
       - name: Send a Slack notification if a publish happens
         if: steps.changesets.outputs.published == 'true'
@@ -61,3 +52,13 @@ jobs:
           webhook-type: incoming-webhook
           payload: |
             text: "A new version of ${GITHUB_REPOSITORY} was published!"
+
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
