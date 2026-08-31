@@ -1,0 +1,22 @@
+description: 'Set up Node.js, install workspace dependencies, and install an npm capable of OIDC trusted publishing'
+
+name: Setup for publishing
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-node
+      with:
+        lock-path: ./yarn.lock
+
+    - name: Install deps
+      run: yarn install
+      shell: bash
+
+    - name: Update npm for OIDC trusted publishing
+      run: |
+        set -o errexit -o xtrace
+
+        npm install --global 'npm@^11.5.1'
+        npm --version
+      shell: bash

@@ -1,26 +1,67 @@
-name: Release
-
-on:
-  push:
-    branches:
-      - main
-
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
-permissions:
-  contents: read
+concurrency: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
 
 jobs:
-  release:
-    name: Release
+  manual-publish:
+    environment:
+      name: npm-publish-release
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    name: Manual publish
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
+    steps:
+      - env:
+          TAG: ${{ inputs.tag }}
+        name: Validate inputs
+        run: |
+          set -o errexit -o xtrace
+
+          if test -z "$TAG"
+          then
+            echo "dist-tag must not be empty"
+            exit 1
+          fi
+
+      - name: Checkout Repo
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.branch }}
+
+      - name: Setup for publishing
+        uses: ./.github/actions/setup-publish
+
+      - env:
+          TAG: ${{ inputs.tag }}
+        name: Publish committed version to NPM
+        run: |
+          set -o errexit -o xtrace
+
+          git log --format="Publishing version committed as of %H: %s" --max-count=1
+
+          yarn build-cli
+          yarn changeset publish --no-git-tag --tag "$TAG"
+
+      - name: Send a Slack notification
+        uses: slackapi/slack-github-action@v3.0.3
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "A new version of ${GITHUB_REPOSITORY} was published manually"
+
+  release:
+    if: ${{ github.event_name == 'push' }}
+    name: Release
     permissions:
       contents: write
-      pull-requests: write
       id-token: write
+      pull-requests: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Generate GitHub App token
-        id: app-token
+      - id: app-token
+        name: Generate GitHub App token
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ vars.RELEASE_APP_ID }}
@@ -31,27 +72,18 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
 
-      - name: Setup node
-        uses: ./.github/actions/setup-node
-        with:
-          # we only care about the root yarn.lock for the synthetic-chain tool
-          lock-path: ./yarn.lock
+      - name: Setup for publishing
+        uses: ./.github/actions/setup-publish
 
-      - name: Install deps
-        run: yarn install
-
-      - name: Create Release Pull Request or Publish to npm
+      - env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
         id: changesets
+        name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
-          # This expects you to have a script called release which does a build for your packages and calls changeset publish
-          publish: yarn release
-          createGithubReleases: true
           commitMode: github-api
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          createGithubReleases: true
+          publish: yarn release
 
       - name: Send a Slack notification if a publish happens
         if: steps.changesets.outputs.published == 'true'
@@ -60,4 +92,26 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "A new version of ${GITHUB_REPOSITORY} was published!"
+            text: "A new version of ${GITHUB_REPOSITORY} was published"
+
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      branch:
+        default: main
+        description: 'Branch (or tag/SHA) whose committed version to publish; the workflow definition itself still comes from the "Use workflow from" ref'
+        required: false
+        type: string
+      tag:
+        default: latest
+        description: 'NPM dist-tag to publish under (e.g. latest, or agoric-upgrade-23)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
