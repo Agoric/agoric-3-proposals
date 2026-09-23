@@ -11,9 +11,9 @@
       "coreProposals": [],
       "vatOptionUpdates": [
         {
-          "vatID": "v91",
+          "vatID": "v90",
           "critical": true,
-          "label": "ymax1"
+          "label": "ymax0"
         }
       ]
     },

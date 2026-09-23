@@ -11,7 +11,9 @@ vat as critical.
 
 This replicates the `upgradeDetails.vatOptionUpdates` that the chain's
 `golang/cosmos/app/upgrade.go` provides for devnet and mainnet, but targeting
-a ymax instance deployed in the a3p image.
+the ymax instance actually deployed in this repo's own proposal history (via
+`100:ymax-alpha1` through `111:ymax-beta`), which uses the `ymax0` naming
+convention rather than mainnet's `ymax1`.
 
 Because the vatID must be pinned statically in this package.json,
 `test/critical-vat.test.js` cross-checks it against the live vat before
