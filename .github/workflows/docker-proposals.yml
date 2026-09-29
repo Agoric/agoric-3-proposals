@@ -257,6 +257,9 @@ jobs:
       fail-fast: false
       matrix:
         target: ${{ fromJson(needs.build.outputs.images-to-push) }}
+    concurrency:
+      group: docker-repo-push
+      cancel-in-progress: false
     steps:
       - uses: depot/setup-action@v1
         with:
@@ -278,7 +281,27 @@ jobs:
           REGISTRY: ${{ inputs.registry }}
           IMAGE_NAME: ${{ inputs.image_name }}
         # ,, to lowercase because Agoric org is uppercase and Depot requires lowercase
-        run: depot push --project $PROJECT_ID --tag "$REGISTRY/${IMAGE_NAME,,}:$TARGET" --target $TARGET $BUILD_ID
+        run: |
+          for attempt in {1..5}; do
+            if output=$(depot push --project "$PROJECT_ID" --tag "$REGISTRY/${IMAGE_NAME,,}:$TARGET" --target "$TARGET" "$BUILD_ID" 2>&1); then
+              printf '%s\n' "$output"
+              exit 0
+            else
+              status=$?
+            fi
+            printf '%s\n' "$output"
+
+            if [[ $attempt -eq 5 || ! $output =~ 429[[:space:]]Too[[:space:]]Many[[:space:]]Requests || ! $output =~ retry-after:[[:space:]]*([0-9]+([.][0-9]+)?)(ms|s) ]]; then
+              exit "$status"
+            fi
+
+            retry_after=${BASH_REMATCH[1]}
+            if [[ ${BASH_REMATCH[3]} == ms ]]; then
+              retry_after=$(awk -v milliseconds="$retry_after" 'BEGIN { printf "%.9f", milliseconds / 1000 }')
+            fi
+            echo "Push attempt $attempt failed with 429; retrying in $retry_after seconds."
+            sleep "$retry_after"
+          done
 
       # XXX: depot.dev is configured with a 1-day retention for registry images
       # It'd be nice if we could explicitly remove the build images since we're done with them
