@@ -1,0 +1,66 @@
+{
+  "agoricProposal": {
+    "releaseNotes": "https://github.com/Agoric/agoric-sdk/releases/tag/agoric-upgrade-23",
+    "sdkImageTag": "75",
+    "planName": "agoric-upgrade-23",
+    "upgradeInfo": {
+      "binaries": {
+        "any": "https://github.com/Agoric/agoric-sdk/archive/1b99316a4104439cb73b906ca8452732edcdd748.zip//agoric-sdk-1b99316a4104439cb73b906ca8452732edcdd748?checksum=sha256:1f5753f11360050d7648895d12e7ab17a1f0e7a61dde0f9a31e07d52adf821ff"
+      },
+      "source": "https://github.com/Agoric/agoric-sdk/archive/1b99316a4104439cb73b906ca8452732edcdd748.zip?checksum=sha256:1f5753f11360050d7648895d12e7ab17a1f0e7a61dde0f9a31e07d52adf821ff",
+      "coreProposals": [],
+      "vatOptionUpdates": [
+        {
+          "vatID": "v90",
+          "critical": true,
+          "label": "ymax0"
+        }
+      ]
+    },
+    "type": "Software Upgrade Proposal"
+  },
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@agoric/client-utils": "agoric-upgrade-23",
+    "@agoric/ertp": "agoric-upgrade-23",
+    "@agoric/internal": "agoric-upgrade-23",
+    "@agoric/synthetic-chain": "^0.7.1",
+    "@agoric/zoe": "agoric-upgrade-23",
+    "@cosmjs/encoding": "^0.36.0",
+    "@cosmjs/proto-signing": "^0.36.0",
+    "@cosmjs/stargate": "^0.36.0",
+    "@endo/bundle-source": "^4.1.2",
+    "@endo/errors": "^1.2.13",
+    "@endo/init": "^1.1.12",
+    "@endo/marshal": "^1.8.0",
+    "agoric": "agoric-upgrade-23",
+    "ava": "^6.4.1",
+    "execa": "9.1.0",
+    "ts-blank-space": "^0.6.2"
+  },
+  "ava": {
+    "concurrency": 1,
+    "timeout": "2m",
+    "extensions": {
+      "js": true,
+      "ts": "module"
+    },
+    "files": [
+      "test/**/*.test.*"
+    ],
+    "nodeArguments": [
+      "--loader=ts-blank-space/register",
+      "--no-warnings"
+    ]
+  },
+  "scripts": {
+    "agops": "yarn --cwd /usr/src/agoric-sdk/ agops"
+  },
+  "packageManager": "yarn@4.12.0",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "~6.0.1-rc"
+  }
+}
