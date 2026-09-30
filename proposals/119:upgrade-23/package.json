@@ -8,14 +8,7 @@
         "any": "https://github.com/Agoric/agoric-sdk/archive/1b99316a4104439cb73b906ca8452732edcdd748.zip//agoric-sdk-1b99316a4104439cb73b906ca8452732edcdd748?checksum=sha256:1f5753f11360050d7648895d12e7ab17a1f0e7a61dde0f9a31e07d52adf821ff"
       },
       "source": "https://github.com/Agoric/agoric-sdk/archive/1b99316a4104439cb73b906ca8452732edcdd748.zip?checksum=sha256:1f5753f11360050d7648895d12e7ab17a1f0e7a61dde0f9a31e07d52adf821ff",
-      "coreProposals": [],
-      "vatOptionUpdates": [
-        {
-          "vatID": "v90",
-          "critical": true,
-          "label": "ymax0"
-        }
-      ]
+      "coreProposals": []
     },
     "type": "Software Upgrade Proposal"
   },
