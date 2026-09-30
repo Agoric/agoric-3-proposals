@@ -255,11 +255,9 @@ jobs:
     runs-on: 'depot-ubuntu-latest'
     strategy:
       fail-fast: false
+      max-parallel: 1
       matrix:
         target: ${{ fromJson(needs.build.outputs.images-to-push) }}
-    concurrency:
-      group: docker-repo-push
-      cancel-in-progress: false
     steps:
       - uses: depot/setup-action@v1
         with:
