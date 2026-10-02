@@ -1,6 +1,6 @@
 {
   "name": "@agoric/synthetic-chain",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Utilities to build a chain and test proposals atop it",
   "repository": {
     "url": "https://github.com/Agoric/agoric-3-proposals"
